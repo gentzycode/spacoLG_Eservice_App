@@ -52,7 +52,7 @@ const Login = ({ handleChildUpdate }) => {
                 <input 
                     type='text' 
                     className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Email'
+                    placeholder='Username'
                     onChange={(e) => setUsername(e.target.value)}
                     required
                 />
