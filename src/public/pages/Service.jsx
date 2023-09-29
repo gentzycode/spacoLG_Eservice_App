@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import AuthBanner from '../../common/AuthBanner'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { GrFormPreviousLink } from 'react-icons/gr'
 import ProceedNotify from '../components/service/ProceedNotify'
 import Register from '../components/auth/Register'
@@ -18,7 +18,9 @@ const Service = () => {
     const s_location = useLocation();
     const servObj = s_location.state?.serviceObject;
 
-    const { updateServiceObject } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const { updateServiceObject, user } = useContext(AuthContext);
 
 
     const [curraction, setCurraction] = useState('');
@@ -82,8 +84,9 @@ const Service = () => {
                     </div>
                     <div className='mt-0'>
                         {
-                            isLoggedin ? 
-                                <ProfileUpdate /> :  
+                            user && user !== null ? 
+                                (user?.has_personal_info ? navigate('/request-form') : <ProfileUpdate />) 
+                                :  
                                 (
                                     loading ? <AuthLoader /> : child
                                 )
