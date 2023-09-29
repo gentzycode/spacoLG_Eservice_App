@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import AuthBanner from '../../common/AuthBanner'
 import { Link, useLocation } from 'react-router-dom'
 import { GrFormPreviousLink } from 'react-icons/gr'
@@ -11,11 +11,15 @@ import AuthLoader from '../../common/AuthLoader'
 import Login from '../components/auth/Login'
 import ProfileUpdate from '../components/service/ProfileUpdate'
 import DashboardButton from '../../common/DashboardButton'
+import { AuthContext } from '../../context/AuthContext'
 
-const Sevice = () => {
+const Service = () => {
 
     const s_location = useLocation();
     const servObj = s_location.state?.serviceObject;
+
+    const { updateServiceObject } = useContext(AuthContext);
+
 
     const [curraction, setCurraction] = useState('');
     const [loading, setLoading] = useState(false);
@@ -52,6 +56,11 @@ const Sevice = () => {
         child = <ProceedNotify  handleChildUpdate={handleChildUpdate} />
     }
 
+
+    useEffect(() => {
+        updateServiceObject(servObj)
+    }, [])
+
     return (
         <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
             <AuthBanner />
@@ -67,7 +76,7 @@ const Sevice = () => {
                     }
                     <div className='mt-0 md:mt-8 pb-3 border-b border-gray-100'>
                         <p className='text-md my-2 text-gray-500'>{servObj?.localgovernments?.name}</p>
-                        <h1 className='text-xl md:text-4xl font-extralight'>   
+                        <h1 className='text-xl md:text-2xl font-extralight'>   
                             {servObj?.eservice?.name}
                         </h1>
                     </div>
@@ -86,4 +95,4 @@ const Sevice = () => {
     )
 }
 
-export default Sevice
+export default Service

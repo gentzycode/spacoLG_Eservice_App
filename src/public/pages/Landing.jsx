@@ -40,7 +40,7 @@ const Landing = () => {
             <div className="grow my-0 md:my-8 items-center">
                 <div className='w-full md:px-12'>
                     <div className="w-full md:w-[80%] my-8 md:mt-32 p-8 rounded-xl bg-gradient-to-r from-gray-100 from-20% via-gray-200 via-30% to-gray-100 to-80%">
-                        <div className='text-3xl md:text-4xl text-green-800 font-light text-center'>What You Can Do</div>
+                        <div className='text-3xl md:text-4xl text-[#0d544c] font-light text-center'>What You Can Do</div>
                         {/**<div className='text-gray-700 font-medium mt-1 uppercase text-center'>With this E-Services solution</div>*/}
                         <div className='w-full mb-6 space-y-4 md:space-y-4'>
                             

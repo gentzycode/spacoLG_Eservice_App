@@ -25,8 +25,8 @@ const ForgotPassword = ({ handleChildUpdate }) => {
 
         <div className="w-full">
             <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
-                <AiOutlineQuestion size={40} />
-                <h1 className='text-4xl'>Forgot Password</h1>
+                <AiOutlineQuestion size={25} />
+                <h1 className='text-2xl'>Forgot Password</h1>
             </div>
             {success !== null && <p className='text-green-700'>{success?.message}. <span className='cursor-pointer font-bold' onClick={() => handleChildUpdate('reset-password')}>Click here to Reset your Password</span></p>}
             {error !== null && <p className='text-red-500'>{error?.message}</p>}
@@ -41,16 +41,16 @@ const ForgotPassword = ({ handleChildUpdate }) => {
 
                 <div className=''>
                     {sending ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-green-800 hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-green-800 hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
                             Send Reset Link
                         </button>
                     }
                     <div className='flex justify-end py-1'>
                         <span 
-                            className='cursor-pointer text-blue-600'
+                            className='cursor-pointer text-orange-700'
                             onClick={() => handleChildUpdate('login')}
                         >
                                 Go to Login

@@ -25,6 +25,29 @@ export const getLGAs = async ( setLgas , setError) => {
 }
 
 
+export const getCities = async ( setCities , setError) => {
+
+    try{
+        const response  = await axios.get(`cities`,
+            {
+                headers: { 'Accept' : 'application/json' }
+            }
+        );    
+
+        console.log(response.data?.data?.data)
+        setCities(response.data?.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            setError(err.response.data);
+        }
+    }
+}
+
+
 export const getActiveservices = async ( lga_id, setActiveservices, setLoading ) => {
 
     setLoading(true);
@@ -94,8 +117,8 @@ export const signIn = async ( data, setSuccess, setError, setLoggingin ) => {
             }
         );    
 
-        console.log(response.data?.message)
-        setSuccess(response.data?.message);
+        //console.log(response.data?.data)
+        setSuccess(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
@@ -191,4 +214,32 @@ export const resetPassword = async ( data, setSuccess, setError, setResetting ) 
     }
 
     setResetting(false);
+}
+
+
+export const updateProfile = async ( token, data, setSuccess, setError, setUpdating ) => {
+
+    setUpdating(true);
+
+    try{
+        const response  = await axios.post('personalinformation',
+            data,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            setError(err.response.data);
+        }
+    }
+
+    setUpdating(false);
 }

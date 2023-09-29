@@ -12,6 +12,7 @@ const AuthContextProvider = (props) => {
     const [shownav, setShownav] = useState(false);
     const [authObject, setAuthObject] = useState(null);
     const [userid, setUserid] = useState();
+    const [serviceObject, setServiceObject] = useState(null);
 
     const logout = () => {
         setToken('');
@@ -28,7 +29,7 @@ const AuthContextProvider = (props) => {
         
         if(localStorage.getItem('isLoggedIn')){
             
-            setToken(userData?.access_tokentoken);
+            setToken(userData?.access_token);
             setUser(userData?.user);
         }
     }, [])
@@ -45,13 +46,17 @@ const AuthContextProvider = (props) => {
         setUserid(id);
     }
 
+    const updateServiceObject = (obj) => {
+        setServiceObject(obj);
+    }
+
     /**const changeTheme = () => {
         setDark(!dark);
     }*/
 
 
     return(
-        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, logout }}>
+        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout }}>
             {props.children}
         </AuthContext.Provider>
     )

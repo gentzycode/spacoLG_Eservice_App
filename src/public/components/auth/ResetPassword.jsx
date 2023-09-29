@@ -34,8 +34,8 @@ const ResetPassword = ({ handleChildUpdate }) => {
     return (
         <div className="w-full">
             <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
-                <MdOutlineLockReset size={40} />
-                <h1 className='text-4xl'>Reset Password</h1>
+                <MdOutlineLockReset size={25} />
+                <h1 className='text-2xl'>Reset Password</h1>
             </div>
             {error !== null && <span className='text-red-500'>{error?.message?.errors ? error?.message?.errors : error?.message }</span>}
             <form onSubmit={handleReset} className='w-full mt-6 mb-6 space-y-8'>
@@ -71,16 +71,16 @@ const ResetPassword = ({ handleChildUpdate }) => {
 
                 <div className=''>
                     {resetting ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-green-800 hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-green-800 hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
                             Reset
                         </button>
                     }
                     <div className='flex justify-end py-1'>
                         <span 
-                            className='cursor-pointer text-blue-600'
+                            className='cursor-pointer text-orange-700'
                             onClick={() => handleChildUpdate('login')}
                         >
                                 Go to Login
