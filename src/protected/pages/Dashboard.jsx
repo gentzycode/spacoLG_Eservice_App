@@ -15,7 +15,7 @@ const Dashboard = () => {
 
     return (
         <div className='space-y-8'>
-            <div className='w-full rounded-xl p-12 bg-[#02380c] mt-12 text-gray-200 space-y-2'>
+            <div className='w-full rounded-xl p-12 bg-[#0d544c] mt-12 text-gray-200 space-y-2'>
                 <p className='text-2xl font-bold'>Hello, {user?.username}</p>
                 <p className='text-2xl'>Welcome to Anambra State Government e-services</p>
             </div>
@@ -25,8 +25,8 @@ const Dashboard = () => {
                     <span className='text-yellow-900'>You have a pending application</span>
                 </div>
                 <div className='flex space-x-3 items-center'>
-                    <button className='py-2 px-4 bg-white text-green-700 rounded-md font-bold shadow'>Cancel</button>
-                    <button className='py-2 px-4 bg-green-700 text-white rounded-md font-medium shadow'>Return to Application</button>
+                    <button className='py-2 px-4 bg-white text-[#0d544c] rounded-md font-bold shadow'>Cancel</button>
+                    <button className='py-2 px-4 bg-[#0d544c] text-white rounded-md font-medium shadow'>Return to Application</button>
                 </div>
             </div>
             <div className='w-full md:flex justify-between space-y-8 md:space-y-0'>
@@ -39,7 +39,7 @@ const Dashboard = () => {
                                 <p className='font-bold'><span>&#8358;</span>0.00</p>
                             </div>
                         </div>
-                        <button className='py-1 px-6 bg-green-700 text-white rounded-md font-medium shadow'>Fund Wallet</button>
+                        <button className='py-1 px-6 bg-[#0d544c] text-white rounded-md font-medium shadow'>Fund Wallet</button>
                     </div>
                     <div className='w-full md:flex bg-green-100 rounded-md p-4'>
                         <div className='w-full md:w-1/5 md:flex md:justify-center items-center'>

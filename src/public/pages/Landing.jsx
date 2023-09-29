@@ -15,7 +15,7 @@ const Landing = () => {
     }
 
     return (
-        <div className="w-full md:h-screen grid md:flex md:justify-between px-6 md:px-12 m-0 bg-[#02380c]">
+        <div className="w-full md:h-screen grid md:flex md:justify-between px-6 md:px-12 m-0 bg-[#0d544c]">
             <div className="w-full md:w-[50%] my-8 flex items-center">
                 <div className="space-y-6 md:space-y-8">
                     {localStorage.getItem('isLoggedIn') && 
