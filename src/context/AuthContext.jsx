@@ -19,6 +19,7 @@ const AuthContextProvider = (props) => {
         setToken('');
         setUser(null);
         localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('selectedService');
         window.location.reload();
     }
 

@@ -11,7 +11,7 @@ const RequestForm = ({ serviceObject }) => {
 
     const clearRequest = () => {
         updateServiceObject(null);
-        navigate('/application');
+        //navigate('/application');
     }
 
     return (
@@ -20,7 +20,7 @@ const RequestForm = ({ serviceObject }) => {
                 <div className='w-full flex justify-end my-2'>
                     <button 
                         className='flex justify-center items-center space-x-2 py-3 px-6 rounded-md bg-[#0d544c] text-white'
-                        onClick={() => clearRequest()}
+                        onClick={clearRequest}
                     >
                         <MdClear size={18} />
                         <span>Clear Request</span>
