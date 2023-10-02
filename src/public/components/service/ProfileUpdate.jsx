@@ -6,10 +6,11 @@ import { getCities, getLGAs, updateProfile } from '../../../apis/noAuthActions';
 import { Combobox } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '../../../apis/functions';
+import Loader from '../../../common/Loader';
 
 const ProfileUpdate = () => {
 
-    const { token, user } = useContext(AuthContext);
+    const { token, user, logout } = useContext(AuthContext);
 
     //alert('I am in profile update');
 
@@ -33,6 +34,7 @@ const ProfileUpdate = () => {
 
     const [lgasquery, setLgasquery] = useState('')
     const [citiesquery, setCitiesquery] = useState('')
+    const [loading, setLoading] = useState(false);
 
     //const [query, setQuery] = useState('')
 
@@ -86,7 +88,9 @@ const ProfileUpdate = () => {
     }
 
     if(success !== null){
-        navigate('/dashboard')
+        alert('You will be logged out to to effect your update. Please login in again')
+        //navigate('/dashboard')
+        logout();
     }
 
     useEffect(() => {
@@ -97,8 +101,14 @@ const ProfileUpdate = () => {
         getCities(setCities, setError)
     }, [])
 
+    useEffect(() => {
+        setLoading(true);
+        setTimeout(() => setLoading(false), 1000);
+    }, [])
+
     return (
-        <div className="w-full">
+        loading ? <Loader /> :
+        <div className="w-full md:px-28">
             <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
                 <HiUser size={25} />
                 <h1 className='text-2xl md:text-2xl'>Update your profile</h1>
