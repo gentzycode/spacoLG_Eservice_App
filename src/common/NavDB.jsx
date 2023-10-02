@@ -34,7 +34,7 @@ const NavDB = () => {
         {
             id: 3,
             title: "Apply for Services",
-            url: "#",
+            url: "/application",
             icon: <HiDocumentText size={17} />
         },
         {

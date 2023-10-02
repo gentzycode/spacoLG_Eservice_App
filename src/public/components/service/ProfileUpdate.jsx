@@ -84,7 +84,7 @@ const ProfileUpdate = () => {
     }
 
     if(success !== null){
-        navigate('/request-form')
+        navigate('/dashboard')
     }
 
     useEffect(() => {

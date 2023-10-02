@@ -50,7 +50,7 @@ const ForgotPassword = ({ handleChildUpdate }) => {
                     }
                     <div className='flex justify-end py-1'>
                         <span 
-                            className='cursor-pointer text-orange-700'
+                            className='cursor-pointer text-gray-500'
                             onClick={() => handleChildUpdate('login')}
                         >
                                 Go to Login

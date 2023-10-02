@@ -5,14 +5,15 @@ export const AuthContext = createContext();
 const AuthContextProvider = (props) => {
 
     const userData = JSON.parse(localStorage.getItem('isLoggedIn'));
+    const serviceData = JSON.parse(localStorage.getItem('selectedService'));
     
     const [token, setToken] = useState(userData ? userData?.access_token : '');
     const [user, setUser] = useState(userData ? userData?.user : null);
+    const [serviceObject, setServiceObject] = useState(serviceData ? serviceData : null);
 
     const [shownav, setShownav] = useState(false);
     const [authObject, setAuthObject] = useState(null);
     const [userid, setUserid] = useState();
-    const [serviceObject, setServiceObject] = useState(null);
 
     const logout = () => {
         setToken('');

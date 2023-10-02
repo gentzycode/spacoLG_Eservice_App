@@ -32,7 +32,8 @@ const Login = ({ handleChildUpdate }) => {
 
     if(success !== null){
         localStorage.setItem('isLoggedIn', JSON.stringify(success));
-        locatn.pathname === '/service' ? location.reload() : navigate('/services');
+        location.reload();
+        locatn.pathname === '/service' ? navigate('/application') : navigate('/dashboard');
     }
 
     if(error && error?.user_id){
@@ -59,7 +60,7 @@ const Login = ({ handleChildUpdate }) => {
                 <div>
                     <div className='flex justify-end py-1'>
                         <span 
-                            className='cursor-pointer text-orange-700'
+                            className='cursor-pointer text-gray-500'
                             onClick={() => handleChildUpdate('forgot-password')}
                         >
                             Forgot Password?
@@ -85,7 +86,7 @@ const Login = ({ handleChildUpdate }) => {
                     }
                     <div className='flex justify-end py-1'>
                         <span 
-                            className='cursor-pointer text-orange-700'
+                            className='cursor-pointer text-gray-500'
                             onClick={() => handleChildUpdate('register')}
                         >
                                 Don't have an account? Register

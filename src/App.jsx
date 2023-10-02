@@ -6,7 +6,7 @@ import Auth from './public/pages/Auth';
 import Services from './public/pages/Services';
 import Service from './public/pages/Service'
 import AuthContextProvider from './context/AuthContext';
-import RequestForm from './public/pages/RequestForm';
+import Application from './protected/pages/Application';
 import DefaultLayout from './protected/DefaultLayout';
 import routes from './routes';
 import Dashboard from './protected/pages/Dashboard';
@@ -28,9 +28,9 @@ function App() {
                 <Route path='/auth' element={<Auth />} />
                 <Route path='/services' element={<Services />} />
                 <Route path='/service' element={<Service />} />
-                <Route path='/request-form' element={<RequestForm />} />
                 <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
                     <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                    <Route path='/application' element={<PrivateRoute><Application /></PrivateRoute>} />
                     {routes.map(({ path, component: Component }) => {
                       <Route 
                         path={path}

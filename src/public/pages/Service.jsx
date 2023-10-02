@@ -20,8 +20,9 @@ const Service = () => {
 
     const navigate = useNavigate();
 
-    const { updateServiceObject, user } = useContext(AuthContext);
+    const { user } = useContext(AuthContext);
 
+    console.log(user);
 
     const [curraction, setCurraction] = useState('');
     const [loading, setLoading] = useState(false);
@@ -60,7 +61,7 @@ const Service = () => {
 
 
     useEffect(() => {
-        updateServiceObject(servObj)
+        localStorage.setItem('selectedService', JSON.stringify(servObj))
     }, [])
 
     return (
@@ -73,9 +74,6 @@ const Service = () => {
                             <GrFormPreviousLink size={30} />
                         </Link>
                     </div>
-                    {localStorage.getItem('isLoggedIn') && 
-                        <DashboardButton />
-                    }
                     <div className='mt-0 md:mt-8 pb-3 border-b border-gray-100'>
                         <p className='text-md my-2 text-gray-500'>{servObj?.localgovernments?.name}</p>
                         <h1 className='text-xl md:text-2xl font-extralight'>   
@@ -84,8 +82,12 @@ const Service = () => {
                     </div>
                     <div className='mt-0'>
                         {
-                            user && user !== null ? 
-                                (user?.has_personal_info ? navigate('/request-form') : <ProfileUpdate />) 
+                            isLoggedin ? 
+                                navigate('/application', {
+                                    state : {
+                                        servObj: servObj
+                                    }
+                                })
                                 :  
                                 (
                                     loading ? <AuthLoader /> : child
