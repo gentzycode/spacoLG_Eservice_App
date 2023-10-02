@@ -10,7 +10,7 @@ const RequestForm = ({ serviceObject }) => {
     const { updateServiceObject } = useContext(AuthContext);
 
     const clearRequest = () => {
-        updateServiceObject(null);
+        //updateServiceObject(null);
         //navigate('/application');
     }
 
