@@ -32,8 +32,8 @@ const Login = ({ handleChildUpdate }) => {
 
     if(success !== null){
         localStorage.setItem('isLoggedIn', JSON.stringify(success));
-        location.reload();
         locatn.pathname === '/service' ? navigate('/application') : navigate('/dashboard');
+        location.reload();
     }
 
     if(error && error?.user_id){
