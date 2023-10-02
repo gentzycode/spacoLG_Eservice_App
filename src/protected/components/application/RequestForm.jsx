@@ -1,18 +1,16 @@
 import { useContext } from "react"
 import { MdClear } from "react-icons/md"
 import { AuthContext } from "../../../context/AuthContext"
-import { useNavigate } from "react-router-dom"
+//import { useNavigate } from "react-router-dom"
 
 
 const RequestForm = ({ serviceObject }) => {
 
-    alert('I am in request form');
-
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     const { updateServiceObject } = useContext(AuthContext);
 
     const clearRequest = () => {
-        //updateServiceObject(null);
+        updateServiceObject(null);
         //navigate('/application');
     }
 

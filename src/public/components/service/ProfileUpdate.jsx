@@ -11,7 +11,7 @@ const ProfileUpdate = () => {
 
     const { token, user } = useContext(AuthContext);
 
-    alert('I am in profile update');
+    //alert('I am in profile update');
 
     const navigate = useNavigate();
 

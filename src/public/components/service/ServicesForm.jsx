@@ -12,7 +12,7 @@ import { AuthContext } from '../../../context/AuthContext';
 
 const ServicesForm = () => {
     
-    alert('I am in service form');
+    //alert('I am in service form');
 
     const lcn = useLocation();
     const { updateServiceObject } = useContext(AuthContext);

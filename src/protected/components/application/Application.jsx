@@ -2,7 +2,7 @@ import React from 'react'
 
 const Application = () => {
     
-    alert('I am in application page');
+    //alert('I am in application page');
 
     return (
         <div className='w-full'>
