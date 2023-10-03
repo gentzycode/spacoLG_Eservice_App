@@ -11,6 +11,7 @@ import DefaultLayout from './protected/DefaultLayout';
 import routes from './routes';
 import Dashboard from './protected/pages/Dashboard';
 import PrivateRoute from './protected/PrivateRoute';
+import Landing2 from './public/pages/Landing2';
 
 function App() {
 
@@ -24,7 +25,7 @@ function App() {
       <AuthContextProvider>
           <Router>
               <Routes>
-                <Route path='/' element={<Landing />} />
+                <Route path='/' element={<Landing2 />} />
                 <Route path='/auth' element={<Auth />} />
                 <Route path='/services' element={<Services />} />
                 <Route path='/service' element={<Service />} />
