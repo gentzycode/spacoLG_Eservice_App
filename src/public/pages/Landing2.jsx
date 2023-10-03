@@ -22,7 +22,7 @@ const Landing2 = () => {
                         <img src={Logo} alt="logo" width='120px' /> 
                     </div>
                     <div className="text-xl md:text-4xl break-normal leading-tight font-extralight text-white text-center">
-                        Anambra LGA E-Services Solution
+                        Local Government E-Services Solution
                     </div>
                     <div className="text-md md:text-xl flex justify-center text-center break-normal text-white">
                         <p className='w-full md:w-2/3'></p>
