@@ -71,7 +71,7 @@ const ServicesForm = () => {
                     placeholder='Local Government Area'
                 />
                 <Combobox.Options 
-                    className='w-[93%] md:w-[32.5%] fixed z-10 mt-[-20px] bg-white border border-gray-200 px-4 rounded-b-md'
+                    className={`w-[93%] md:${localStorage.getItem('isLoggedIn') ? 'w-[32.5%]' : 'w-[40%]'} fixed z-10 mt-[-20px] bg-white border border-gray-200 px-4 rounded-b-md`}
                 >
                     {(lgas !== null && lgas !== undefined) && filteredLgas.map((lga) => (
                         <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer text-gray-700 py-3 border-b border-gray-100'>
