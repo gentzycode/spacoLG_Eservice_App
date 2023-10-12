@@ -9,6 +9,7 @@ import ServiceLoader from '../../../common/ServiceLoader'
 import { GrFormPreviousLink } from 'react-icons/gr';
 import { useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
+import { RiErrorWarningLine } from 'react-icons/ri';
 
 const ServicesForm = () => {
     
@@ -57,24 +58,24 @@ const ServicesForm = () => {
             {lcn.pathname === '/services' &&
                 <div className='mt-2'>
                     <Link to='/' className='mt-4'>
-                        <GrFormPreviousLink size={30} />
+                        <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
                     </Link>
                 </div>
             }
-            <h1 className='mt-4 text-xl md:text-2xl font-extralight'>
-                Select Local Government Area for the request
+            <h1 className='mt-10 text-xl md:text-2xl font-semibold'>
+                Local Government Area
             </h1>
             <Combobox value={lgas} onChange={(event) => handleChange(event)}>
                 <Combobox.Input 
                     onChange={(event) => setQuery(event.target.value)}
-                    className={`w-full ${lcn.pathname === '/application' && 'md:w-2/5'} p-3 bg-transparent border-b border-gray-400 my-6 text-gray-600`}
+                    className={`w-full ${lcn.pathname === '/application' && 'md:w-2/5'} p-3 bg-transparent border border-gray-400 my-6 text-gray-600 rounded-md`}
                     placeholder='Local Government Area'
                 />
                 <Combobox.Options 
-                    className={`w-[93%] md:${localStorage.getItem('isLoggedIn') ? 'w-[32.5%]' : 'w-[40%]'} fixed z-10 mt-[-20px] bg-white border border-gray-200 px-4 rounded-b-md`}
+                    className={`w-[93%] md:${localStorage.getItem('isLoggedIn') ? 'w-[32.5%]' : 'w-[40%]'} fixed z-10 mt-[-20px] bg-white border border-gray-200 px-0 rounded-b-md`}
                 >
                     {(lgas !== null && lgas !== undefined) && filteredLgas.map((lga) => (
-                        <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer text-gray-700 py-3 border-b border-gray-100'>
+                        <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer hover:bg-[#e3ebe2] text-gray-700 p-3 border-b border-gray-100'>
                             {lga.name}
                         </Combobox.Option>
                     ))}
@@ -85,17 +86,15 @@ const ServicesForm = () => {
                 {
                     loading ? <ServiceLoader /> : 
                         (activeservices !== null && activeservices.length > 0) &&  activeservices.map(lgaActServ => {
-                                return <Fragment>
+                                return <Fragment key={lgaActServ.id}>
                                     {
                                         localStorage.getItem('isLoggedIn') ? 
                                             <div 
-                                                key={lgaActServ.id}
-                                                className='w-full md:w-[32%] rounded-md border-gray-200 text-gray-500 my-3 shadow-lg bg-white cursor-pointer'
+                                                className='w-full md:w-[32%] text-gray-700 cursor-pointer'
                                                 onClick={() => goToAuthServicePage(lgaActServ)}
                                             > 
-                                                <div className='flex justify-between items-center h-[100px] p-4'>
-                                                    {lgaActServ.eservice.name}
-                                                    <MdOutlineNavigateNext size={20} className='mt-1' />    
+                                                <div className='flex md:justify-center bg-[#e3ebe2] items-center rounded-md my-3 md:my-0 h-[100px] p-4'>
+                                                    {lgaActServ.eservice.name}  
                                                 </div>
                                             </div>
                                             : 
@@ -103,11 +102,10 @@ const ServicesForm = () => {
                                                 to ='/service' 
                                                 key={lgaActServ.id} 
                                                 state={{ serviceObject : lgaActServ }} 
-                                                className={`w-full md:w-[48%] rounded-md border-gray-200 text-gray-500 my-3 shadow-lg bg-white`}
+                                                className='w-full md:w-[48%] text-gray-700 my-3'
                                             >   
-                                                <div className='flex justify-between items-center h-[100px] p-4'>
-                                                    {lgaActServ.eservice.name}
-                                                    <MdOutlineNavigateNext size={20} className='mt-1' />    
+                                                <div className='flex md:justify-center bg-[#e3ebe2] items-center rounded-md my-3 md:my-0 h-[100px] p-4'>
+                                                    {lgaActServ.eservice.name}   
                                                 </div>
                                             </Link>
                                     }
@@ -116,8 +114,14 @@ const ServicesForm = () => {
                         )
                 }
             </div>
-            {!loading && <div className={`${activeservices !== null ? 'hidden' : 'block'} w-full border border-yellow-300 bg-yellow-50 rounded-md p-4 font-medium text-gray-600 my-3`}>
-                <p>To request for any service, you must select a Local Government Area to which you want to make the request. Above is a list of Local Government Areas in the state. Select any to proceed with your request</p>
+            {!loading && <div className={`${activeservices !== null ? 'hidden' : 'md:flex'} w-full border border-orange-300 bg-orange-50 rounded-md p-4 font-medium text-gray-600 my-3`}>
+                <div className='flex md:justify-center items-center pl-1 pr-5'>
+                    <div className="bg-orange-100 p-2 rounded-full"><RiErrorWarningLine size={25} className='text-orange-300' /></div>
+                </div>
+                <div>
+                    <p className='text-gray-600 font-semibold'>NOTE:</p>
+                    <p>To request for any service, you must select a Local Government Area to which you want to make the request. Above is a list of Local Government Areas in the state. Select any to divroceed with your request</p>
+                </div>
             </div>}
         </div>
     )

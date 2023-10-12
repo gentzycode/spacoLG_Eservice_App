@@ -21,7 +21,7 @@ function App() {
       setTimeout(() => setLoading(false), 1000);
     }, [])
 
-    return loading ? (<Loader />) : (
+    return /**loading ? (<Loader />) : */ (
       <AuthContextProvider>
           <Router>
               <Routes>

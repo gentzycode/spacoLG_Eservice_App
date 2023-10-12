@@ -230,7 +230,7 @@ export const updateProfile = async ( token, data, setSuccess, setError, setUpdat
         );    
 
         console.log(response.data)
-        setSuccess(response.data);
+        setSuccess(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {

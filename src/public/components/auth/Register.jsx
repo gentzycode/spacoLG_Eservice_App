@@ -51,63 +51,74 @@ const Register = ( { handleChildUpdate } ) => {
     return (
         <div className="w-full">
             <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
-                <GiArchiveRegister size={25} />
-                <h1 className='text-2xl md:text-2xl'>{locatn.pathname === '/service' ? 'Provide your Information' : 'Register'}</h1>
+                {locatn.pathname !== '/service' && <GiArchiveRegister size={25} />}
+                <h1 className='text-gray-500'>{locatn.pathname === '/service' ? 'Please provide your information to continue the application process' : <span className='text-2xl'>Register</span>}</h1>
             </div>
 
             { error !== null && <span className='text-red-500 my-2'>{formatError(error)}</span>}
 
-            <form onSubmit={handleRegister} className='w-full mt-0 mb-6 space-y-8'>
-                <input 
-                    type='text' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Username'
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                />
-                <input 
-                    type='number' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Mobile (2348012345678)'
-                    onChange={(e) => setMobile(e.target.value)}
-                />
-                <input 
-                    type='email' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Email'
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input 
-                    type='password' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Password'
-                    onChange={(e) => setPassword_hash(e.target.value)}
-                    required
-                />
-                <input 
-                    type='password' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Confirm Password'
-                    onChange={(e) => setPassword_hash_confirmation(e.target.value)}
-                    required
-                />
+            <form onSubmit={handleRegister} className='w-full mt-0 mb-6 space-y-3'>
+                <div>
+                    <div className='text-gray-500 mb-1'>Username</div>
+                    <input 
+                        type='text' 
+                        className='w-full p-3 rounded-md border border-gray-300 bg-transparent'
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <div className='text-gray-500 mb-1'>Phone number</div>
+                    <input 
+                        type='number' 
+                        className='w-full p-3 rounded-md border border-gray-300 bg-transparent'
+                        onChange={(e) => setMobile(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <div className='text-gray-500 mb-1'>Email</div>
+                    <input 
+                        type='email' 
+                        className='w-full p-3 rounded-md border border-gray-300 bg-transparent'
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <div className='text-gray-500 mb-1'>Password</div>
+                    <input 
+                        type='password' 
+                        className='w-full p-3 rounded-md border border-gray-300 bg-transparent'
+                        onChange={(e) => setPassword_hash(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <div className='text-gray-500 mb-1'>Confirm Password</div>
+                    <input 
+                        type='password' 
+                        className='w-full p-3 rounded-md border border-gray-300 bg-transparent'
+                        onChange={(e) => setPassword_hash_confirmation(e.target.value)}
+                        required
+                    />
+                </div>
+                
 
                 <div className=''>
                     {registering ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-5 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             Register
                         </button>
                     }
-                    <div className='flex justify-end py-1'>
+                    <div className='flex justify-start py-1 mt-2'>
                         <span 
-                            className='cursor-pointer text-gray-500'
+                            className='cursor-pointer text-gray-700'
                             onClick={() => handleChildUpdate('login')}
                         >
-                                Already have an account? Login
+                                Already have an account? <span className='text-orange-500'>Sign in</span>
                         </span>
                     </div>
                 </div>

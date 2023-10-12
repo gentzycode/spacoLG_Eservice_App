@@ -44,32 +44,27 @@ const Login = ({ handleChildUpdate }) => {
     return (
         <div className="w-full border-gray-300">
             <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
-                <RiShieldKeyholeLine size={25} />
-                <h1 className='text-2xl'>Login</h1>
+                {locatn.pathname !== '/service' && <RiShieldKeyholeLine size={25} />}
+                {locatn.pathname !== '/service' && <h1 className='text-2xl'>Login</h1>}
             </div>
             {error && <p className='text-red-500 my-2'>{error?.message} </p>}
             { (error && error?.user_id) && <p className='text-[#0d544c] cursor-pointer' onClick={() => handleChildUpdate('verify-email')}>Click here to verify your email.</p>}
-            <form onSubmit={handleLogin} className='w-full mt-6 mb-6 space-y-8'>
-                <input 
-                    type='text' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Username'
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                />
+            <form onSubmit={handleLogin} className='w-full mt-0 mb-6 space-y-4'>
                 <div>
-                    <div className='flex justify-end py-1'>
-                        <span 
-                            className='cursor-pointer text-gray-500'
-                            onClick={() => handleChildUpdate('forgot-password')}
-                        >
-                            Forgot Password?
-                        </span>
-                    </div>
+                    <div className='text-gray-500 mb-1'>Username</div>
+                    <input 
+                        type='text' 
+                        className='w-full p-3 border border-gray-400 bg-transparent rounded-md'
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                </div>
+                
+                <div>
+                    <div className='text-gray-500 mb-1'>Password</div>
                     <input 
                         type='password' 
-                        className='w-full p-3 border-b border-gray-400 bg-transparent'
-                        placeholder='Password'
+                        className='w-full p-3 border border-gray-400 bg-transparent rounded-md'
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
@@ -77,20 +72,29 @@ const Login = ({ handleChildUpdate }) => {
 
                 <div className=''>
                     {loggingin ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-6 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             Login
                         </button>
                     }
-                    <div className='flex justify-end py-1'>
-                        <span 
-                            className='cursor-pointer text-gray-500'
+                    <div className='flex justify-between items-center py-2'>
+                        <div 
+                            className='cursor-pointer text-gray-700'
                             onClick={() => handleChildUpdate('register')}
                         >
-                                Don't have an account? Register
-                        </span>
+                                Don't have an account? <span className='text-orange-500'>Create one</span>
+                        </div>
+                        <div className='flex justify-end py-1'>
+                            <span 
+                                className='cursor-pointer text-gray-500'
+                                onClick={() => handleChildUpdate('forgot-password')}
+                            >
+                                Forgot Password?
+                            </span>
+                        </div>
+                        
                     </div>
                 </div>
                 

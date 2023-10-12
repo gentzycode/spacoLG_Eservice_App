@@ -10,9 +10,10 @@ import Loader from '../../../common/Loader';
 
 const ProfileUpdate = () => {
 
-    const { token, user, logout } = useContext(AuthContext);
+    const { token, user, logout, updateUser } = useContext(AuthContext);
 
     //alert('I am in profile update');
+    console.log(user);
 
     const navigate = useNavigate();
 
@@ -88,9 +89,11 @@ const ProfileUpdate = () => {
     }
 
     if(success !== null){
-        alert('You will be logged out to to effect your update. Please login in again')
+        console.log(success?.user);
+        updateUser(success?.user)
+        alert('You have successfully updated your personal information');
         //navigate('/dashboard')
-        logout();
+        location.reload();
     }
 
     useEffect(() => {
@@ -107,111 +110,102 @@ const ProfileUpdate = () => {
     }, [])
 
     return (
-        loading ? <Loader /> :
-        <div className="w-full md:px-28">
-            <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
-                <HiUser size={25} />
+        <div className="w-full md:px-8 md:mt-12">
+            <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-semibold py-6 border-gray-300">
                 <h1 className='text-2xl md:text-2xl'>Update your profile</h1>
             </div>
-            <div className='w-full grid grid-cols-2'>
+            {/**<div className='w-full grid grid-cols-2'>
                 <div className='col-span-1 p-1 bg-green-500'></div>
                 <div className='col-span-1 p-1 bg-gray-300'></div>
-            </div>
+        	</div>*/}
 
             { error !== null && <span className='text-red-500 my-2'>{error?.message}</span>}
 
-            <form onSubmit={handleUpdate} className='w-full my-6 space-y-8'>
-                <div className='w-full grid md:flex md:justify-between space-y-6 md:space-y-0'>
+            <form onSubmit={handleUpdate} className='w-full md:flex md:flex-wrap md:justify-between my-4 bg-white rounded-md p-8'>
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='text-gray-500 font-semibold mb-1.5'>First name</div>
                     <input 
                         type='text' 
-                        className='w-full md:w-[47%] p-3 border-b border-gray-400 bg-transparent'
-                        placeholder='First name'
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
                         onChange={(e) => setFirst_name(e.target.value)}
                         required
                     />
+                </div>
+                
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='text-gray-500 font-semibold mb-1.5'>Last name</div>
                     <input 
                         type='text' 
-                        className='w-full md:w-[47%] p-3 border-b border-gray-400 bg-transparent'
-                        placeholder='Last name'
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
                         onChange={(e) => setLast_name(e.target.value)}
                         required
                     />
                 </div>
-
-                <div className='w-full grid md:flex md:justify-between space-y-6 md:space-y-0'>
+                
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='text-gray-500 font-semibold mb-1.5'>Gender</div>
                     <select 
-                        className='w-full md:w-[47%] p-3 border-b border-gray-400 bg-transparent'
+                        className='w-full px-3 py-3.5 rounded-md border border-gray-400 bg-transparent'
                         onChange={(e) => setGender(e.target.value)}
                         required
                     >
-                        <option value="">Gender</option>
+                        <option value=""></option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                     </select>
+                </div>
+
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='text-gray-500 font-semibold mb-1.5'>Date of Birth</div>
                     <input 
                         type='date' 
-                        className='w-full md:w-[47%] p-3 border-b border-gray-400 bg-transparent'
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
                         placeholder='Date of birth'
                         onChange={(e) => setDate_of_birth(e.target.value)}
                         required
                     />
                 </div>
-
-                <input 
-                    type='text' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Address'
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                />
                 
-                <div className='w-full grid md:flex md:justify-between space-y-6 md:space-y-0'>
-                    {/**<div className='w-full md:w-[47%]'>
-                        <input 
-                            type='text' 
-                            className='w-full p-3 border-b border-gray-400 bg-transparent'
-                            placeholder='Search and select cities'
-                            onChange={(e) => setCitiesquery(e.target.value)}
-                            required
-                        />
-                        {
-                            citiesquery !== "" && <div className='w-[93%] md:w-[16%] mt-[-60%] md:mt-0 fixed z-10 border border-x border-b border-gray-200 rounded-b-md px-3 bg-white'>
-                            {
-                                    (citieData !== null && citieData !== undefined) && citieData.map((filtered) => {
-                                        return <div key={filtered?.id} className='w-full py-2 border-b border-gray-100'>
-                                            {filtered?.name}
-                                        </div>
-                                    })
-                                }
-                            </div>
-                        }
-                        
-                    </div>*/}
-                    <div className='w-full md:w-[47%]'>
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='text-gray-500 font-semibold mb-1.5'>Address</div>
+                    <input 
+                        type='text' 
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        onChange={(e) => setAddress(e.target.value)}
+                        required
+                    />
+                </div>
+                
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='w-full'>
+                        <div className='text-gray-500 font-semibold mb-1.5'>Local Government Area</div>
                         <Combobox value={lgas} onChange={(event) => handleLgasChange(event)}>
                             <Combobox.Input 
                                 onChange={(event) => setLgasquery(event.target.value)}
-                                className='w-full p-3 bg-transparent border-b border-gray-400 text-gray-600' 
-                                placeholder={lgaselected !== '' ? lgaselected : 'Local Government Area'}
+                                className='w-full p-3 bg-transparent rounded-md border border-gray-400 text-gray-600' 
+                                placeholder={lgaselected !== '' && lgaselected}
                             />
-                            <Combobox.Options className='w-full md:w-[16%] md:fixed z-10 bg-white border border-gray-200 px-4 rounded-b-md'>
+                            <Combobox.Options className='w-full md:w-[22.5%] md:fixed z-10 bg-white border border-gray-200 px-4 rounded-b-md'>
                                 {lgas !== null && filteredLgas.map((lga) => (
-                                    <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer text-gray-700 py-3 border-b border-gray-100'>
+                                    <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer text-gray-700 py-3 rounded-md border border-gray-100'>
                                         {lga.name}
                                     </Combobox.Option>
                                 ))}
                             </Combobox.Options>
                         </Combobox>
                     </div>
-                    
-                    <div className='w-full md:w-[47%]'>
+                </div>
+                
+                <div className='w-full md:w-[31%] my-4'>
+                    <div className='w-full'>
+                        <div className='text-gray-500 font-semibold mb-1.5'>City</div>
                         <Combobox value={cities} onChange={(event) => handleCitiesChange(event)}>
                             <Combobox.Input 
                                 onChange={(event) => setCitiesquery(event.target.value)}
-                                className='w-full p-3 bg-transparent border-b border-gray-400 text-gray-600' 
-                                placeholder={cityselected !== '' ? cityselected : 'City'}
+                                className='w-full p-3 bg-transparent rounded-md border border-gray-400 text-gray-600' 
+                                placeholder={cityselected !== '' && cityselected}
                             />
-                            <Combobox.Options className='w-full md:w-[16%] md:fixed z-10 bg-white border border-gray-200 px-4 rounded-b-md'>
+                            <Combobox.Options className='w-full md:w-[22.5%] md:fixed z-10 bg-white border border-gray-200 px-4 rounded-b-md'>
                                 {cities !== null && filteredCities.map((cty) => (
                                     <Combobox.Option key={cty.id} value={cty.id} className='cursor-pointer text-gray-700 py-3 border-b border-gray-100'>
                                         {cty.name}
@@ -221,14 +215,15 @@ const ProfileUpdate = () => {
                         </Combobox>
                     </div>
                 </div>
+                
 
-                <div className=''>
+                <div className='w-full flex justify-end'>
                     {updating ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-[200px] flex justify-center p-3 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
-                            Update
+                        <button className='w-[200px] p-4 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                            Submit
                         </button>
                     }
                 </div>

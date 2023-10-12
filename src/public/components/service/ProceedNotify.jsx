@@ -1,34 +1,33 @@
 import React from 'react'
+import { MdArrowForwardIos } from 'react-icons/md'
 
 const ProceedNotify = ({ handleChildUpdate }) => {
 
     return (
         <div>
-            <div className='my-8'>
-                <h1 className='text-2xl font-extralight'>Login to your Account to Continue</h1>
-                <p className='text-sm text-gray-400 mb-4'>Access to more features to manage your requests</p>
+            <div className='mt-10 flex justify-between items-center p-4 border border-gray-200 rounded-md'>
+                <h1 className='text-lg font-semibold text-gray-600'>Don't have an account?</h1>
                 <button
-                    className='w-[150px] py-2.5 bg-[#0d544c] rounded-3xl text-white hover:bg-green-950 hover:text-white'
-                    onClick={() => handleChildUpdate('login')}
-                >
-                    Click here
-                </button>
-            </div>
-
-            <div className='w-2/3 md:w-1/2 flex justify-center border-t border-green-700 mt-20 mb-12'>
-                <div className='px-2 mt-[-20px] md:mt-[-25px] text-2xl md:text-4xl text-[#0d544c] font-extralight bg-white'>OR</div>
-            </div>   
-                
-
-            <div className='mb-8'>
-                <h1 className='text-2xl font-extralight mb-4'>Proceed with Request ?</h1>
-                <button
-                    className='w-[150px] py-2 border-2 border-[#0d544c] rounded-3xl text-[#0d544c] hover:bg-border-950 hover:text-green-950 font-medium'
+                    className='w-[130px] flex justify-around px-3 py-1.5 bg-[#0d544c] rounded-3xl text-white hover:bg-green-950 hover:text-white items-center text-lg'
                     onClick={() => handleChildUpdate('register')}
                 >
-                    Click here
+                    <span>Proceed</span>
+                    <MdArrowForwardIos size={15} />
                 </button>
-            </div>
+            </div> 
+
+            <div className='mt-4 flex justify-between items-center p-4 border border-gray-200 rounded-md'>
+                <div>
+                    <h1 className='text-lg font-semibold text-gray-600'>Have an account?</h1>
+                    <p className='text-gray-500'>You'll continue where you left off</p>
+                </div>
+                <button
+                    className='w-[130px] flex justify-around px-3 py-1.5 border border-gray-200 rounded-3xl hover:bg-gray-100 text-gray-700 items-center text-lg'
+                    onClick={() => handleChildUpdate('login')}
+                >
+                    <span>Sign in first</span>
+                </button>
+            </div> 
         </div>
     )
 }

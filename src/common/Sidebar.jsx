@@ -14,10 +14,15 @@ const Sidebar = ({ toggleSidebar, navOpen }) => {
                 <div className='flex justify-end my-6 md:hidden px-6'>
                     <AiOutlineClose size={25} className='text-gray-300 cursor-pointer' onClick={toggleSidebar} />
                 </div>
-                <div className='w-full flex justify-start px-6 mt-16 mb-8'>
-                    <img src={Logo} alt='logo' width='100px' />
+                <div className='w-full flex justify-start px-6 mt-8 mb-8'>
+                    <div className='rounded-full shadow-2xl'>
+                        <img src={Logo} alt='logo' width='60px' />
+                    </div>
                 </div>
-                <div className='w-full flex justify-start px-4'>
+                <div className='w-full px-3'>
+                    <div className='w-full border-b-2 border-[#669d97] mb-3 opacity-40'></div>
+                </div>
+                <div className='w-full flex justify-start px-3'>
                     <NavDB />
                 </div>
             </div>

@@ -12,7 +12,7 @@ const AuthBanner = () => {
     }
 
     return (
-        <div className="w-full col-span-1 my-0 flex items-center bg-[#0d544c]">
+        <div className="w-full col-span-1 my-0 hidden md:flex items-center bg-[#0d544c]">
             <div className="space-y-2 md:space-y-8 md:pl-8 p-4 md:p-0">
                 <div className='w-full flex justify-center'>
                     <img src={Logo} alt="logo" width='100px' /> 

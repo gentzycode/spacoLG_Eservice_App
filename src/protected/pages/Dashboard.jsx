@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../context/AuthContext'
 import { BsExclamationTriangleFill } from 'react-icons/bs';
 import Wallet from '../../assets/wallet.png'
@@ -13,10 +13,16 @@ const Dashboard = () => {
 
     const { user } = useContext(AuthContext);
 
+    const [username, setUsername] = useState(null);
+
+    useEffect(() => {
+        setUsername(user?.username);
+    }, [])
+
     return (
         <div className='space-y-8'>
             <div className='w-full rounded-xl p-12 bg-[#0d544c] mt-12 text-gray-200 space-y-2'>
-                <p className='text-2xl font-bold'>Hello, {user?.username}</p>
+                <p className='text-2xl font-bold'>Hello, {username !==  null && username}</p>
                 <p className='text-2xl'>Welcome to Anambra State Government e-services</p>
             </div>
             <div className='w-full md:flex justify-between rounded-md bg-[#feebb3] p-2 space-y-6 md:space-y-0'>

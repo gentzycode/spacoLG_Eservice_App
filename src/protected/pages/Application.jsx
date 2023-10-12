@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../context/AuthContext'
 import RequestForm from '../components/application/RequestForm'
 import Applications from '../components/application/Applications'
@@ -10,13 +10,17 @@ const Application = () => {
     const { user, serviceObject } = useContext(AuthContext);
     const location = useLocation();
 
+    const [userObj, setUserObj] = useState(null);
     //const currServiceObject = location?.state ? location?.state?.serveObj : serviceObject;
 
     //console.log(user, currServiceObject);
+    useEffect(() => {
+        setUserObj(user)
+    }, [])
 
     return (
         <div className="w-full">
-            {user !== null && user?.has_personal_info ? 
+            {userObj !== null && userObj?.has_personal_info ? 
                 (serviceObject !== null ? <RequestForm serviceObject={serviceObject} /> : <Applications />)
                 :
                 <ProfileUpdate />

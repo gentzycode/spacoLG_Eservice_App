@@ -33,7 +33,7 @@ const NavDB = () => {
         },
         {
             id: 3,
-            title: "Apply for Services",
+            title: "Applications",
             url: "/application",
             icon: <HiDocumentText size={17} />
         },
@@ -64,12 +64,12 @@ const NavDB = () => {
     ]
 
     return (
-        <ul className='space-y-2'>
+        <ul className='w-full space-y-2'>
             {
                 adminlinks !== null && adminlinks.map(nav => {
                     return (
-                        <li key={nav.id} className={`${locatn.pathname === nav.url ? 'text-green-500 font-bold' : 'text-gray-100'} px-3 py-2 rounded-sm`}>
-                            <Link to={nav.url} key={nav.id} className='flex justify-start items-center space-x-4 my-1'>
+                        <li key={nav.id} className={`${locatn.pathname === nav.url ? 'bg-[#2b7d54] text-gray-100 font-semibold' : 'text-gray-300'} px-3 py-2 rounded-md `}>
+                            <Link to={nav.url} key={nav.id} className='flex justify-start items-center space-x-3 my-1'>
                                 {nav.icon}
                                 <span>{nav.title}</span>
                             </Link>

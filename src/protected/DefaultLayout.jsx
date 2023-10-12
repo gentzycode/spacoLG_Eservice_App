@@ -15,7 +15,7 @@ const DefaultLayout = () => {
         <div>
             <div className='flex h-screen overflow-hidden'>
                 <Sidebar toggleSidebar={toggleSidebar} navOpen={navOpen} />
-                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-gray-100">
+                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-[#ecf6ec]">
                     <Header toggleSidebar={toggleSidebar} />
                     <main>
                         <div className="ml-0 md:ml-[230px] max-w-screen-2xl p-4 2xl:px-10">

@@ -25,30 +25,32 @@ const ForgotPassword = ({ handleChildUpdate }) => {
 
         <div className="w-full">
             <div className="w-full flex justify-start items-center space-x-2 text-gray-700 font-extralight py-6 border-gray-300">
-                <AiOutlineQuestion size={25} />
                 <h1 className='text-2xl'>Forgot Password</h1>
+                <AiOutlineQuestion size={25} />
             </div>
             {success !== null && <p className='text-green-700'>{success?.message}. <span className='cursor-pointer font-bold' onClick={() => handleChildUpdate('reset-password')}>Click here to Reset your Password</span></p>}
             {error !== null && <p className='text-red-500'>{error?.message}</p>}
             <form onSubmit={handleReset} className='w-full mt-6 mb-6 space-y-8'>
-                <input 
-                    type='email' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Enter you email'
-                    onChange={(e) => setUsername_or_email(e.target.value)}
-                    required
-                />
+                <div>
+                    <div className='text-gray-500 mb-1'>Email</div>
+                    <input 
+                        type='email' 
+                        className='w-full p-3 border border-gray-400 bg-transparent rounded-md'
+                        onChange={(e) => setUsername_or_email(e.target.value)}
+                        required
+                    />
+                </div>
 
                 <div className=''>
                     {sending ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-4 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             Send Reset Link
                         </button>
                     }
-                    <div className='flex justify-end py-1'>
+                    <div className='flex justify-end py-1 mt-1'>
                         <span 
                             className='cursor-pointer text-gray-500'
                             onClick={() => handleChildUpdate('login')}

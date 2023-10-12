@@ -52,13 +52,17 @@ const AuthContextProvider = (props) => {
         setServiceObject(obj);
     }
 
+    const updateUser = (obj) => {
+        setUser(obj);
+    }
+
     /**const changeTheme = () => {
         setDark(!dark);
     }*/
 
 
     return(
-        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout }}>
+        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout, updateUser }}>
             {props.children}
         </AuthContext.Provider>
     )
