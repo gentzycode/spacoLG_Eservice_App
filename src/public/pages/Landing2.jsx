@@ -22,7 +22,7 @@ const Landing2 = () => {
 
     return (
         <div className='w-full grid px-0 m-0'>
-            <div className="w-full bg-[#0d544c] px-6 md:px-12 py-12">
+            <div className="w-full bg-[#0d544c] md:bg-[url('https://ucc1d09be5ec5f869a8e06bc896e.previews.dropboxusercontent.com/p/thumb/ACBS7BvJWugTreWsZ2KXFacgyHHIBYgj0sGKKkiJ0eV8reh5IC2zoPwNflZm2ypcmJxuFg5eFD1zOFUYao3BFMglGH-VkKOp9sqp6_ohPQDhgHKO69HL6wSJPGpRUygAxSh2n-h8L_9B0CESJgKc79TM1gxMH6AmLH8-vkhD-rjXj8_G9SHMfPvKq_BguXtM6YXizUhTJUjLitQeamOn_mwlL_hAWIpdk5NZCBANQMi2PRAbRluPG9yqJrMN8uIpVZyFXfOmvIr-arPv3y2WvTzrT1zze64vTvaAPslIN7XflCOt1ohgGlW1Mh_qgjAeNsAMEn96pI9nR4624HL83Ed8flOG5-fvWAg_ON3jDlImcTyQbJ14NsIiVCIkS168t8s/p.png')] bg-cover px-6 md:px-12 py-12">
                 <div className="w-full space-y-4">
                     <div className='flex justify-center'>
                         <img src={Logo} alt="logo" width='120px' /> 

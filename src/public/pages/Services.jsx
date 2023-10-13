@@ -1,8 +1,13 @@
+import { useEffect } from 'react'
 import AuthBanner from '../../common/AuthBanner'
 import ServicesForm from '../components/service/ServicesForm'
 
 
 const Services = () => {
+
+    useEffect(() => {
+        localStorage.getItem('selectedService') && localStorage.removeItem('selectedService');
+    }, [])
 
     return (
         <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
