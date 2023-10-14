@@ -20,7 +20,7 @@ const Sidebar = ({ toggleSidebar, navOpen }) => {
                     </div>
                 </div>
                 <div className='w-full px-3'>
-                    <div className='w-full border-b-2 border-[#669d97] mb-3 opacity-40'></div>
+                    <div className='w-full border-b-2 border-[#669d97] mb-6 opacity-40'></div>
                 </div>
                 <div className='w-full flex justify-start px-3'>
                     <NavDB />
