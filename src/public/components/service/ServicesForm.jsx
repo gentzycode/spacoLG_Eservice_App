@@ -27,11 +27,12 @@ const ServicesForm = () => {
     const [query, setQuery] = useState('')
 
     const filteredLgas =
-        query === ''
+        lgas !== null &&
+        (query === ''
         ? lgas
         : lgas.filter((lga) => {
             return lga?.name.toLowerCase().includes(query.toLowerCase())
-            })
+            }))
 
     const handleChange = (event) => {
         if(event === "0"){
@@ -74,14 +75,14 @@ const ServicesForm = () => {
                 <Combobox.Options 
                     className={`w-[93%] md:${localStorage.getItem('isLoggedIn') ? 'w-[32.5%]' : 'w-[40%]'} fixed z-10 mt-[-20px] bg-white border border-gray-200 px-0 rounded-b-md`}
                 >
-                    {(lgas !== null && lgas !== undefined) && filteredLgas.map((lga) => (
+                    {(lgas !== null && filteredLgas !== undefined) && filteredLgas.map((lga) => (
                         <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer hover:bg-[#e3ebe2] text-gray-700 p-3 border-b border-gray-100'>
                             {lga.name}
                         </Combobox.Option>
                     ))}
                 </Combobox.Options>
             </Combobox>
-            {error && <div className='text-red-500 my-3'>{error}</div>}
+            {error && <div className='text-red-500 my-3'>{error?.message}</div>}
             <div className={`w-full justify-center md:flex md:justify-between md:flex-wrap`}>
                 {
                     loading ? <ServiceLoader /> : 
