@@ -1,12 +1,19 @@
 import { useEffect } from 'react'
 import AuthBanner from '../../common/AuthBanner'
 import ServicesForm from '../components/service/ServicesForm'
+import { useNavigate } from 'react-router-dom'
 
 
 const Services = () => {
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         localStorage.getItem('selectedService') && localStorage.removeItem('selectedService');
+    }, [])
+
+    useEffect(() => {
+        localStorage.getItem('isLoggedIn') && navigate('/dashboard')
     }, [])
 
     return (

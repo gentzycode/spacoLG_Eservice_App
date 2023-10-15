@@ -44,7 +44,7 @@ const Auth = () => {
 
     
     useEffect(() => {
-        localStorage.getItem('isLoggedIn') && navigate('/services')
+        localStorage.getItem('isLoggedIn') && navigate('/dashboard')
     }, [])
 
     return (

@@ -64,6 +64,10 @@ const Service = () => {
         localStorage.setItem('selectedService', JSON.stringify(servObj))
     }, [])
 
+    useEffect(() => {
+        localStorage.getItem('isLoggedIn') && navigate('/dashboard')
+    }, [])
+
     return (
         <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
             <AuthBanner />
