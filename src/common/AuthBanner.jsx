@@ -12,7 +12,7 @@ const AuthBanner = () => {
     }
 
     return (
-        <div className="w-full col-span-1 my-0 hidden md:flex items-center bg-[url('https://uc5e67b35f7962c90fab7fedba2f.previews.dropboxusercontent.com/p/thumb/ACCMYwzb0WDfn-ZOE1eWk7aKMCYKEkJawDT1CH54y_AkrB5UFuY0VlHk3_0_-SzZtsJAgsmAGlNkayqQ0vWGDZ1IxuPZrpk0qu17ng-c7TUErVv13idHUvbp3TFUgiMM6xiP0A15ve-V9vv6mfH1WxLFZn3H-9KFGqm095PXCXSJhPlaMtoVPAaPBSgAs5AV8Hyif2Q7vtrbqGZfHxAbtz5VXmcgSCwER4EyPiBw8MRuZM6rT8k-ofAW-459riPlEadkX8fr5lpBaqsJ1L4Cv7p9DkNpxYOri8F8z6Kc6luKG9kkuTMpHNqVmWaS0jbqKRK-yazw6cc16czIzfVyt13oPh4unWVEVdJdX0ncTm_VuxNyUkUhiLN9WUkpze4M4pE/p.png')] bg-cover">
+        <div className="w-full col-span-1 my-0 hidden md:flex items-center bg-[url('/assets/authBannerBg.png')] bg-cover">
             <div className="w-full flex justify-center items-center">
                 <div className='space-y-2 md:space-y-4 p-4'>
                     <div className='w-full flex justify-center'>
