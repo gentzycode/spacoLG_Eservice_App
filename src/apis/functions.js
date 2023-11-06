@@ -25,12 +25,32 @@ export const formatError = (err) => {
 }
 
 
-export const formatDate = (dateVal) => {
+export const formatDate = (dt) => {
 
-    const date = new Date(dateVal);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1; // Months are zero-indexed in JavaScript
+    const date = new Date(dt);
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+    const month = date.getMonth();
     const day = date.getDate();
-
-    return `${year}-${month}-${day}`;
+    const year = date.getFullYear();
+  
+    return `${monthNames[month]} ${day}, ${year}`;
 }
+
+
+export const tableCustomStyles = {
+    headCells: {
+      style: {
+          fontSize: '13px',
+          fontWeight: 'bold',
+          padding: '0 15px',
+          justifyContent: 'left',
+      },
+      rows: {
+        style: {
+            fontWeight: 'bold', 
+            color: 'red'
+        },
+    },
+    },
+  }

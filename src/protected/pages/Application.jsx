@@ -4,6 +4,7 @@ import RequestForm from '../components/application/RequestForm'
 import Applications from '../components/application/Applications'
 import ProfileUpdate from '../../public/components/service/ProfileUpdate'
 import { useLocation } from 'react-router-dom'
+import NewServiceApplication from '../components/application/NewServiceApplication'
 
 const Application = () => {
 
@@ -21,7 +22,7 @@ const Application = () => {
     return (
         <div className="w-full">
             {userObj !== null && userObj?.has_personal_info ? 
-                (serviceObject !== null ? <RequestForm serviceObject={serviceObject} /> : <Applications />)
+                (serviceObject !== null ? <NewServiceApplication serviceObject={serviceObject} /> : <Applications />)
                 :
                 <ProfileUpdate />
             }

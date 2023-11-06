@@ -14,6 +14,7 @@ const AuthContextProvider = (props) => {
     const [shownav, setShownav] = useState(false);
     const [authObject, setAuthObject] = useState(null);
     const [userid, setUserid] = useState();
+    const [record, setRecord] = useState(null);
 
     const logout = () => {
         setToken('');
@@ -56,13 +57,17 @@ const AuthContextProvider = (props) => {
         setUser(obj);
     }
 
+    const refreshRecord = (val) => {
+        setRecord(val);
+    }
+
     /**const changeTheme = () => {
         setDark(!dark);
     }*/
 
 
     return(
-        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout, updateUser }}>
+        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout, updateUser, record, refreshRecord }}>
             {props.children}
         </AuthContext.Provider>
     )

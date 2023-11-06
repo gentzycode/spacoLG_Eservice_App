@@ -12,6 +12,7 @@ import routes from './routes';
 import Dashboard from './protected/pages/Dashboard';
 import PrivateRoute from './protected/PrivateRoute';
 import Landing2 from './public/pages/Landing2';
+import ApplicationDetail from './protected/pages/ApplicationDetail';
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
                 <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
                     <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                     <Route path='/application' element={<PrivateRoute><Application /></PrivateRoute>} />
+                    <Route path='/application-detail' element={<PrivateRoute><ApplicationDetail /></PrivateRoute>} />
                     {routes.map(({ path, component: Component }) => {
                       <Route 
                         path={path}
