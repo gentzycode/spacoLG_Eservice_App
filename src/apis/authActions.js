@@ -64,8 +64,8 @@ export const fetchDropdownOptions = async ( api, setOptions ) => {
             }
         );    
 
-        console.log(response.data?.data?.data)
-        setOptions(response.data?.data?.data);
+        console.log(response.data?.data)
+        setOptions(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
@@ -267,4 +267,31 @@ export const paymentConfirm = async ( token, id, setConfirm, setError, setConfir
     }
 
     setConfirming(false);
+}
+
+
+export const hasPersonalInfo = async (token, setHasInfo, setError, setChecking) => {
+
+    setChecking(true);
+
+    try{
+        const response  = await axios.get('personal-information-query',
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setHasInfo(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+
+    setChecking(false);
 }

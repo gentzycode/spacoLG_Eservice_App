@@ -1,11 +1,16 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { FcApproval } from 'react-icons/fc'
 import InitLoader from './InitLoader'
 import RequestForm from '../protected/components/application/RequestForm';
 import ManagePayments from '../protected/components/payments/ManagePayments';
-import { AiOutlineCheckCircle } from 'react-icons/ai';
+import { AiOutlineCheckCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { formatDate } from '../apis/functions';
+import Reviews from './Reviews';
+import { AuthContext } from '../context/AuthContext';
 
 const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id }) => {
+
+    const { user } =  useContext(AuthContext);
 
     const [flag, setFlag] = useState(currentStep);
     const [order, setOrder] = useState(current_step);
@@ -48,12 +53,35 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                     <div className='w-full' key={activestep?.id}>
                                         <h1 className='text-lg my-2'>{activestep?.step?.step_name}</h1>
                                         {
-                                            activestep?.step?.flag === 'ADD_INFO' && 
-                                                <RequestForm action_id={activestep?.step?.action_id} eservice_id={activestep?.eservices_id} />
+                                            activestep?.step?.flag === 'ADD_INFO' && (
+                                                user?.role === 'PublicUser' ? 
+                                                    <RequestForm action_id={activestep?.action_id} eservice_id={activestep?.eservices_id} />
+                                                    :
+                                                    <div className='w-full my-4 text-gray-700'>
+                                                        Applicant yet to provide required information...
+                                                    </div>
+                                            )
+                                                
                                         }
                                         {
-                                            activestep?.step?.flag === 'PAYMENT_REQUIRED' && 
-                                                <ManagePayments purpose={activestep?.step?.flag} purpose_id={purpose_id} />
+                                            activestep?.step?.flag === 'PAYMENT_REQUIRED' && (
+                                                user?.role === 'PublicUser' ? 
+                                                    <ManagePayments purpose={activestep?.step?.flag} purpose_id={purpose_id} />
+                                                    :
+                                                    <div className='w-full my-4 text-gray-700'>
+                                                        Yet to receive notification on Applicant's payment...
+                                                    </div>
+                                            )
+                                                
+                                        }
+                                        {
+                                            (activestep?.step?.flag === 'AWAITING_PAYMENT_CONFIRMATION' ||
+                                            activestep?.step?.flag === 'INFO_REQ_ADMIN_REVIEW' ||
+                                            activestep?.step?.flag === 'REQ_ADMIN_REVIEW') && 
+                                            <Reviews 
+                                                id={purpose_id}  
+                                                flag={activestep?.step?.flag}
+                                            />
                                         }
                                     </div>
                                 })
@@ -77,13 +105,30 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         }
                                         {
                                             stp?.payment_info && stp?.payment_info.length > 0 && stp?.payment_info.map(pinfo => {
-                                                return <div className='grid md:grid-cols-2 border-gray-100 pb-8'>
-                                                {Object.keys(pinfo).map((key, i) => (
-                                                    <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
-                                                        <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ')}</p>
-                                                        <p className='w-full'>{pinfo[key]}</p>
+                                                return <div key={key?.id} className='grid border-gray-100 pb-8'>
+                                                    <h1 className={`text-lg ${pinfo?.status === 'Failed' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'} px-2 py-1`}>{pinfo?.status}</h1>
+                                                    <div className='grid md:grid-cols-2 my-2'>
+                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
+                                                            <span className='text-gray-600'>Reference ID</span>
+                                                            <span>{pinfo?.ref_no}</span>
+                                                        </div>
+                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
+                                                            <span className='text-gray-600'>Payment Channel</span>
+                                                            <span>{pinfo?.payment_gateway?.gateway_name}</span>
+                                                        </div>
+                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
+                                                            <span className='text-gray-600'>Category</span>
+                                                            <span>{pinfo?.tariff?.category}</span>
+                                                        </div>
+                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
+                                                            <span className='text-gray-600'>Amount</span>
+                                                            <span>&#8358; {pinfo?.tariff?.amount}</span>
+                                                        </div>
+                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
+                                                            <span className='text-gray-600'>Date</span>
+                                                            <span>{formatDate(pinfo?.updated_at)}</span>
+                                                        </div>
                                                     </div>
-                                                ))}
                                                 </div>
                                             })
                                         }
@@ -92,6 +137,15 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                 <div className='flex justify-center my-6'>
                                                     <div className='w-full flex justify-between items-center rounded-lg bg-green-100 text-[#0d544c] p-4'>
                                                         <span className='font-bold text-lg'>Payment Confirmed</span>
+                                                        <AiOutlineCheckCircle size={30} />
+                                                    </div>
+                                                </div>
+                                        }
+                                        {
+                                            stp?.flag === 'REQ_ADMIN_REVIEW' && 
+                                                <div className='flex justify-center my-6'>
+                                                    <div className='w-full flex justify-between items-center rounded-lg bg-green-100 text-[#0d544c] p-4'>
+                                                        <span className='font-bold text-lg'>Application Reviewed and Approved</span>
                                                         <AiOutlineCheckCircle size={30} />
                                                     </div>
                                                 </div>

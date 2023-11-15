@@ -38,6 +38,7 @@ export const formatDate = (dt) => {
 }
 
 
+
 export const tableCustomStyles = {
     headCells: {
       style: {
@@ -54,3 +55,11 @@ export const tableCustomStyles = {
     },
     },
   }
+
+
+export const setUserLinks = (role, publicUser, staff, superAdmin, setNavlinks) => {
+
+    role === 'PublicUser' && setNavlinks(publicUser);
+    role === 'Staff' && setNavlinks(staff);
+    role === 'SuperAdmin' && setNavlinks(superAdmin);
+}

@@ -5,26 +5,31 @@ import Applications from '../components/application/Applications'
 import ProfileUpdate from '../../public/components/service/ProfileUpdate'
 import { useLocation } from 'react-router-dom'
 import NewServiceApplication from '../components/application/NewServiceApplication'
+import { hasPersonalInfo } from '../../apis/authActions'
+import InitLoader from '../../common/InitLoader'
 
 const Application = () => {
 
-    const { user, serviceObject } = useContext(AuthContext);
-    const location = useLocation();
+    const { token, serviceObject } = useContext(AuthContext);
 
-    const [userObj, setUserObj] = useState(null);
-    //const currServiceObject = location?.state ? location?.state?.serveObj : serviceObject;
+    const [hasInfo, setHasInfo] = useState(null);
+    const [error, setError] = useState(null);
+    const [checking, setChecking] = useState(false);
 
-    //console.log(user, currServiceObject);
+    console.log(hasInfo);
+
     useEffect(() => {
-        setUserObj(user)
+        hasPersonalInfo(token, setHasInfo, setError, setChecking);
     }, [])
 
     return (
         <div className="w-full">
-            {userObj !== null && userObj?.has_personal_info ? 
-                (serviceObject !== null ? <NewServiceApplication serviceObject={serviceObject} /> : <Applications />)
-                :
-                <ProfileUpdate />
+            {error !==  null && <span className='text text-red-600'></span>}
+            {hasInfo === null && checking ? <InitLoader /> :
+                hasInfo?.hasPersonalInformation ? 
+                    (serviceObject !== null ? <NewServiceApplication serviceObject={serviceObject} /> : <Applications />)
+                    :
+                    <ProfileUpdate />
             }
         </div>
     )

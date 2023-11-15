@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
+import { AuthContext } from '../../../context/AuthContext'
+import { Link, useLocation } from 'react-router-dom';
+import { getAdminApplicationByID } from '../../../apis/adminActions';
 import { MdKeyboardBackspace } from 'react-icons/md';
-import { Link, useLocation } from 'react-router-dom'
-import { AuthContext } from '../../context/AuthContext';
-import { getApplicationByID } from '../../apis/authActions';
-import AppStepsTab from '../../common/AppStepsTab';
-import InitLoader from '../../common/InitLoader';
+import InitLoader from '../../../common/InitLoader';
+import AppStepsTab from '../../../common/AppStepsTab';
 
-const ApplicationDetail = () => {
+const AdminApplicationDetail = () => {
 
     const { token, logout, record } = useContext(AuthContext);
     const loctn = useLocation();
@@ -17,28 +17,23 @@ const ApplicationDetail = () => {
     const [fetching, setFetching] = useState(false);
     const [loading, setLoading] = useState(false);
     const id = loctn?.state?.appid;
-    const currentStep = loctn?.state?.currentStep;
+    const currentStep = appdetail !== null && appdetail?.data?.current_step;
     const serviceName = appdetail !== null && appdetail?.data?.eservice?.name;
 
-    console.log(steps);
 
     if(error !== null && error?.message === 'Token has expired'){
         logout();
     }
 
     useEffect(() => {
-        getApplicationByID( token, id, setAppdetail, setSteps, setError, setFetching )
-    }, [])
-
-    useEffect(() => {
-        setTimeout(() => setLoading(false), 1000);
-      }, [record])
-
+        getAdminApplicationByID(token, id, setAppdetail, setSteps, setError, setFetching)
+    }, [record])
+    
     return (
         <div className='w-full'>
             <div className='w-full flex justify-end my-2'>
                 <Link
-                    to='/application' 
+                    to='/applications' 
                     className='flex justify-center items-center space-x-2 py-3 px-6 rounded-md bg-[#0d544c] hover:bg-green-950 text-white'
                 >
                     <MdKeyboardBackspace size={22} />
@@ -64,4 +59,4 @@ const ApplicationDetail = () => {
     )
 }
 
-export default ApplicationDetail
+export default AdminApplicationDetail

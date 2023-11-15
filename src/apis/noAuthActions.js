@@ -11,8 +11,8 @@ export const getLGAs = async ( setLgas , setError) => {
             }
         );    
 
-        console.log(response.data?.data?.data)
-        setLgas(response.data?.data?.data);
+        console.log(response.data?.data)
+        setLgas(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {

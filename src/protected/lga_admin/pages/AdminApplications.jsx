@@ -1,21 +1,22 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../../context/AuthContext'
-import { userApplications } from '../../../apis/authActions';
+import { lgaApplications } from '../../../apis/adminActions';
 import InitLoader from '../../../common/InitLoader';
-import ApplicationsTable from './ApplicationsTable';
+import ApplicationsTable from '../../components/application/ApplicationsTable';
 import { formatDate } from '../../../apis/functions';
 import { AiOutlineSearch } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';
 
-const Application = () => {
-    
-    const { token, logout } = useContext(AuthContext);
-    const navigate = useNavigate();
+const AdminApplications = () => {
 
-    const [applications, setApplications] = useState(null);
+    const { token, user, logout } = useContext(AuthContext);
+
+    const navigate = useNavigate();
+    const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
 
+    //console.log(success);
     const columns = [
         {
           name: "E-service",
@@ -24,7 +25,7 @@ const Application = () => {
           cell: (row) => (
             <div className="hover:break-normal">{row?.eservice?.name}</div>
           )
-        },,
+        },
         {
           name: "Status",
           selector: (row) => row?.current_step?.step?.step_name,
@@ -33,6 +34,14 @@ const Application = () => {
             <div className="hover:break-normal">{row?.current_step?.step?.step_name}</div>
           )
         },
+        {
+            name: "Request from",
+            selector: (row) => row?.user?.email,
+            sortable: true,
+            cell: (row) => (
+              <div className="hover:break-normal">{row?.user?.email}</div>
+            )
+          },
         {
           name: "Date applied",
           selector: (row) => row?.created_at,
@@ -47,7 +56,7 @@ const Application = () => {
           cell: (row) => (
             <button 
                 className="p-2 border-none font-medium"
-                onClick={(e) => getApplicationDetail(row?.id, row?.eservice?.step?.flag)}
+                onClick={(e) => getApplicationDetail(row?.id)}
             >
                 <AiOutlineSearch size={20} />
             </button>
@@ -55,36 +64,33 @@ const Application = () => {
         },
       ];
 
-    const getApplicationDetail = (appid, currentStep) => {
+    const getApplicationDetail = (appid) => {
         navigate(
-            '/application-detail',
+            '/admin-applications-detail',
             {
-                state : { appid, currentStep }
+                state : { appid }
             }
         )
     }
 
-    if(error !== null && error?.message === 'Token has expired'){
-        //alert(error?.message);
-        logout();
-    }
-
     useEffect(() => {
-        userApplications(token, setApplications, setError, setFetching);
+        lgaApplications(token, setSuccess, setError, setFetching);
     }, [])
 
     return (
         <div className='w-full'>
-            <h1 className='mt-4 text-xl md:text-3xl font-extralight'>
-                Your Applications
-            </h1>
-            <div className='w-full my-12'>
+            <div className='grid md:flex md:justify-between md:items-center my-4 space-y-2 md:space-y-0'>
+                <span className='text-2xl'>Applications</span>
+                <span className='text-gray-500'>Welcome { user?.username }</span>
+            </div>
+            <div className='w-full rounded-xl bg-white mt-8 p-4'>
+                {error !== null && <div className='text-red-600'>No application found!</div>}
                 { fetching && <InitLoader />}
-                { applications !== null && (
-                    applications === undefined ? logout() : (
-                        applications.length > 0 ? 
-                        <ApplicationsTable columns={columns} appdata={applications} /> :
-                        <div className='text-red-600'>You have not applied for any service yet</div>
+                { success !== null && (
+                    success === undefined ? logout() : (
+                        success.length > 0 ? 
+                        <ApplicationsTable columns={columns} appdata={success} /> :
+                        <div className='text-red-600'>No application found!</div>
                     )
                 )}
             </div>
@@ -92,4 +98,4 @@ const Application = () => {
     )
 }
 
-export default Application
+export default AdminApplications

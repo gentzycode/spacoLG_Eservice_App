@@ -58,7 +58,7 @@ const ManagePayments = ({ purpose, purpose_id }) => {
     }, [])
 
     return (
-        <div className='w-full grid md:grid-cols-3'>
+        <div className='w-full grid md:grid-cols-2'>
             <div className='col-span-1'>
                 {/** PAYMENT GATEWAY SELECTION */}
                 <div className='w-full my-3 py-4 border-b border-gray-200'>
@@ -93,7 +93,7 @@ const ManagePayments = ({ purpose, purpose_id }) => {
                 </div>
 
             </div>
-            <div className='col-span-2'>
+            <div className='col-span-1'>
                 {
                     initializing ? <i className='m-12 text-gray-500'>initializing...</i>
                         :
