@@ -20,7 +20,7 @@ export const getServiceFormdata = async ( token, action_id, setFormdata , setErr
         } else {
             console.log(err.response.data);
             setError(err.response.data);
-        }
+        } 
     }
     setLoading(false);
 }
@@ -243,9 +243,7 @@ export const initiatePayment = async ( token, data, setInitpay, setError, setIni
 }
 
 
-export const paymentConfirm = async ( token, id, setConfirm, setError, setConfirming ) => {
-
-    setConfirming(true);
+export const paymentConfirm = async ( token, id, setConfirm, setError ) => {
 
     try{
         const response  = await axios.post(`payments/confirm/${id}`,
@@ -254,7 +252,7 @@ export const paymentConfirm = async ( token, id, setConfirm, setError, setConfir
             }
         );    
 
-        console.log(response.data)
+        console.log(response.data);
         setConfirm(response.data);
     }
     catch (err) {
@@ -265,8 +263,6 @@ export const paymentConfirm = async ( token, id, setConfirm, setError, setConfir
             setError(err.response.data);
         }
     }
-
-    setConfirming(false);
 }
 
 

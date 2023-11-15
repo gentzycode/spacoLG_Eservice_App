@@ -58,7 +58,11 @@ const NewServiceApplication = ({ serviceObject }) => {
                                 <div className='w-full bg-white rounded-r-lg p-4'>
                                     <p className='text-sm text-gray-500'>{serviceObject?.localgovernments?.name}</p>
                                     <h1 className='text-2xl py-2 border-b border-gray-200'>{serviceObject?.eservice?.name}</h1>
-                                    <RequestForm action_id={initSteps[0]?.step?.action_id} eservice_id={serviceObject?.eservice?.id} />
+                                    <RequestForm 
+                                        action_id={initSteps[0]?.action_id} 
+                                        eservice_id={serviceObject?.eservice?.id}  
+                                        lg_id={serviceObject?.local_government_id}
+                                    />
                                 </div>
                             </div>
                         </div>

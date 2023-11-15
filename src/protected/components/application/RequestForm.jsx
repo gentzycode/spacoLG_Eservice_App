@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 //import { useNavigate } from "react-router-dom"
 
 
-const RequestForm = ({ action_id, eservice_id }) => {
+const RequestForm = ({ action_id, eservice_id, lg_id }) => {
 
     console.log(action_id);
 
@@ -41,6 +41,7 @@ const RequestForm = ({ action_id, eservice_id }) => {
         e.preventDefault();
 
         const data = {
+            local_government_id: lg_id,
             eservices_id: eservice_id,
             formmetadata_id: action_id,
             data :JSON.stringify(fmdata),

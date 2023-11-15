@@ -1,10 +1,15 @@
 import React, { useContext, useState } from 'react'
 import ButtonLoader from '../../../common/ButtonLoader'
 import { AuthContext } from '../../../context/AuthContext';
+import { paymentConfirm } from '../../../apis/authActions';
 
 const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
 
-    const { user } = useContext(AuthContext);
+    const { token, user, refreshRecord } = useContext(AuthContext);
+
+    const [confirm, setConfirm] = useState(null);
+    const [error, setError] = useState(null);
+    const [res, setRes] = useState(null);
 
     function paymentCallback(response) {
         console.log(response);
@@ -32,11 +37,12 @@ const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
           currency: 'NGN', // Use GHS for Ghana Cedis or USD for US Dollars
           ref: initpay?.paymentInfo?.ref_no, // Replace with a reference you generated
           callback: function(response) {
+            //paymentConfirm(token, initpay?.paymentInfo?.id, setConfirm, setError)
             //this happens after the payment is completed successfully
-            var reference = response.reference;
-            alert('Payment complete! Reference: ' + reference);
+            setRes(response.reference);
+            //alert('Payment complete! Reference: ' + reference);
             // Make an AJAX call to your server with the reference to verify the transaction
-        },
+          },
         onClose: function() {
             alert('Transaction was not completed, window closed.');
           },
@@ -49,8 +55,21 @@ const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
         gateway === 'Paystack' && payWithPaystack();
     }
 
+    if(res !== null){
+        alert(res);
+        setRes(null);
+        paymentConfirm(token, initpay?.paymentInfo?.id, setConfirm, setError)
+    }
+
+    if(confirm !==  null){
+        alert(confirm?.message);
+        setConfirm(null);
+        refreshRecord(Date.now());
+    }
+
     return (
         <div className='w-full my-3 md:ml-6 md:border-l border-gray-200 px-4'>
+            {error !== null && <div className='w-full my-2 text-red-600'>{error?.message}</div>}
             <div className='w-full flex py-2'>
                 <div className='w-1/2 text-gray-600'>Ref. No.</div>
                 <div className='w-1/2'>{initpay?.paymentInfo?.ref_no}</div>
@@ -87,7 +106,7 @@ const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
                                 className='w-full py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'
                                 onClick={() => confirmPay(initpay?.paymentInfo?.id, initpay?.paymentGateway?.gateway_name)}
                             >
-                                Confirm Payment
+                                Checkout
                             </button>
                     }
                 </div>
