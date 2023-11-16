@@ -26,36 +26,30 @@ const NavDB = () => {
         },
         {
             id: 2,
-            title: "Application Status",
-            url: "#",
-            icon: <BiSolidDoughnutChart size={17} />
-        },
-        {
-            id: 3,
             title: "Applications",
             url: "/application",
             icon: <HiDocumentText size={17} />
         },
         {
-            id: 4,
-            title: "Wallet",
-            url: "#",
+            id: 3,
+            title: "Payments",
+            url: "/payments",
             icon: <RiWalletFill size={17} />
         },
         {
-            id: 5,
+            id: 4,
             title: "Profile",
             url: "#",
             icon: <BiSolidUser size={17} />
         },
         {
-            id: 6,
+            id: 5,
             title: "FAQ",
             url: "#",
             icon: <FaComments size={17} />
         },
         {
-            id: 7,
+            id: 6,
             title: "Support",
             url: "#",
             icon: <FaUserAlt size={17} />

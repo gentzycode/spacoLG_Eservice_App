@@ -1,17 +1,17 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import DataTable from 'react-data-table-component'
 import { tableCustomStyles } from '../../../apis/functions'
 import FilterComponent from '../../../common/FilterComponent'
 
-const ApplicationsTable = ({ columns, appdata }) => {
+const PaymentsTable = ({ columns, paymentsdata}) => {
 
     const [filteredData, setFilteredData] = useState(null);
 
     return (
         <div>
             <div className='overflow-auto w-[100%] mt-0 mb-12 bg-white p-4 rounded-md'>
-                <FilterComponent data={appdata} setFilteredData={setFilteredData} />
-                {filteredData !== null && 
+                <FilterComponent data={paymentsdata} setFilteredData={setFilteredData} />
+                {filteredData !== null &&
                 <DataTable 
                     columns={columns} data={filteredData}
                     paginationTotalRows={filteredData.totalCount}
@@ -27,4 +27,4 @@ const ApplicationsTable = ({ columns, appdata }) => {
     )
 }
 
-export default ApplicationsTable
+export default PaymentsTable

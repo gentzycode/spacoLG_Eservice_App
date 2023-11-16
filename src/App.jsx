@@ -17,6 +17,7 @@ import AdminApplications from './protected/lga_admin/pages/AdminApplications';
 import AdminApplicationDetail from './protected/lga_admin/pages/AdminApplicationDetail';
 import Users from './protected/super_admin/pages/Users';
 import LgasStaff from './protected/super_admin/pages/LgasStaff';
+import Payments from './protected/pages/Payments';
 
 function App() {
 
@@ -42,6 +43,7 @@ function App() {
                     <Route path='/admin-applications-detail' element={<PrivateRoute><AdminApplicationDetail /></PrivateRoute>} />
                     <Route path='/users' element={<PrivateRoute><Users /></PrivateRoute>} />
                     <Route path='/lgas-staff' element={<PrivateRoute><LgasStaff /></PrivateRoute>} />
+                    <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
                     {routes.map(({ path, component: Component }) => {
                       <Route 
                         path={path}

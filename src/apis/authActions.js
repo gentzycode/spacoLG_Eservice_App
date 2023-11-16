@@ -291,3 +291,30 @@ export const hasPersonalInfo = async (token, setHasInfo, setError, setChecking) 
 
     setChecking(false);
 }
+
+
+export const getUserPayments = async ( token, setPayments, setError, setFetching ) => {
+
+    setFetching(true);
+
+    try{
+        const response  = await axios.get('payments',
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setPayments(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+
+    setFetching(false);
+}
