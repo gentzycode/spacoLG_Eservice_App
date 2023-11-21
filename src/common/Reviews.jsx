@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { updateApproval } from '../apis/adminActions';
 import ButtonLoader from './ButtonLoader';
+import { AiOutlineQuestionCircle } from 'react-icons/ai';
 
 const Reviews = ({ id, flag }) => {
 

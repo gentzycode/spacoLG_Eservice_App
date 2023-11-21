@@ -11,7 +11,7 @@ const OptionsList = ({ source }) => {
 
     return (
         options !== null && options.map(opt => {
-            return <option key={opt?.id} value={opt?.id}>{opt?.name}</option>
+            return <option key={opt?.id} value={opt?.name}>{opt?.name}</option>
         })
     )
 }

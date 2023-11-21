@@ -1,15 +1,18 @@
 import React, { useContext, useState } from 'react'
 import ButtonLoader from '../../../common/ButtonLoader'
 import { AuthContext } from '../../../context/AuthContext';
-import { paymentConfirm } from '../../../apis/authActions';
+import { paymentConfirm, updateEserviceStep } from '../../../apis/authActions';
+import { FaCheckCircle } from 'react-icons/fa';
 
-const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
+const InitializePayment = ({ initpay, confirming, confirmPayment, order_no, appID }) => {
 
     const { token, user, refreshRecord } = useContext(AuthContext);
 
     const [confirm, setConfirm] = useState(null);
     const [error, setError] = useState(null);
-    const [res, setRes] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const [updating, setUpdating] = useState(false);
+    const [proceed, setProceed] = useState(false);
 
     function paymentCallback(response) {
         console.log(response);
@@ -39,7 +42,9 @@ const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
           callback: function(response) {
             //paymentConfirm(token, initpay?.paymentInfo?.id, setConfirm, setError)
             //this happens after the payment is completed successfully
-            setRes(response.reference);
+            //setRes(response.reference);
+            console.log(response);
+            paymentConfirm(token, initpay?.paymentInfo?.id, setConfirm, setError)
             //alert('Payment complete! Reference: ' + reference);
             // Make an AJAX call to your server with the reference to verify the transaction
           },
@@ -50,68 +55,81 @@ const InitializePayment = ({ initpay, confirming, confirmPayment }) => {
         handler.openIframe();
     }
 
-    const confirmPay = (app_id, gateway) => {
+    const checkout = (app_id, gateway) => {
         gateway === 'Interswitch' && window.webpayCheckout(paymentRequest);
         gateway === 'Paystack' && payWithPaystack();
     }
 
-    if(res !== null){
-        alert(res);
-        setRes(null);
-        paymentConfirm(token, initpay?.paymentInfo?.id, setConfirm, setError)
+    const updateStep = () => {
+        const data = {
+            payment_id : initpay?.paymentInfo?.id,
+            order_no
+        }
+        updateEserviceStep(token, appID, data, setSuccess, setError, setUpdating)
+    }
+
+    if(success !== null){
+        //refreshRecord(Date.now());
+        setSuccess(null);
+        window.location.reload();
     }
 
     if(confirm !==  null){
-        alert(confirm?.message);
+        setProceed(true);
         setConfirm(null);
-        refreshRecord(Date.now());
     }
 
     return (
-        <div className='w-full my-3 md:ml-6 md:border-l border-gray-200 px-4'>
-            {error !== null && <div className='w-full my-2 text-red-600'>{error?.message}</div>}
-            <div className='w-full flex py-2'>
-                <div className='w-1/2 text-gray-600'>Ref. No.</div>
-                <div className='w-1/2'>{initpay?.paymentInfo?.ref_no}</div>
+        proceed ? 
+            <div className='w-full my-3 md:ml-6 md:border-l border-gray-200 px-4'>
+                <div className='w-full flex space-x-4 items-center bg-green-100 border border-green-400 rounded-md text-green-600 p-2 my-6'>
+                    <FaCheckCircle size={30} />
+                    <span>Payment successful! Please click the button below to continue</span>
+                </div>
+                {
+                    updating ? 
+                        <button className='w-full flex justify-center py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'>
+                            <ButtonLoader />
+                        </button>
+                        :
+                        <button 
+                            className='w-full py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'
+                            onClick={() => updateStep()}
+                        >
+                            Continue
+                        </button>
+                }
             </div>
-            <div className='w-full flex py-2'>
-                <div className='w-1/2 text-gray-600'>Status</div>
-                <div className='w-1/2'>{initpay?.paymentInfo?.status}</div>
-            </div>
-            <div className='w-full flex py-2'>
-                <div className='w-1/2 text-gray-600'>Purpose</div>
-                <div className='w-1/2'>{initpay?.paymentInfo?.purpose}</div>
-            </div>
-            <div className='w-full flex py-2'>
-                <div className='w-1/2 text-gray-600'>Payment Gateway</div>
-                <div className='w-1/2'>{initpay?.paymentGateway?.gateway_name}</div>
-            </div>
-            <div className='w-full flex py-2'>
-                <div className='w-1/2 text-gray-600'>Category</div>
-                <div className='w-1/2'>{initpay?.tariff?.category}</div>
-            </div>
-            <div className='w-full flex py-2'>
-                <div className='w-1/2 text-gray-600'>Amount</div>
-                <div className='w-1/2'>&#8358; {initpay?.tariff?.amount}</div>
-            </div>
-            <div className='w-full flex py-2 mt-4'>
-                <div className='w-full text-gray-600'>
-                    {
-                        confirming ? 
-                            <button className='w-full flex justify-center py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'>
-                                <ButtonLoader />
-                            </button>
-                            :
-                            <button 
-                                className='w-full py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'
-                                onClick={() => confirmPay(initpay?.paymentInfo?.id, initpay?.paymentGateway?.gateway_name)}
-                            >
-                                Checkout
-                            </button>
-                    }
+            :
+            <div className='w-full my-3 md:ml-6 md:border-l border-gray-200 px-4'>
+                {error !== null && <div className='w-full my-2 text-red-600'>{error?.message}</div>}
+                <div className='w-full flex py-2'>
+                    <div className='w-1/2 text-gray-600'>Ref. No.</div>
+                    <div className='w-1/2'>{initpay?.paymentInfo?.ref_no}</div>
+                </div>
+                <div className='w-full flex py-2'>
+                    <div className='w-1/2 text-gray-600'>Status</div>
+                    <div className='w-1/2'>{initpay?.paymentInfo?.status}</div>
+                </div>
+                <div className='w-full flex py-2'>
+                    <div className='w-1/2 text-gray-600'>Payment Gateway</div>
+                    <div className='w-1/2'>{initpay?.paymentGateway?.gateway_name}</div>
+                </div>
+                <div className='w-full flex py-2'>
+                    <div className='w-1/2 text-gray-600'>Amount</div>
+                    <div className='w-1/2'>&#8358; {initpay?.tariff?.amount}</div>
+                </div>
+                <div className='w-full flex py-2 mt-4'>
+                    <div className='w-full text-gray-600'>
+                        <button 
+                            className='w-full py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'
+                            onClick={() => checkout(initpay?.paymentInfo?.id, initpay?.paymentGateway?.gateway_name)}
+                        >
+                            Checkout
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
     )
 }
 

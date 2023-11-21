@@ -73,7 +73,7 @@ const ServicesForm = () => {
                     placeholder='Local Government Area'
                 />
                 <Combobox.Options 
-                    className={`w-[93%] md:${localStorage.getItem('isLoggedIn') ? 'w-[32.5%]' : 'w-[40%]'} fixed z-10 mt-[-20px] bg-white border border-gray-200 px-0 rounded-b-md`}
+                    className={`w-[93%] ${localStorage.getItem('isLoggedIn') ? 'md:w-[32.5%]' : 'md:w-[40%]'} fixed z-10 mt-[-20px] bg-white border border-gray-200 px-0 rounded-b-md`}
                 >
                     {(lgas !== null && filteredLgas !== undefined) && filteredLgas.map((lga) => (
                         <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer hover:bg-[#e3ebe2] text-gray-700 p-3 border-b border-gray-100'>
@@ -91,7 +91,7 @@ const ServicesForm = () => {
                                     {
                                         localStorage.getItem('isLoggedIn') ? 
                                             <div 
-                                                className='w-full md:w-[32%] text-gray-700 cursor-pointer'
+                                                className='w-full md:w-[32%] text-gray-700 cursor-pointer md:pb-6'
                                                 onClick={() => goToAuthServicePage(lgaActServ)}
                                             > 
                                                 <div className='flex md:justify-center bg-[#e3ebe2] items-center rounded-md my-3 md:my-0 h-[100px] p-4'>

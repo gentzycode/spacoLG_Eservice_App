@@ -28,18 +28,18 @@ const Payments = () => {
         },
         {
           name: "E-Service",
-          selector: (row) => row?.purpose_id,
+          selector: (row) => row?.eservice?.name,
           sortable: true,
           cell: (row) => (
-            <div className="hover:break-normal">{row?.purpose_id}</div>
+            <div className="hover:break-normal">{row?.eservice?.name}</div>
           )
         },
         {
           name: "Payment for",
-          selector: (row) => row?.eservices_step_id,
+          selector: (row) => row?.eservice_step?.step?.step_name,
           sortable: true,
           cell: (row) => (
-            <div className="hover:break-normal">{row?.eservices_step_id}</div>
+            <div className="hover:break-normal">{row?.eservice_step?.step?.step_name}</div>
           )
         },
         {

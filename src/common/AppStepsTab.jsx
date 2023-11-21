@@ -11,6 +11,7 @@ import { AuthContext } from '../context/AuthContext';
 const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id }) => {
 
     const { user } =  useContext(AuthContext);
+    console.log(user);
 
     const [flag, setFlag] = useState(currentStep);
     const [order, setOrder] = useState(current_step);
@@ -30,8 +31,10 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                     steps.map(step => {
                         return <div 
                             key={step?.id} 
-                            className={`w-full flex justify-between pl-4 py-4 ${steps.length !== step?.order_no && 'border-b'} border-gray-100 ${ step?.order_no === current_step ? 'text-[#0d544c] hover:text-green-600 font-bold' : 'hover:font-medium text-gray-600 hover:text-gray-900' } ${current_step >= step?.order_no && 'cursor-pointer'} items-center`}
-                            onClick={(e) => stepActions(step)}
+                            className={`
+                                w-full flex justify-between pl-4 py-4 
+                                ${steps.length !== step?.order_no && 'border-b'} border-gray-100 ${ step?.order_no === current_step ? 'text-[#0d544c] hover:text-green-600 font-bold' : 'hover:font-medium text-gray-600 hover:text-gray-900' } ${current_step >= step?.order_no && 'cursor-pointer'} items-center`}
+                            onClick={current_step >= step?.order_no ? (e) => stepActions(step) : '#'}
                         >
                             <span className={`md:hidden rounded-full ${ step?.order_no === current_step ? 'bg-[#0d544c] text-white' : 'text-[#0d544c] border-[#0d544c]'} px-2`}>
                                 {step?.order_no}
@@ -66,7 +69,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         {
                                             activestep?.step?.flag === 'PAYMENT_REQUIRED' && (
                                                 user?.role === 'PublicUser' ? 
-                                                    <ManagePayments purpose={activestep?.step?.flag} purpose_id={purpose_id} />
+                                                    <ManagePayments purpose={activestep?.step?.id} purpose_id={purpose_id} order_no={order} />
                                                     :
                                                     <div className='w-full my-4 text-gray-700'>
                                                         Yet to receive notification on Applicant's payment...
@@ -96,8 +99,8 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                 return <div key={sub?.id} className='grid md:grid-cols-2'>
                                                 {Object.keys(JSON.parse(sub?.data)).map((key, i) => (
                                                     <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
-                                                        <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ')}</p>
-                                                        <p className='w-full'>{JSON.parse(sub?.data)[key]}</p>
+                                                        <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ').replace('_', ' ')}</p>
+                                                        <p className='w-full'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
                                                     </div>
                                                 ))}
                                                 </div>
@@ -106,7 +109,16 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         {
                                             stp?.payment_info && stp?.payment_info.length > 0 && stp?.payment_info.map(pinfo => {
                                                 return <div key={key?.id} className='grid border-gray-100 pb-8'>
-                                                    <h1 className={`text-lg ${pinfo?.status === 'Failed' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'} px-2 py-1`}>{pinfo?.status}</h1>
+                                                    <h1 
+                                                        className={
+                                                            `text-lg 
+                                                            ${pinfo?.status === 'Failed' || pinfo?.status === 'Rejected' && 'bg-red-100 text-red-800'} 
+                                                            ${pinfo?.status === 'Completed' && 'bg-green-100 text-green-800'}
+                                                            ${pinfo?.status === 'Initialized' && 'bg-orange-100 text-orange-600'} 
+                                                            px-2 py-1`}
+                                                    >
+                                                        {pinfo?.status}
+                                                    </h1>
                                                     <div className='grid md:grid-cols-2 my-2'>
                                                         <div className='flex justify-between items-center my-1 md:mx-6'>
                                                             <span className='text-gray-600'>Reference ID</span>

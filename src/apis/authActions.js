@@ -245,8 +245,10 @@ export const initiatePayment = async ( token, data, setInitpay, setError, setIni
 
 export const paymentConfirm = async ( token, id, setConfirm, setError ) => {
 
+
     try{
         const response  = await axios.post(`payments/confirm/${id}`,
+            {},
             {
                 headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
             }
@@ -317,4 +319,32 @@ export const getUserPayments = async ( token, setPayments, setError, setFetching
     }
 
     setFetching(false);
+}
+
+
+export const updateEserviceStep = async ( token, appID, data, setSuccess, setError, setUpdating ) => {
+
+    setUpdating(true);
+
+    try{
+        const response  = await axios.put(`applicationdata/${appID}`,
+            data,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+
+    setUpdating(false);
 }

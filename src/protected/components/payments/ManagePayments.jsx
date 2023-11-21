@@ -4,7 +4,7 @@ import { getEnabledPaymentGateways, getPaymentGatewayByID, initiatePayment, paym
 import { GrFormNextLink } from 'react-icons/gr';
 import InitializePayment from './InitializePayment';
 
-const ManagePayments = ({ purpose, purpose_id }) => {
+const ManagePayments = ({ purpose, purpose_id, order_no }) => {
 
     const { token, refreshRecord } = useContext(AuthContext);
 
@@ -100,7 +100,13 @@ const ManagePayments = ({ purpose, purpose_id }) => {
                         initpay !== null && 
                         (
                             confirm !==  null ? <div className='p-3 m-12 bg-green-200 text-[#0d544c] font-bold'>{confirm?.message}</div> : 
-                                <InitializePayment initpay={initpay} confirming={confirming} confirmPayment={confirmPayment} />
+                                <InitializePayment 
+                                    initpay={initpay} 
+                                    confirming={confirming} 
+                                    confirmPayment={confirmPayment} 
+                                    order_no={order_no}
+                                    appID={purpose_id}
+                                />
                         )
                 }
             </div>
