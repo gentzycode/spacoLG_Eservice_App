@@ -60,7 +60,7 @@ export const tableCustomStyles = {
 export const setUserLinks = (role, publicUser, staff, superAdmin, setNavlinks) => {
 
     role === 'PublicUser' && setNavlinks(publicUser);
-    role === 'Staff' && setNavlinks(staff);
+    (role === 'Staff' || role === 'LocalAdmin') && setNavlinks(staff);
     role === 'SuperAdmin' && setNavlinks(superAdmin);
 }
 

@@ -11,7 +11,7 @@ import { filterAdminusers } from '../../../apis/functions';
 
 const Users = () => {
 
-    const { token, logout, record, refreshRecord } = useContext(AuthContext);
+    const { token, user, logout, record, refreshRecord } = useContext(AuthContext);
 
     const [users, setUsers] = useState(null);
     const [error, setError] = useState(null);
@@ -88,12 +88,13 @@ const Users = () => {
                 >
                     <AiOutlineSearch size={20} />
                 </button>
-                <button 
+                {   user?.role === 'SuperAdmin' || user?.role === 'LocalAdmin' &&
+                    <button 
                     className="p-2 border-none font-medium"
                     onClick={() => editUser(row)}
                 >
                     <AiOutlineEdit size={20} className='text-blue-700' />
-                </button>
+                </button>}
             </div>
             
           ),
