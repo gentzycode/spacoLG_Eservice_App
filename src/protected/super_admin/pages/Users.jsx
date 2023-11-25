@@ -78,6 +78,14 @@ const Users = () => {
             )
         },
         {
+            name: "LGA",
+            selector: (row) => row?.staff_locale?.local_government?.name,
+            sortable: true,
+            cell: (row) => (
+              <div className="hover:break-normal">{row?.staff_locale?.local_government?.name}</div>
+            )
+        },
+        {
           name: "Action",
           button: true,
           cell: (row) => (
