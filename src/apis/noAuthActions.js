@@ -59,8 +59,8 @@ export const getActiveservices = async ( lga_id, setActiveservices, setLoading )
             }
         );    
 
-        console.log(response.data?.data?.data)
-        setActiveservices(response.data?.data?.data);
+        console.log(response.data?.data)
+        setActiveservices(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
