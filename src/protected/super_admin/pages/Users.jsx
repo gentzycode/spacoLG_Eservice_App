@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { AiOutlineEdit, AiOutlinePlus, AiOutlineSearch, AiOutlineUnorderedList } from 'react-icons/ai'
 import { AuthContext } from '../../../context/AuthContext'
 import { getAllUsers } from '../../../apis/adminActions';
@@ -7,10 +7,11 @@ import UsersTable from '../components/users/UsersTable';
 import { HiUserGroup } from 'react-icons/hi';
 import UserDetail from '../components/users/UserDetail';
 import CreateUser from '../components/users/CreateUser';
+import { filterAdminusers } from '../../../apis/functions';
 
 const Users = () => {
 
-    const { token, logout, record } = useContext(AuthContext);
+    const { token, logout, record, refreshRecord } = useContext(AuthContext);
 
     const [users, setUsers] = useState(null);
     const [error, setError] = useState(null);
@@ -62,7 +63,7 @@ const Users = () => {
         },
         {
             name: "Role",
-            selector: (row) => row?.created_at,
+            selector: (row) => row?.role?.name,
             sortable: true,
             cell: (row) => (
               <div className="hover:break-normal">{row?.role?.name}</div>
@@ -105,7 +106,7 @@ const Users = () => {
     }
 
     useEffect(() => {
-        getAllUsers(token, setUsers, setError, setFetching);
+        getAllUsers(token, setUsers, setError, setFetching); 
     }, [record])
 
     return (

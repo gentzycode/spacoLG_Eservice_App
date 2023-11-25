@@ -7,6 +7,7 @@ import { AiOutlineCheckCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { formatDate } from '../apis/functions';
 import Reviews from './Reviews';
 import { AuthContext } from '../context/AuthContext';
+import Approvals from './Approvals';
 
 const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id }) => {
 
@@ -86,6 +87,13 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                 flag={activestep?.step?.flag}
                                             />
                                         }
+                                        {
+                                            (activestep?.step?.flag === 'P_CERT' || activestep?.step?.flag === 'D_CERT') && 
+                                            <Approvals 
+                                                id={purpose_id}  
+                                                flag={activestep?.step?.flag}
+                                            />
+                                        }
                                     </div>
                                 })
                                 :
@@ -119,25 +127,25 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                     >
                                                         {pinfo?.status}
                                                     </h1>
-                                                    <div className='grid md:grid-cols-2 my-2'>
-                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
-                                                            <span className='text-gray-600'>Reference ID</span>
+                                                    <div className='grid my-2'>
+                                                        <div className='flex items-center my-1'>
+                                                            <span className='w-1/2 md:w-1/3 text-gray-600'>Reference ID</span>
                                                             <span>{pinfo?.ref_no}</span>
                                                         </div>
-                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
-                                                            <span className='text-gray-600'>Payment Channel</span>
+                                                        <div className='flex items-center my-1'>
+                                                            <span className='w-1/2 md:w-1/3 text-gray-600'>Payment Channel</span>
                                                             <span>{pinfo?.payment_gateway?.gateway_name}</span>
                                                         </div>
-                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
-                                                            <span className='text-gray-600'>Category</span>
+                                                        <div className='flex items-center my-1'>
+                                                            <span className='w-1/2 md:w-1/3 text-gray-600'>Category</span>
                                                             <span>{pinfo?.tariff?.category}</span>
                                                         </div>
-                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
-                                                            <span className='text-gray-600'>Amount</span>
+                                                        <div className='flex items-center my-1'>
+                                                            <span className='w-1/2 md:w-1/3 text-gray-600'>Amount</span>
                                                             <span>&#8358; {pinfo?.tariff?.amount}</span>
                                                         </div>
-                                                        <div className='flex justify-between items-center my-1 md:mx-6'>
-                                                            <span className='text-gray-600'>Date</span>
+                                                        <div className='flex items-center my-1'>
+                                                            <span className='w-1/2 md:w-1/3 text-gray-600'>Date</span>
                                                             <span>{formatDate(pinfo?.updated_at)}</span>
                                                         </div>
                                                     </div>
@@ -147,21 +155,31 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         {
                                             stp?.flag === 'AWAITING_PAYMENT_CONFIRMATION' && 
                                                 <div className='flex justify-center my-6'>
-                                                    <div className='w-full flex justify-between items-center rounded-lg bg-green-100 text-[#0d544c] p-4'>
-                                                        <span className='font-bold text-lg'>Payment Confirmed</span>
-                                                        <AiOutlineCheckCircle size={30} />
+                                                    <div className='w-full flex justify-between items-center rounded-lg bg-green-50 text-[#0d544c] p-4'>
+                                                        <span className='text-lg'>Payment Confirmed</span>
+                                                        <AiOutlineCheckCircle size={25} />
                                                     </div>
                                                 </div>
                                         }
                                         {
                                             stp?.flag === 'REQ_ADMIN_REVIEW' && 
                                                 <div className='flex justify-center my-6'>
-                                                    <div className='w-full flex justify-between items-center rounded-lg bg-green-100 text-[#0d544c] p-4'>
-                                                        <span className='font-bold text-lg'>Application Reviewed and Approved</span>
-                                                        <AiOutlineCheckCircle size={30} />
+                                                    <div className='w-full flex justify-between items-center rounded-lg bg-green-50 text-[#0d544c] p-4'>
+                                                        <span className='text-lg'>Application Reviewed and Approved</span>
+                                                        <AiOutlineCheckCircle size={25} />
                                                     </div>
                                                 </div>
                                         }
+                                        {
+                                            stp?.flag === 'P_CERT' && 
+                                                <div className='flex justify-center my-6'>
+                                                    <div className='w-full flex justify-between items-center rounded-lg bg-green-50 text-[#0d544c] p-4'>
+                                                        <span className='text-lg'>Application final reveiw and certificate processing completed</span>
+                                                        <AiOutlineCheckCircle size={25} />
+                                                    </div>
+                                                </div>
+                                        }
+                                        
                                         </div>
                                     </div>
                                 }) 

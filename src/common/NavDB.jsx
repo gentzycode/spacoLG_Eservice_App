@@ -10,6 +10,7 @@ import { useContext } from 'react'
 import { setUserLinks } from '../apis/functions'
 import { BsHouses } from 'react-icons/bs'
 import { FiSettings } from 'react-icons/fi'
+import { FaFileCircleCheck } from 'react-icons/fa6'
 
 const NavDB = () => {
 
@@ -72,7 +73,7 @@ const NavDB = () => {
         {
             id: 3,
             title: "Users",
-            url: "#",
+            url: "/users",
             icon: <HiUserGroup size={17} />
         },
     ]
@@ -99,14 +100,14 @@ const NavDB = () => {
         {
             id: 4,
             title: "LGAs Staff",
-            url: "lgas-staff",
+            url: "/lgas-staff",
             icon: <BsHouses size={17} />
         },
         {
             id: 5,
-            title: "Settings",
-            url: "#",
-            icon: <FiSettings size={17} />
+            title: "Authorizers",
+            url: "/authorizers",
+            icon: <FaFileCircleCheck size={17} />
         },
     ]
 

@@ -11,8 +11,8 @@ export const lgaApplications = async ( token, setSuccess, setError, setFetching 
             }
         );    
 
-        console.log(response.data?.data?.data)
-        setSuccess(response.data?.data?.data);
+        console.log(response.data?.data)
+        setSuccess(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
@@ -24,6 +24,33 @@ export const lgaApplications = async ( token, setSuccess, setError, setFetching 
     }
 
     setFetching(false);
+}
+
+
+export const getStaffByLga = async ( token, lga_id, setLgaStaff, setError, setLoading ) => {
+
+    setLoading(true);
+
+    try{
+        const response  = await axios.get(`user-manager/users/lg/${lga_id}`,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data?.data?.data)
+        setLgaStaff(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+
+    setLoading(false);
 }
 
 
@@ -95,7 +122,7 @@ export const getAllUsers = async ( token, setUsers, setError, setFetching ) => {
         );    
 
         console.log(response.data?.data)
-        setUsers(response.data?.data?.data);
+        setUsers(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
@@ -286,4 +313,83 @@ export const updateLgaStaff = async ( token, id, data, setSuccess, setError, set
         }
     }
     setCreating(false);
+}
+
+
+export const getAllAuthorizers = async ( token, setAuthorizers, setError, setFetching ) => {
+    setFetching(true);
+
+    try{
+        const response  = await axios.get(`authorizer-manager/app-authorizers`,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data?.data)
+        setAuthorizers(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+    setFetching(false);
+}
+
+
+export const createAuthorizer = async ( token, data, setSuccess, setError, setCreating ) => {
+    setCreating(true);
+
+    try{
+        const response  = await axios.post(`authorizer-manager/app-authorizers`,
+            data,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response?.data)
+        setSuccess(response?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+    setCreating(false);
+}
+
+
+export const updateAuthorization = async ( token, id, data, setSuccess, setError, setApproving, setDisapproving ) => {
+
+    data?.action === 'Authorized' ? setApproving(true) : setDisapproving(true);
+
+    try{
+        const response  = await axios.post(`authorizer-manager/app-authorizers/${id}/authorize`,
+            data,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data?.message);
+        }
+    }
+
+    data?.action === 'Authorized' ? setApproving(false) : setDisapproving(false);
 }

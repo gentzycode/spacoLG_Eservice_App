@@ -1,45 +1,47 @@
 import React, { useContext, useState } from 'react'
+import { AiOutlineCheckCircle, AiOutlineQuestionCircle } from 'react-icons/ai'
 import { AuthContext } from '../context/AuthContext'
-import { updateApproval } from '../apis/adminActions';
 import ButtonLoader from './ButtonLoader';
-import { AiOutlineQuestionCircle } from 'react-icons/ai';
+import { updateAuthorization } from '../apis/adminActions';
+import CertDownload from '../protected/components/certificates/CertDownload';
 
-const Reviews = ({ id, flag }) => {
+const Approvals = ({ id, flag }) => {
 
     const { token, user, refreshRecord } = useContext(AuthContext);
 
     const [notification, setNotification] = useState('');
-    const [showRemarkDiv, setSshowRemarkDiv] = useState(false);
+    const [showRemarkDiv, setShowRemarkDiv] = useState(false);
     const [approving, setApproving] = useState(false);
     const [disapproving, setDisapproving] = useState(false);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
+    const [downloadModal, setDownloadModal] = useState(false);
 
-    const approveStep = () => {
+    const authorize = () => {
 
-        if(window.confirm('Are you sure you want to approve this application?')){
+        if(window.confirm('Are you sure you want to approve this certificate?')){
             const data = {
-                action : 'Approved',
+                action : 'Authorized',
                 notification
             }
-            updateApproval(token, id, data, setSuccess, setError, setApproving, setDisapproving);
+            updateAuthorization(token, id, data, setSuccess, setError, setApproving, setDisapproving);
         } 
     }
 
     const addRemark = () => {
-        setSshowRemarkDiv(true);
+        setShowRemarkDiv(true);
     }
 
-    const disapproveStep = () => {
+    const decline = () => {
         if(notification === ''){
             alert('Sorry! You must enter the reason for cancellation.')
         }
-        else if(window.confirm('Are you sure you want to disapprove this application?')){
+        else if(window.confirm('Are you sure you want to disapprove this certificate?')){
             const data = {
-                action : 'Disapproved',
+                action : 'Declined',
                 notification
             }
-            updateApproval(token, id, data, setSuccess, setError, setApproving, setDisapproving);
+            updateAuthorization(token, id, data, setSuccess, setError, setApproving, setDisapproving);
         } 
     }
 
@@ -53,37 +55,55 @@ const Reviews = ({ id, flag }) => {
     }
 
     return (
-        <div className='flex justify-center my-4'>
+        <div className='flex justify-center my-6'>
             {
-                user?.role === 'PublicUser' && <div className='w-full flex justify-between items-center rounded-lg bg-orange-50 text-orange-700 p-4'>
-                    <span className='text-lg'>
-                        {
-                            flag === 'AWAITING_PAYMENT_CONFIRMATION' ? 'Payment yet to be Confirmed...' : 'Reveiw in progress. Chack back please.'
-                        }
-                    </span>
-                    <AiOutlineQuestionCircle size={30} />
-                </div>
+                user?.role === 'PublicUser' && 
+                    (
+                        flag === 'P_CERT' ? 
+                            <div className='w-full flex justify-between items-center rounded-lg bg-orange-50 text-orange-700 p-4'>
+                                <span className='text-lg'>
+                                    Your application is undergoing final review. Please check back later
+                                </span>
+                                <AiOutlineQuestionCircle size={25} />
+                            </div>
+                            :
+                            <div className='w-full flex items-center py-4'>
+                                <button 
+                                    className='py-4 px-6 rounded-md bg-[#0d544c] text-white hover:bg-green-950'
+                                    onClick={() => setDownloadModal(true)}
+                                >
+                                    Preview Certificate
+                                </button>
+                            </div>
+                            
+                    )
             }
             {
-                user?.role === 'Staff' && 
+                (flag === 'D_CERT' && user?.role !== 'PublicUser') && 
+                    <div className='w-full'>
+                        <div className='w-full flex justify-between items-center rounded-lg bg-green-50 text-[#0d544c] p-4'>
+                            <span className='text-lg'>Application processing completed and Certificate available for download</span>
+                            <AiOutlineCheckCircle size={25} />
+                        </div>
+                    </div>
+            }
+            {
+                (flag === 'P_CERT' && user?.role !== 'PublicUser') && 
                     <div className='w-full grid md:grid-cols-2'>
                         <div className='col-span-1 py-3 md:pr-3 md:border-r border-gray-200'>
                             {
                                 approving ? 
                                     <button 
                                         className='w-full flex justify-center bg-green-700 hover:bg-green-900 text-white rounded-lg p-3'
-                                        onClick={() => approveStep()}
                                     >
                                         <ButtonLoader />
                                     </button>
                                     :
                                     <button 
                                         className='w-full bg-green-700 hover:bg-green-900 text-white rounded-lg p-3'
-                                        onClick={() => approveStep()}
+                                        onClick={() => authorize()}
                                     >
-                                        {
-                                            flag === 'AWAITING_PAYMENT_CONFIRMATION' ? 'Confirm' : 'Reviewed'
-                                        }
+                                        Authorize
                                     </button>
                             }
                         </div>
@@ -92,13 +112,13 @@ const Reviews = ({ id, flag }) => {
                                 className='w-full bg-red-700 hover:bg-red-900 text-white rounded-lg p-3'
                                 onClick={() => addRemark()}
                             >
-                                Cancel
+                                Decline
                             </button>
                             <div className={`w-full my-4 ${showRemarkDiv ? 'block' : 'hidden'}`}>
                                 <textarea
                                     className='w-full rounded-md border border-gray-400 my-2 p-2 text-gray-700'
                                     rows="3"
-                                    placeholder='Add reason for cancelling'
+                                    placeholder='Reason for declining please'
                                     onChange={(e) => setNotification(e.target.value)}
                                 >
 
@@ -114,7 +134,7 @@ const Reviews = ({ id, flag }) => {
                                             :
                                             <button 
                                                 className='w-[150px] bg-red-700 hover:bg-red-900 text-white rounded-lg py-3'
-                                                onClick={() => disapproveStep()}
+                                                onClick={() => decline()}
                                             >
                                                 Submit
                                             </button>
@@ -125,8 +145,10 @@ const Reviews = ({ id, flag }) => {
                         </div>
                     </div>
             }
+
+            {downloadModal && <CertDownload setDownloadModal={setDownloadModal} appid={id} />}
         </div>
     )
 }
 
-export default Reviews
+export default Approvals

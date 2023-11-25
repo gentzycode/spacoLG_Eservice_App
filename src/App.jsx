@@ -18,6 +18,8 @@ import AdminApplicationDetail from './protected/lga_admin/pages/AdminApplication
 import Users from './protected/super_admin/pages/Users';
 import LgasStaff from './protected/super_admin/pages/LgasStaff';
 import Payments from './protected/pages/Payments';
+import Authorizers from './protected/super_admin/pages/Authorizers';
+import Statuscheck from './public/pages/Statuscheck';
 
 function App() {
 
@@ -35,6 +37,7 @@ function App() {
                 <Route path='/auth' element={<Auth />} />
                 <Route path='/services' element={<Services />} />
                 <Route path='/service' element={<Service />} />
+                <Route path='/status-check' element={<Statuscheck />} />
                 <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
                     <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                     <Route path='/application' element={<PrivateRoute><Application /></PrivateRoute>} />
@@ -44,6 +47,7 @@ function App() {
                     <Route path='/users' element={<PrivateRoute><Users /></PrivateRoute>} />
                     <Route path='/lgas-staff' element={<PrivateRoute><LgasStaff /></PrivateRoute>} />
                     <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
+                    <Route path='/authorizers' element={<PrivateRoute><Authorizers /></PrivateRoute>} />
                     {routes.map(({ path, component: Component }) => {
                       <Route 
                         path={path}

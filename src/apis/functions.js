@@ -63,3 +63,9 @@ export const setUserLinks = (role, publicUser, staff, superAdmin, setNavlinks) =
     role === 'Staff' && setNavlinks(staff);
     role === 'SuperAdmin' && setNavlinks(superAdmin);
 }
+
+
+export const filterAdminusers = (data) => {
+    let filterdata = data.filter(item => item?.role?.name !== 'PublicUser');
+    return filterdata;
+}

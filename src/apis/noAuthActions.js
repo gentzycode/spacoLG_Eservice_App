@@ -34,8 +34,8 @@ export const getCities = async ( setCities , setError) => {
             }
         );    
 
-        console.log(response.data?.data?.data)
-        setCities(response.data?.data?.data);
+        console.log(response.data?.data)
+        setCities(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
@@ -242,4 +242,58 @@ export const updateProfile = async ( token, data, setSuccess, setError, setUpdat
     }
 
     setUpdating(false);
+}
+
+
+export const getEservices = async ( lga_id, setServices, setLoading ) => {
+
+    setLoading(true);
+
+    try{
+        const response  = await axios.get(`activeeservices?local_government_id=${lga_id}`,
+            {
+                headers: { 'Accept' : 'application/json' }
+            }
+        );    
+
+        console.log(response.data?.data)
+        setServices(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            //setError(err.response.data);
+        }
+    }
+
+    setLoading(false);
+}
+
+
+export const getPublicApplicationStatus = async ( ref_no, setSuccess, setError, setLoading ) => {
+
+    setLoading(true);
+
+    try{
+        const response  = await axios.get(`applicationdata/${ref_no}/public-status`,
+            {
+                headers: { 'Accept' : 'application/json' }
+            }
+        );    
+
+        console.log(response.data?.data)
+        setSuccess(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            setError(err.response.data?.message);
+        }
+    }
+
+    setLoading(false);
 }

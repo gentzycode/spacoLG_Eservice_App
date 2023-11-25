@@ -21,6 +21,10 @@ const Landing2 = () => {
         navigate('/services');
     }
 
+    const goToStatuscheck = () => {
+        navigate('/status-check')
+    }
+
     return (
         <div className='w-full grid px-0 m-0'>
             <div className={`w-full bg-[#0d544c] md:bg-[url('/assets/landingBanner.png')] bg-cover px-6 md:px-12 py-12`}>
@@ -77,6 +81,7 @@ const Landing2 = () => {
                             <div className='w-full flex justify-center'>
                                 <button
                                     className='w-[150px] py-3 bg-[#0d544c] rounded-md text-white font-medium shadow-xl'
+                                    onClick={() =>  goToStatuscheck()}
                                 >
                                     Click here
                                 </button>

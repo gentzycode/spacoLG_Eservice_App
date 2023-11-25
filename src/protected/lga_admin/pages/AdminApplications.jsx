@@ -19,6 +19,14 @@ const AdminApplications = () => {
     //console.log(success);
     const columns = [
         {
+          name: "Reference No.",
+          selector: (row) => row?.ref_no,
+          sortable: true,
+          cell: (row) => (
+            <div className="hover:break-normal">{row?.ref_no}</div>
+          )
+        },
+        {
           name: "E-service",
           selector: (row) => row?.eservice?.name,
           sortable: true,

@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../../context/AuthContext'
 import { Link, useLocation } from 'react-router-dom';
-import { getAdminApplicationByID } from '../../../apis/adminActions';
+import { getAdminApplicationByID, getUserById } from '../../../apis/adminActions';
 import { MdKeyboardBackspace } from 'react-icons/md';
 import InitLoader from '../../../common/InitLoader';
 import AppStepsTab from '../../../common/AppStepsTab';
+import ApplicantInfo from '../components/ApplicantInfo';
 
 const AdminApplicationDetail = () => {
 
@@ -20,6 +21,7 @@ const AdminApplicationDetail = () => {
     const currentStep = appdetail !== null && appdetail?.data?.current_step;
     const serviceName = appdetail !== null && appdetail?.data?.eservice?.name;
 
+    console.log(appdetail?.data?.user);
 
     if(error !== null && error?.message === 'Token has expired'){
         logout();
@@ -43,15 +45,18 @@ const AdminApplicationDetail = () => {
             <div className='w-full my-12 py-4'>
                 {
                     (steps !== null && steps.length > 0) ? 
-                        <AppStepsTab 
-                            steps={steps} 
-                            fetching={fetching} 
-                            current_step={appdetail?.data?.current_step} 
-                            serviceName={serviceName} 
-                            currentStep={currentStep} 
-                            steps_completed={appdetail?.steps_completed} 
-                            purpose_id={id}
-                        />
+                        <Fragment>
+                            <ApplicantInfo user={appdetail?.data?.user} />
+                            <AppStepsTab 
+                                steps={steps} 
+                                fetching={fetching} 
+                                current_step={appdetail?.data?.current_step} 
+                                serviceName={serviceName} 
+                                currentStep={currentStep} 
+                                steps_completed={appdetail?.steps_completed} 
+                                purpose_id={id}
+                            />
+                        </Fragment>
                         : <InitLoader />
                 }
             </div>

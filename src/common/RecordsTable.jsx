@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import DataTable from 'react-data-table-component'
-import { filterAdminusers, tableCustomStyles } from '../../../../apis/functions'
-import FilterComponent from '../../../../common/FilterComponent';
+import FilterComponent from './FilterComponent';
+import { tableCustomStyles } from '../apis/functions';
 
-const UsersTable = ({ columns, usersdata }) => {
+const RecordsTable = ({ columns, data }) => {
 
     const [filteredData, setFilteredData] = useState(null);
-
-    let data = filterAdminusers(usersdata);
 
     return (
         <div>
@@ -29,4 +27,4 @@ const UsersTable = ({ columns, usersdata }) => {
     )
 }
 
-export default UsersTable
+export default RecordsTable
