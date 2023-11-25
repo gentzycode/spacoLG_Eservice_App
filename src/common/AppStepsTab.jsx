@@ -120,7 +120,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                     <h1 
                                                         className={
                                                             `text-lg 
-                                                            ${pinfo?.status === 'Failed' || pinfo?.status === 'Rejected' && 'bg-red-100 text-red-800'} 
+                                                            ${(pinfo?.status === 'Failed' || pinfo?.status === 'Rejected') && 'bg-red-100 text-red-800'} 
                                                             ${pinfo?.status === 'Completed' && 'bg-green-100 text-green-800'}
                                                             ${pinfo?.status === 'Initialized' && 'bg-orange-100 text-orange-600'} 
                                                             px-2 py-1`}
@@ -162,7 +162,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                 </div>
                                         }
                                         {
-                                            stp?.flag === 'REQ_ADMIN_REVIEW' && 
+                                            (stp?.flag === 'REQ_ADMIN_REVIEW' || stp?.flag === 'INFO_REQ_ADMIN_REVIEW') && 
                                                 <div className='flex justify-center my-6'>
                                                     <div className='w-full flex justify-between items-center rounded-lg bg-green-50 text-[#0d544c] p-4'>
                                                         <span className='text-lg'>Application Reviewed and Approved</span>

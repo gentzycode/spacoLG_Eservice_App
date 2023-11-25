@@ -58,7 +58,7 @@ const Reviews = ({ id, flag }) => {
                 user?.role === 'PublicUser' && <div className='w-full flex justify-between items-center rounded-lg bg-orange-50 text-orange-700 p-4'>
                     <span className='text-lg'>
                         {
-                            flag === 'AWAITING_PAYMENT_CONFIRMATION' ? 'Payment yet to be Confirmed...' : 'Reveiw in progress. Chack back please.'
+                            flag === 'AWAITING_PAYMENT_CONFIRMATION' ? 'Payment yet to be Confirmed...' : 'Reveiw in progress. Check back please.'
                         }
                     </span>
                     <AiOutlineQuestionCircle size={30} />
