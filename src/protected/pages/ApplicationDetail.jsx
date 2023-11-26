@@ -56,6 +56,7 @@ const ApplicationDetail = () => {
                             currentStep={currentStep} 
                             steps_completed={appdetail?.steps_completed} 
                             purpose_id={id}
+                            admin_notes={appdetail?.data?.admin_notes}
                         />
                         : <InitLoader />
                 }

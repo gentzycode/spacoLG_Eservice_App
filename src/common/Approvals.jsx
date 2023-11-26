@@ -47,6 +47,8 @@ const Approvals = ({ id, flag }) => {
 
     if(success !== null){
         refreshRecord(Date.now());
+        alert(success?.message);
+        setSuccess(null);
     }
 
     if(error !== null){

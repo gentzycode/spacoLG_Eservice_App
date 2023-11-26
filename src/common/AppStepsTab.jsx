@@ -9,7 +9,7 @@ import Reviews from './Reviews';
 import { AuthContext } from '../context/AuthContext';
 import Approvals from './Approvals';
 
-const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id }) => {
+const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes }) => {
 
     const { user } =  useContext(AuthContext);
     console.log(user);
@@ -56,6 +56,13 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                 return activestep?.order_no === order &&
                                     <div className='w-full' key={activestep?.id}>
                                         <h1 className='text-lg my-2'>{activestep?.step?.step_name}</h1>
+                                        <div className='w-full my-4'>
+                                            {admin_notes && admin_notes.length > 0 && admin_notes.map(note => {
+                                                return <span key={note?.id} className='text-orange-600 py-2'>
+                                                        {note?.notification?.message}
+                                                    </span>
+                                            })}
+                                        </div>
                                         {
                                             activestep?.step?.flag === 'ADD_INFO' && (
                                                 user?.role === 'PublicUser' ? 
