@@ -164,6 +164,28 @@ export const getUserById = async ( token, id, setUserinfo, setError, setFetching
 }
 
 
+export const getAuthorizerinformation = async ( token, id ) => {
+    let userdata = null;
+    try{
+        const response  = await axios.get(`authorizer-manager/app-authorizers/${id}`,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+        console.log(response.data?.data)
+        userdata = response.data?.data?.user;
+    }
+    catch (err) {
+        if (!err?.response) {
+            console.log('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+        }
+    }
+    return userdata;
+}
+
+
 export const getAllRoles = async ( token, setRoles, setError ) => {
 
     try{

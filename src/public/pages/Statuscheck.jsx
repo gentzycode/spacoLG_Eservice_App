@@ -82,7 +82,7 @@ const Statuscheck = () => {
                                                 success?.status?.step?.flag === 'D_CERT' ?
                                                     <div className='w-full bg-green-600 p-1 rounded-full'></div>
                                                     :
-                                                    <div className={`w-[${success?.status?.order_no * 10}%] bg-orange-600 p-1 rounded-full`}>
+                                                    <div className={`${success?.status?.order_no < 5 ? 'w-[30%]' : 'w-[70%]'} bg-orange-600 p-1 rounded-full`}>
                                                     </div>
                                             }
                                         </div>

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { Fragment, useContext, useState } from 'react'
 import { FcApproval } from 'react-icons/fc'
 import InitLoader from './InitLoader'
 import RequestForm from '../protected/components/application/RequestForm';
@@ -8,8 +8,9 @@ import { formatDate } from '../apis/functions';
 import Reviews from './Reviews';
 import { AuthContext } from '../context/AuthContext';
 import Approvals from './Approvals';
+import Authorizations from '../protected/lga_admin/components/Authorizations';
 
-const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes }) => {
+const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes, authorizations }) => {
 
     const { user } =  useContext(AuthContext);
     console.log(user);
@@ -57,11 +58,14 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                     <div className='w-full' key={activestep?.id}>
                                         <h1 className='text-lg my-2'>{activestep?.step?.step_name}</h1>
                                         <div className='w-full my-4'>
-                                            {admin_notes && admin_notes.length > 0 && admin_notes.map(note => {
-                                                return <span key={note?.id} className='text-orange-600 py-2'>
-                                                        {note?.notification?.message}
-                                                    </span>
-                                            })}
+                                            {
+                                            (activestep?.step?.flag !== 'P_CERT' && activestep?.step?.flag !== 'D_CERT') && 
+                                                admin_notes && admin_notes.length > 0 && admin_notes.map(note => {
+                                                    return <span key={note?.id} className='text-orange-600 py-2'>
+                                                            {note?.notification?.message} {activestep?.step?.flag}
+                                                        </span>
+                                                })
+                                            }
                                         </div>
                                         {
                                             activestep?.step?.flag === 'ADD_INFO' && (
@@ -96,10 +100,16 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         }
                                         {
                                             (activestep?.step?.flag === 'P_CERT' || activestep?.step?.flag === 'D_CERT') && 
-                                            <Approvals 
-                                                id={purpose_id}  
-                                                flag={activestep?.step?.flag}
-                                            />
+                                                <Fragment>
+                                                    {user?.role !== 'PublicUser' && 
+                                                        <Authorizations authorizations={authorizations} />
+                                                    }
+                                                    <Approvals 
+                                                        id={purpose_id}  
+                                                        flag={activestep?.step?.flag}
+                                                    />
+                                                </Fragment>
+                                            
                                         }
                                     </div>
                                 })
