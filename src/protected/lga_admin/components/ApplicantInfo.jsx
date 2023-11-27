@@ -22,7 +22,7 @@ const ApplicantInfo = ({ user }) => {
                     </div>
                     {<div className='flex py-1 border-b border-gray-50'>
                         <div className='w-1/3 md:w-[15%]'>Fullname</div>
-                        <div className='w-2/3 md:w-[85%]'>{
+                        <div className='w-2/3 md:w-[85%] uppercases'>{
                             user?.personal_information ? user?.personal_information?.first_name+' '+user?.personal_information?.last_name
                             : <i className='text-orange-600'>No Profile information</i>
                         }</div>

@@ -25,7 +25,7 @@ const Application = () => {
     return (
         <div className="w-full">
             {error !==  null && <span className='text text-red-600'></span>}
-            {hasInfo === null && checking ? <InitLoader /> :
+            {hasInfo === null && checking ? <div className='flex mt-48 items-center'><InitLoader /></div> :
                 hasInfo?.hasPersonalInformation ? 
                     (serviceObject !== null ? <NewServiceApplication serviceObject={serviceObject} /> : <Applications />)
                     :
