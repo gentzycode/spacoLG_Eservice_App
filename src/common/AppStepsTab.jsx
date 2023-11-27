@@ -123,9 +123,9 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                             stp?.submission && stp?.submission.length > 0 && stp?.submission.map(sub => {
                                                 return <div key={sub?.id} className='grid md:grid-cols-2'>
                                                 {Object.keys(JSON.parse(sub?.data)).map((key, i) => (
-                                                    <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
+                                                    key !== 'user_id'&& <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
                                                         <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ').replace('_', ' ')}</p>
-                                                        <p className='w-full'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
+                                                        <p className='w-full text-gray-700'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
                                                     </div>
                                                 ))}
                                                 </div>

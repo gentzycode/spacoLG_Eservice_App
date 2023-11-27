@@ -11,6 +11,7 @@ const Authorizations = ({ authorizations }) => {
                 </div>
             })) : <div className='text-orange-600'>No authorization action yet</div>
         }
+        {  authorizations.length > 0 && <span className='italic text-gray-400 text-sm'>Awaiting other authorizers...</span>}
         </div>
     )
 }

@@ -39,18 +39,6 @@ const NavDB = () => {
         },
         {
             id: 4,
-            title: "Profile",
-            url: "#",
-            icon: <BiSolidUser size={17} />
-        },
-        {
-            id: 5,
-            title: "FAQ",
-            url: "#",
-            icon: <FaComments size={17} />
-        },
-        {
-            id: 6,
             title: "Support",
             url: "#",
             icon: <FaUserAlt size={17} />
