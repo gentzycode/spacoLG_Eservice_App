@@ -2,19 +2,25 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AiOutlineEdit, AiOutlinePlus } from 'react-icons/ai'
 import { FaFileCircleCheck } from 'react-icons/fa6'
 import { AuthContext } from '../../../context/AuthContext'
-import { getAllAuthorizers } from '../../../apis/adminActions'
+import { getAllAuthorizers, removeAuthorizer } from '../../../apis/adminActions'
 import InitLoader from '../../../common/InitLoader'
 import RecordsTable from '../../../common/RecordsTable'
 import AddModal from '../components/authorizers/AddModal'
+import { HiOutlineTrash } from 'react-icons/hi'
+import ButtonLoader from '../../../common/ButtonLoader'
+import DeleteModal from '../../../common/DeleteModal'
 
 const Authorizers = () => {
 
-    const { token, logout, record } = useContext(AuthContext);
+    const { token, user, logout, record, refreshRecord } = useContext(AuthContext);
 
     const [authorizers, setAuthorizers] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
     const [showmodal, setShowmodal] = useState(false);
+    const [success, setSuccess] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
 
     const columns = [
         {
@@ -53,15 +59,38 @@ const Authorizers = () => {
           name: "Action",
           button: true,
           cell: (row) => (
-            <button 
-                className="p-2 border-none font-medium"
-            >
-                <AiOutlineEdit size={20} className='text-blue-700' />
-            </button>
-            
+            <div className='flex items-center space-x-1'>
+              <button 
+                  className="p-2 border-none font-medium"
+              >
+                  <AiOutlineEdit size={20} className='text-blue-700' />
+              </button>
+              {   (user?.role === 'SuperAdmin' || user?.role === 'LocalAdmin') &&
+                    <button 
+                    className="p-2 border-none text-red-600"
+                    onClick={() => deleteAuthorizer(row?.id)}
+                >
+                    <HiOutlineTrash size={20} className='text-red-600' />
+                </button>}
+            </div>            
           ),
         },
       ];
+
+    const deleteAuthorizer = (id) => {
+
+        if(window.confirm('Are you sure you want to remove this authorizer')){
+          removeAuthorizer(token, id, setSuccess, setError, setDeleting);
+        }
+    }
+
+
+    if(success !== null){
+        alert('Authorizer removed successfully!');
+        setSuccess(null);
+        refreshRecord(Date.now());
+    }
+
 
     useEffect(() => {
         getAllAuthorizers(token, setAuthorizers, setError, setFetching);
@@ -85,6 +114,7 @@ const Authorizers = () => {
             </h1>
 
             <div className='w-full my-12'>
+                { error !== null && <span className='text-red-699'>{error?.message}</span>}
                 { fetching ? <InitLoader /> 
                     : 
                     authorizers !== null && (
@@ -98,6 +128,7 @@ const Authorizers = () => {
             </div>
             
             {showmodal && <AddModal setShowmodal={setShowmodal} />}
+            {deleting && <DeleteModal />}
         </div>
     )
 }

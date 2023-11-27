@@ -62,7 +62,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                             (activestep?.step?.flag !== 'P_CERT' && activestep?.step?.flag !== 'D_CERT') && 
                                                 admin_notes && admin_notes.length > 0 && admin_notes.map(note => {
                                                     return <span key={note?.id} className='text-orange-600 py-2'>
-                                                            {note?.notification?.message} {activestep?.step?.flag}
+                                                            {note?.notification?.message}
                                                         </span>
                                                 })
                                             }

@@ -415,3 +415,30 @@ export const updateAuthorization = async ( token, id, data, setSuccess, setError
 
     data?.action === 'Authorized' ? setApproving(false) : setDisapproving(false);
 }
+
+
+export const removeAuthorizer = async ( token, id, setSuccess, setError, setDeleting ) => {
+
+    setDeleting(true);
+
+    try{
+        const response  = await axios.delete(`authorizer-manager/app-authorizers/${id}`,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data?.message);
+        }
+    }
+
+    setDeleting(false);
+}
