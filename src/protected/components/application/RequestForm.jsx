@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 const RequestForm = ({ action_id, eservice_id, lg_id }) => {
 
     console.log(action_id);
+    console.log(lg_id);
 
     const navigate = useNavigate();
     const { token, user, updateServiceObject, logout } = useContext(AuthContext);

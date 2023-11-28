@@ -63,7 +63,7 @@ const CertDownload = ({ setDownloadModal, appid }) => {
                             </span>
                         </div>
 
-                        {loading || appdata === null ? <InitLoader /> : <div className='py-4' ref={pdfRef}>
+                        {loading || appdata === null ? <InitLoader /> : <div className='py-2' ref={pdfRef}>
                             <div className="w-full h-screen p-2 flex justify-center bg-[url('/assets/cert_template.png')] bg-cover">
                                 <h1 className='text-xl font-bold mt-20 text-gray-800 uppercase'>
                                     {appdata?.data?.eservice?.name}

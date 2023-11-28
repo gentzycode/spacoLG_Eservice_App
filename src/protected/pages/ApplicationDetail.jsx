@@ -21,6 +21,7 @@ const ApplicationDetail = () => {
     const serviceName = appdetail !== null && appdetail?.data?.eservice?.name;
 
     console.log(steps);
+    console.log(appdetail);
 
     if(error !== null && error?.message === 'Token has expired'){
         logout();
@@ -58,6 +59,7 @@ const ApplicationDetail = () => {
                             purpose_id={id}
                             admin_notes={appdetail?.data?.admin_notes}
                             authorizations={appdetail?.data?.authorizations}
+                            app_lga_id={appdetail?.data?.local_government_id}
                         />
                         : <InitLoader />
                 }

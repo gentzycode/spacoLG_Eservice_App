@@ -17,7 +17,7 @@ const Reviews = ({ id, flag }) => {
 
     const approveStep = () => {
 
-        if(window.confirm('Are you sure you want to approve this application?')){
+        if(window.confirm('Are you sure you want to confirm / approve?')){
             const data = {
                 action : 'Approved',
                 notification
@@ -34,7 +34,7 @@ const Reviews = ({ id, flag }) => {
         if(notification === ''){
             alert('Sorry! You must enter the reason for cancellation.')
         }
-        else if(window.confirm('Are you sure you want to disapprove this application?')){
+        else if(window.confirm('Are you sure you want to cancel?')){
             const data = {
                 action : 'Disapproved',
                 notification

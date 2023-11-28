@@ -1,7 +1,7 @@
 import React from 'react'
 import { formatDate } from '../../../apis/functions'
 
-const Authorizations = ({ authorizations }) => {
+const Authorizations = ({ authorizations, flag }) => {
     return (
         <div className='w-full my-4 space-y-2'>
         {
@@ -11,7 +11,7 @@ const Authorizations = ({ authorizations }) => {
                 </div>
             })) : <div className='text-orange-600'>No authorization action yet</div>
         }
-        {  authorizations.length > 0 && <span className='italic text-gray-400 text-sm'>Awaiting other authorizers...</span>}
+        {  (authorizations.length > 0 && flag === 'P_CERT') && <span className='italic text-gray-400 text-sm'>Awaiting other authorizers...</span>}
         </div>
     )
 }

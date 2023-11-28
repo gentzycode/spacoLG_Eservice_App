@@ -20,6 +20,7 @@ import LgasStaff from './protected/super_admin/pages/LgasStaff';
 import Payments from './protected/pages/Payments';
 import Authorizers from './protected/super_admin/pages/Authorizers';
 import Statuscheck from './public/pages/Statuscheck';
+import CheckJSON from './public/pages/CheckJSON';
 
 function App() {
 
@@ -37,6 +38,7 @@ function App() {
                 <Route path='/auth' element={<Auth />} />
                 <Route path='/services' element={<Services />} />
                 <Route path='/service' element={<Service />} />
+                <Route path='/check-json' element={<CheckJSON />} />
                 <Route path='/status-check' element={<Statuscheck />} />
                 <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
                     <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />

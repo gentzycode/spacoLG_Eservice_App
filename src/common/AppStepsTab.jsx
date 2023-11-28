@@ -10,7 +10,7 @@ import { AuthContext } from '../context/AuthContext';
 import Approvals from './Approvals';
 import Authorizations from '../protected/lga_admin/components/Authorizations';
 
-const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes, authorizations }) => {
+const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes, authorizations, app_lga_id }) => {
 
     const { user } =  useContext(AuthContext);
     console.log(user);
@@ -70,7 +70,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         {
                                             activestep?.step?.flag === 'ADD_INFO' && (
                                                 user?.role === 'PublicUser' ? 
-                                                    <RequestForm action_id={activestep?.action_id} eservice_id={activestep?.eservices_id} />
+                                                    <RequestForm action_id={activestep?.action_id} eservice_id={activestep?.eservices_id} lg_id={app_lga_id} />
                                                     :
                                                     <div className='w-full my-4 text-gray-700'>
                                                         Applicant yet to provide required information...
@@ -102,7 +102,10 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                             (activestep?.step?.flag === 'P_CERT' || activestep?.step?.flag === 'D_CERT') && 
                                                 <Fragment>
                                                     {user?.role !== 'PublicUser' && 
-                                                        <Authorizations authorizations={authorizations} />
+                                                        <Authorizations 
+                                                            authorizations={authorizations} 
+                                                            flag={activestep?.step?.flag}
+                                                        />
                                                     }
                                                     <Approvals 
                                                         id={purpose_id}  
