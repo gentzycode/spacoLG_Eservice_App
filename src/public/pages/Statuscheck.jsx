@@ -109,7 +109,10 @@ const Statuscheck = () => {
 
                                         {
                                             showinfo && <div className='w-full border border-gray-100 rounded-md bg-gray-50 p-4 text-gray-600'>
-                                                <h1 className='uppercase font-bold mb-2'>Application detail</h1>
+                                                <h1 className='flex justify-between uppercase font-bold mb-2 pb-4 border-b border-gray-200'>
+                                                    <span>Application request preview</span>
+                                                    <span className='cursor-pointer text-red-600' onClick={() => toggleInfo()}>X</span>
+                                                </h1>
                                             {
                                                 Object.keys(JSON.parse(success?.form_submission?.data)).map((key, i) => {
                                                     {
