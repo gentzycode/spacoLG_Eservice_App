@@ -60,11 +60,6 @@ const Authorizers = () => {
           button: true,
           cell: (row) => (
             <div className='flex items-center space-x-1'>
-              <button 
-                  className="p-2 border-none font-medium"
-              >
-                  <AiOutlineEdit size={20} className='text-blue-700' />
-              </button>
               {   (user?.role === 'SuperAdmin' || user?.role === 'LocalAdmin') &&
                     <button 
                     className="p-2 border-none text-red-600"
@@ -99,13 +94,13 @@ const Authorizers = () => {
     return (
         <div className='w-full'>
             <div className='w-full flex justify-end my-2'>
-                <button 
+                {(user && user?.role === 'SuperAdmin') && <button 
                     className='flex justify-center items-center space-x-2 py-3 px-6 rounded-md bg-[#0d544c] hover:bg-green-950 text-white'
                     onClick={() => setShowmodal(true)}
                 >
                     <AiOutlinePlus size={20} />
                     <span>Authorizer</span>
-                </button>
+                </button>}
             </div>
 
             <h1 className='mt-4 flex space-x-2 items-baseline text-xl md:text-3xl font-extralight'>

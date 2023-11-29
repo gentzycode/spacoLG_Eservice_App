@@ -145,7 +145,7 @@ const CreateUser = ({ useredit, closeUserform }) => {
                                         <option value=''>{roleName}</option>
                                         {
                                             roles !== null && roles.map(role => {
-                                                return role !== 'SuperAdmin' && <option key={role?.id} value={role?.id}>{role?.name}</option>
+                                                return (role !== 'SuperAdmin') && <option key={role?.id} value={role?.id}>{role?.name}</option>
                                             })
                                         }
                                     </select>

@@ -64,6 +64,12 @@ const NavDB = () => {
             url: "/users",
             icon: <HiUserGroup size={17} />
         },
+        {
+            id: 4,
+            title: "Authorizers",
+            url: "/authorizers",
+            icon: <FaFileCircleCheck size={17} />
+        },
     ]
 
     const superAdmin = [
