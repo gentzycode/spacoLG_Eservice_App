@@ -26,28 +26,31 @@ const CreateUser = ({ useredit, closeUserform }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        if(useredit === null){
-            const data = {
-                username,
-                password_hash,
-                password_hash_confirmation,
-                role_id,
-                email,
-                mobile
-            }
-            createUser(token, data, setSuccess, setError, setCreating)
+        if(username.length < 6){
+            alert('The username must be at least 6 characters.');
         }
         else{
-            const data = {
-                username,
-                role_id,
-                email,
-                mobile
+            if(useredit === null){
+                const data = {
+                    username,
+                    password_hash,
+                    password_hash_confirmation,
+                    role_id,
+                    email,
+                    mobile
+                }
+                createUser(token, data, setSuccess, setError, setCreating)
             }
-            updateUser(token, useredit?.id, data, setSuccess, setError, setCreating)
+            else{
+                const data = {
+                    username,
+                    role_id,
+                    email,
+                    mobile
+                }
+                updateUser(token, useredit?.id, data, setSuccess, setError, setCreating)
+            }
         }
-
     }
 
     if(success !== null){

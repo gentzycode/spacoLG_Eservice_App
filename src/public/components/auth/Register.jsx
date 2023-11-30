@@ -25,16 +25,21 @@ const Register = ( { handleChildUpdate } ) => {
         e.preventDefault();
         setError(null);
 
-        const data = {
-            username,
-            email,
-            mobile,
-            password_hash,
-            password_hash_confirmation
+        if(username.length < 6) {
+            setError('The username must be at least 6 characters!');
         }
-        console.log(data);
+        else {
+            const data = {
+                username,
+                email,
+                mobile,
+                password_hash,
+                password_hash_confirmation
+            }
+            console.log(data);
 
-        signUp(data, setSuccess, setError, setRegistering);
+            signUp(data, setSuccess, setError, setRegistering)
+        }
     }
 
 

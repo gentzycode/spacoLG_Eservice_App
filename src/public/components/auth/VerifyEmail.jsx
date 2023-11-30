@@ -4,6 +4,7 @@ import { signIn, verifyEmailCode } from "../../../apis/noAuthActions";
 import { AuthContext } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Envelope from "../../../assets/refresh_data.png"
+import CountdownTimer from "../../../common/CountdownTimer";
 
 
 const VerifyEmail = ({ handleChildUpdate }) => {
@@ -63,6 +64,7 @@ const VerifyEmail = ({ handleChildUpdate }) => {
                 <h1 className='text-xl font-bold'>Check your email</h1>
             </div>
             <p className="py-2 text-gray-400 my-2">A verification code has been sent to your email. Please enter the code in the field below and proceed</p>
+            {error !== null && <p className="py-2 text-red-600 my-2">{error}</p>}
             <form onSubmit={handleVerify} className='w-full mt-6 mb-6 space-y-8'>
                 <input 
                     type='text' 
@@ -71,7 +73,7 @@ const VerifyEmail = ({ handleChildUpdate }) => {
                     onChange={(e) => setVerification_code(e.target.value)}
                     required
                 />
-
+                <CountdownTimer />
                 <div className=''>
                     {verifying ? 
                         <button className='w-full flex justify-center p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>

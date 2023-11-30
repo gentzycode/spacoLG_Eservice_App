@@ -38,6 +38,7 @@ const Login = ({ handleChildUpdate }) => {
 
     if(error && error?.user_id){
         tempUserid(error?.user_id);
+        handleChildUpdate('verify-email');
     }
 
 
@@ -47,7 +48,7 @@ const Login = ({ handleChildUpdate }) => {
                 {locatn.pathname !== '/service' && <RiShieldKeyholeLine size={25} />}
                 {locatn.pathname !== '/service' && <h1 className='text-2xl'>Login</h1>}
             </div>
-            {error && <p className='text-red-500 my-2'>{error?.message} </p>}
+            {(error && error?.message) && <p className='text-red-500 my-2'>{error?.message} </p>}
             { (error && error?.user_id) && <p className='text-[#0d544c] cursor-pointer' onClick={() => handleChildUpdate('verify-email')}>Click here to verify your email.</p>}
             <form onSubmit={handleLogin} className='w-full mt-0 mb-6 space-y-4'>
                 <div>
