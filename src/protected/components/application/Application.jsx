@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Application = () => {
     
-    const { token, logout } = useContext(AuthContext);
+    const { token, logout, updateServiceObject } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [applications, setApplications] = useState(null);
@@ -79,6 +79,10 @@ const Application = () => {
 
     useEffect(() => {
         userApplications(token, setApplications, setError, setFetching);
+    }, [])
+
+    useEffect(() => {
+        updateServiceObject(null);
     }, [])
 
     return (

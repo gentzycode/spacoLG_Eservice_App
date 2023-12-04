@@ -11,7 +11,7 @@ import Loader from '../../../common/Loader';
 const ProfileUpdate = () => {
 
     const { token, user, logout, updateUser } = useContext(AuthContext);
-
+    console.log(token);
     //alert('I am in profile update');
     console.log(user);
 
@@ -102,11 +102,6 @@ const ProfileUpdate = () => {
 
     useEffect(() => {
         getCities(setCities, setError)
-    }, [])
-
-    useEffect(() => {
-        setLoading(true);
-        setTimeout(() => setLoading(false), 1000);
     }, [])
 
     return (
