@@ -40,7 +40,7 @@ const NavDB = () => {
         {
             id: 4,
             title: "Support",
-            url: "#",
+            url: "/support",
             icon: <FaUserAlt size={17} />
         },
     ]

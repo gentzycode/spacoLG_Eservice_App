@@ -22,8 +22,8 @@ const ProfileUpdate = () => {
     const [gender, setGender] = useState();
     const [date_of_birth, setDate_of_birth] = useState();
     const [address, setAddress] = useState();
-    const [city_id, setCity_id] = useState();
-    const [localgovernments_id, setLocalgovernments_id] = useState();
+    const [city_id, setCity_id] = useState(null);
+    const [localgovernments_id, setLocalgovernments_id] = useState(null);
 
     const [updating, setUpdating] = useState(false);
     const[error, setError] = useState(null);
@@ -72,20 +72,26 @@ const ProfileUpdate = () => {
     const handleUpdate = (e) => {
         e.preventDefault();
 
-        const data = {
-            user_id: user?.id,
-            first_name,
-            last_name,
-            gender,
-            date_of_birth : formatDate(date_of_birth),
-            address,
-            city_id,
-            localgovernments_id
+        if(city_id === null || localgovernments_id === null){
+            alert('Local Government Area and City must be selected!');
         }
-
-        console.log(data)
-
-        updateProfile(token, data, setSuccess, setError, setUpdating);
+        else{
+            const data = {
+                user_id: user?.id,
+                first_name,
+                last_name,
+                gender,
+                date_of_birth : formatDate(date_of_birth),
+                address,
+                city_id,
+                localgovernments_id
+            }
+    
+            console.log(data)
+    
+            updateProfile(token, data, setSuccess, setError, setUpdating);
+        }
+        
     }
 
     if(success !== null){

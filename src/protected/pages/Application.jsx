@@ -1,12 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../context/AuthContext'
-import RequestForm from '../components/application/RequestForm'
 import Applications from '../components/application/Applications'
 import ProfileUpdate from '../../public/components/service/ProfileUpdate'
-import { useLocation } from 'react-router-dom'
 import NewServiceApplication from '../components/application/NewServiceApplication'
 import { hasPersonalInfo } from '../../apis/authActions'
-import InitLoader from '../../common/InitLoader'
+import ProgressBarComponent from '../../common/ProgressBarComponent'
 
 const Application = () => {
 
@@ -15,11 +13,22 @@ const Application = () => {
     const [hasInfo, setHasInfo] = useState(null);
     const [error, setError] = useState(null);
     const [checking, setChecking] = useState(false);
+    const [showalert, setShowalert] = useState(false);
+
+    const alertdiv = <div className='flex items-center mt-16 p-4 rounded-md bg-orange-50 border border-orange-500 space-x-4'>
+                        <span className='text-orange-600'>Personal Information not added yet</span>
+                        <span className='border border-gray-300 bg-white rounded-full px-3 py-1 text-sm cursor-pointer' onClick={() => reloadPage()}>Click here to add</span>
+                    </div>;
 
     console.log(hasInfo);
 
     const reloadPage = () => {
         window.location.reload();
+    }
+
+    const displayAlert = () => {
+        setTimeout(() => setShowalert(true), 2000);
+        return showalert ? alertdiv : <ProgressBarComponent />;
     }
 
     useEffect(() => {
@@ -33,10 +42,7 @@ const Application = () => {
                 (hasInfo?.hasPersonalInformation ? 
                     (serviceObject !== null ? <NewServiceApplication serviceObject={serviceObject} /> : <Applications />)
                     :
-                    <ProfileUpdate />) : <div className='flex items-center mt-16 p-4 rounded-md bg-orange-50 border border-orange-500 space-x-4'>
-                        <span className='text-orange-600'>Personal Information not added yet</span>
-                        <span className='border border-gray-300 bg-white rounded-full px-3 py-1 text-sm cursor-pointer' onClick={() => reloadPage()}>Click here to add</span>
-                    </div>
+                    <ProfileUpdate />) : displayAlert()
             }
         </div>
     )

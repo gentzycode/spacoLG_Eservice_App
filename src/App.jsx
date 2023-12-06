@@ -21,6 +21,7 @@ import Payments from './protected/pages/Payments';
 import Authorizers from './protected/super_admin/pages/Authorizers';
 import Statuscheck from './public/pages/Statuscheck';
 import CheckJSON from './public/pages/CheckJSON';
+import Support from './protected/pages/Support';
 
 function App() {
 
@@ -50,6 +51,7 @@ function App() {
                     <Route path='/lgas-staff' element={<PrivateRoute><LgasStaff /></PrivateRoute>} />
                     <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
                     <Route path='/authorizers' element={<PrivateRoute><Authorizers /></PrivateRoute>} />
+                    <Route path='/support' element={<PrivateRoute><Support /></PrivateRoute>} />
                     {routes.map(({ path, component: Component }) => {
                       <Route 
                         path={path}

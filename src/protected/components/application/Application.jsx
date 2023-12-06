@@ -82,7 +82,7 @@ const Application = () => {
     }, [])
 
     useEffect(() => {
-        updateServiceObject(null);
+        localStorage.getItem('selectedService') && localStorage.removeItem('selectedService');
     }, [])
 
     return (
