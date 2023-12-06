@@ -73,7 +73,7 @@ const VerifyEmail = ({ handleChildUpdate }) => {
                     onChange={(e) => setVerification_code(e.target.value)}
                     required
                 />
-                <CountdownTimer />
+                <CountdownTimer user_id={userid} />
                 <div className=''>
                     {verifying ? 
                         <button className='w-full flex justify-center p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>

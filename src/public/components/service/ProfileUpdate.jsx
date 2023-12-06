@@ -220,7 +220,7 @@ const ProfileUpdate = () => {
 
                 <div className='w-full flex justify-end'>
                     {updating ? 
-                        <button className='w-[200px] flex justify-center p-3 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-[200px] flex justify-center p-4 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
                         <button className='w-[200px] p-4 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>

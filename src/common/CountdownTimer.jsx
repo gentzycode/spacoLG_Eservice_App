@@ -1,7 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import { OtpResend } from "../apis/noAuthActions";
 
-const CountdownTimer = () => {
+const CountdownTimer = ({ user_id }) => {
 
+    const [resending, setResending] = useState(false);
+    const [success, setSuccess] = useState(null);
+    const [error, setError] = useState(null);
     // We need ref in this, because we are dealing
     // with JS setInterval to keep track of it and
     // stop it when needed
@@ -27,6 +31,14 @@ const CountdownTimer = () => {
             seconds,
         };
     };
+
+    const resendOtp = () => {
+        const data = {
+            user_id
+        }
+
+        OtpResend(data, setSuccess, setError, setResending);
+    }
  
     const startTimer = (e) => {
         let { total, hours, minutes, seconds } =
@@ -68,9 +80,21 @@ const CountdownTimer = () => {
  
         // This is where you need to adjust if
         // you entend to add more time
-        deadline.setSeconds(deadline.getSeconds() + 300);
+        deadline.setSeconds(deadline.getSeconds() + 60);
         return deadline;
     };
+
+
+    if(error !== null){
+        alert('There is an error!');
+        setError(null);
+    }
+
+    if(success !== null){
+        alert(success?.message);
+        setSuccess(null);
+        clearTimer(getDeadTime());
+    }
  
     // We can use useEffect so that when the component
     // mount the timer will start as soon as possible
@@ -92,7 +116,12 @@ const CountdownTimer = () => {
     return (
         <div className="bg-gray-100 p-4 rounded-md text-green-700">
             {
-                timer !== "00:00:00" ? <span>{timer}</span> : <span className="text-blue-900">Resend OTP</span> 
+                timer !== "00:00:00" ? 
+                    <span>{timer}</span> : 
+                    (
+                        resending ? <span className="text-blue-900">Resending...</span>
+                        :
+                        <span className="text-blue-900 cursor-pointer" onClick={() => resendOtp()}>Resend OTP</span>) 
             }
         </div>
     )

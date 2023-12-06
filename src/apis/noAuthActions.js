@@ -297,3 +297,31 @@ export const getPublicApplicationStatus = async ( ref_no, setSuccess, setError, 
 
     setLoading(false);
 }
+
+
+export const OtpResend = async ( data, setSuccess, setError, setResending ) => {
+
+    setResending(true);
+
+    try{
+        const response  = await axios.post(`resend-otp`,
+            data,
+            {
+                headers: { 'Accept' : 'application/json' }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            setError(err.response.data?.message);
+        }
+    }
+
+    setResending(false);
+}
