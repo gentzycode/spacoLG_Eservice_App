@@ -53,7 +53,7 @@ const ApplicationDetail = () => {
                     <GrFormPreviousLink size={30} />
                 </div>
             </div>
-            <div className='w-full rounded-md bg-[#d7e88f] px-6 py-4 mt-6 mb-2 md:max-w-max text-gray-700'>
+            {steps !== null && <div className='w-full rounded-md bg-[#d7e88f] px-6 py-4 mt-6 mb-2 md:max-w-max text-gray-700'>
                 <div className='my-1 flex space-x-2'>
                     <span className='font-bold'>LGA :</span>
                     <span>{lga !== null && lga?.name}</span>
@@ -62,7 +62,7 @@ const ApplicationDetail = () => {
                     <span className='font-bold'>Application :</span>
                     <span>{serviceName}</span>
                 </div>
-            </div>
+            </div>}
             <div className='w-full py-4'>
                 {
                     (steps !== null && steps.length > 0) ? 

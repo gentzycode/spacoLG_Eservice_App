@@ -1,13 +1,10 @@
 import { useContext, useEffect, useState } from "react"
-//import { MdClear } from "react-icons/md"
 import { AuthContext } from "../../../context/AuthContext"
 import { getServiceFormdata, submitApplication } from "../../../apis/authActions";
-//import AuthLoader from '../../../common/AuthLoader'
 import OptionsList from "../../../common/OptionsList";
 import ButtonLoader from "../../../common/ButtonLoader";
 import InitLoader from "../../../common/InitLoader";
 import { useNavigate } from "react-router-dom";
-//import { useNavigate } from "react-router-dom"
 
 
 const RequestForm = ({ action_id, eservice_id, lg_id }) => {
@@ -56,16 +53,16 @@ const RequestForm = ({ action_id, eservice_id, lg_id }) => {
     if(success !== null){
         console.log(success);
         clearRequest();
-        navigate('/application');
-        /**navigate(
+        //navigate('/application');
+        navigate(
             '/application-detail',
             {
                 state : { 
-                    appid : success?.data?.id, 
-                    currentStep : success?.current_step?.step?.flag
+                    appid : success?.application?.id, 
+                    currentStep : success?.next_step?.step?.flag
                 }
             }
-        )*/
+        )
     }
 
     if(error !== null && error?.message === 'Token has expired'){

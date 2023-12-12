@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../../context/AuthContext'
-import { userApplications } from '../../../apis/authActions';
+import { deleteApplication, userApplications } from '../../../apis/authActions';
 import InitLoader from '../../../common/InitLoader';
 import ApplicationsTable from './ApplicationsTable';
 import { formatDate, statusColor } from '../../../apis/functions';
@@ -8,15 +8,20 @@ import { AiOutlineEdit, AiOutlineSearch } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
 import { MdOutlineFileDownload } from 'react-icons/md';
+import { HiOutlineTrash, HiTrash } from 'react-icons/hi';
+import { ToastContainer, toast } from 'react-toastify';
+import DeleteModal from '../../../common/DeleteModal';
 
 const Application = () => {
     
-    const { token, logout, updateServiceObject } = useContext(AuthContext);
+    const { token, logout, updateServiceObject, record, refreshRecord } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [applications, setApplications] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
+    const [success, setSuccess] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const columns = [
         {
@@ -76,7 +81,15 @@ const Application = () => {
                         <FiEdit size={15} />
                     </button>
                 }
-                
+                {
+                  (row?.current_step?.step?.flag !== 'P_CERT' && row?.current_step?.step?.flag !== 'D_CERT') && 
+                    <button 
+                        className="p-2 border-none font-medium text-red-600 cursor-pointer"
+                        onClick={(e) => deleteRequest(row?.id)}
+                    >
+                        <HiOutlineTrash size={18} />
+                    </button>
+                }
             </div>
           ),
         },
@@ -91,9 +104,26 @@ const Application = () => {
         )
     }
 
-    if(error !== null && error?.message === 'Token has expired'){
-        //alert(error?.message);
-        logout();
+    const deleteRequest = (appid) => {
+        if(window.confirm('Are you sure you want to delete this request?')){
+          deleteApplication(token, appid, setSuccess, setError, setDeleting);
+        }
+    }
+
+    if(error !== null){
+        if(error?.message === 'Token has expired'){
+          logout();
+        }
+        
+        toast.error(error?.message);
+        setError(null);
+    }
+
+    if(success !== null){
+        //refreshRecord(Date.now());
+        toast.success(success?.message);
+        setSuccess(null);
+        location.reload();
     }
 
     useEffect(() => {
@@ -101,6 +131,7 @@ const Application = () => {
     }, [])
 
     useEffect(() => {
+        updateServiceObject(null);
         localStorage.getItem('selectedService') && localStorage.removeItem('selectedService');
     }, [])
 
@@ -118,7 +149,9 @@ const Application = () => {
                         <div className='text-red-600'>You have not applied for any service yet</div>
                     )
                 )}
+                <ToastContainer />
             </div>
+            {deleting && <DeleteModal />}
         </div>
     )
 }
