@@ -16,8 +16,8 @@ const Application = () => {
     const [showalert, setShowalert] = useState(false);
 
     const alertdiv = <div className='flex items-center mt-16 p-4 rounded-md bg-orange-50 border border-orange-500 space-x-4'>
-                        <span className='text-orange-600'>Personal Information not added yet</span>
-                        <span className='border border-gray-300 bg-white rounded-full px-3 py-1 text-sm cursor-pointer' onClick={() => reloadPage()}>Click here to add</span>
+                        <span className='text-orange-600'>You might be having issues with your internet connection</span>
+                        <span className='border border-gray-300 bg-white rounded-full px-3 py-1 text-sm cursor-pointer' onClick={() => reloadPage()}>Click here to retry</span>
                     </div>;
 
     console.log(hasInfo);

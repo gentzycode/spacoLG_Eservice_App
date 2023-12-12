@@ -12,6 +12,7 @@ import Login from '../components/auth/Login'
 import ProfileUpdate from '../components/service/ProfileUpdate'
 import DashboardButton from '../../common/DashboardButton'
 import { AuthContext } from '../../context/AuthContext'
+import PublicLinks from '../../common/PublicLinks'
 
 const Service = () => {
 
@@ -69,34 +70,37 @@ const Service = () => {
     }, [])
 
     return (
-        <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
-            <AuthBanner />
-            <div className="w-full col-span-1 my-0 md:my-8 flex justify-center px-4 md:px-0">
-                <div className='w-full md:w-2/3 px-2 md:px-0'>
-                    <div className='mt-6 md:mt-0'>
-                        <Link to='/services' className='mt-4'>
-                            <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
-                        </Link>
-                    </div>
-                    <div className='mt-12 p-4 bg-[#d7e88f] rounded-md'>
-                        <p className='text-lg mb-1 text-gray-600'><span className='mr-1 text-gray-600 font-bold'>LGA: </span>{servObj?.localgovernments?.name}</p>
-                        <h1 className='text-lg text-gray-600'>   
-                            <span className='mr-1 text-gray-600 font-bold'>Application: </span>{servObj?.eservice?.name}
-                        </h1>
-                    </div>
-                    <div className='mt-0'>
-                        {
-                            isLoggedin ? 
-                                navigate('/application', {
-                                    state : {
-                                        servObj: servObj
-                                    }
-                                })
-                                :  
-                                (
-                                    loading ? <AuthLoader /> : child
-                                )
-                        } 
+        <div>
+            <PublicLinks />
+            <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
+                <AuthBanner />
+                <div className="w-full col-span-1 my-0 md:my-8 flex justify-center px-4 md:px-0">
+                    <div className='w-full md:w-2/3 px-2 md:px-0'>
+                        <div className='mt-6 md:mt-0'>
+                            <Link to='/services' className='mt-4'>
+                                <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
+                            </Link>
+                        </div>
+                        <div className='mt-12 p-4 bg-[#d7e88f] rounded-md'>
+                            <p className='text-lg mb-1 text-gray-600'><span className='mr-1 text-gray-600 font-bold'>LGA: </span>{servObj?.localgovernments?.name}</p>
+                            <h1 className='text-lg text-gray-600'>   
+                                <span className='mr-1 text-gray-600 font-bold'>Application: </span>{servObj?.eservice?.name}
+                            </h1>
+                        </div>
+                        <div className='mt-0'>
+                            {
+                                isLoggedin ? 
+                                    navigate('/application', {
+                                        state : {
+                                            servObj: servObj
+                                        }
+                                    })
+                                    :  
+                                    (
+                                        loading ? <AuthLoader /> : child
+                                    )
+                            } 
+                        </div>
                     </div>
                 </div>
             </div>

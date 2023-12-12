@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom'
 import Landing from './public/pages/Landing'
 import { Suspense, useEffect, useState } from 'react'
 import Loader from './common/Loader';
@@ -33,39 +33,39 @@ function App() {
 
     return /**loading ? (<Loader />) : */ (
       <AuthContextProvider>
-          <Router>
-              <Routes>
-                <Route path='/' element={<Landing2 />} />
-                <Route path='/auth' element={<Auth />} />
-                <Route path='/services' element={<Services />} />
-                <Route path='/service' element={<Service />} />
-                <Route path='/check-json' element={<CheckJSON />} />
-                <Route path='/status-check' element={<Statuscheck />} />
-                <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
-                    <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-                    <Route path='/application' element={<PrivateRoute><Application /></PrivateRoute>} />
-                    <Route path='/application-detail' element={<PrivateRoute><ApplicationDetail /></PrivateRoute>} />
-                    <Route path='/applications' element={<PrivateRoute><AdminApplications /></PrivateRoute>} />
-                    <Route path='/admin-applications-detail' element={<PrivateRoute><AdminApplicationDetail /></PrivateRoute>} />
-                    <Route path='/users' element={<PrivateRoute><Users /></PrivateRoute>} />
-                    <Route path='/lgas-staff' element={<PrivateRoute><LgasStaff /></PrivateRoute>} />
-                    <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
-                    <Route path='/authorizers' element={<PrivateRoute><Authorizers /></PrivateRoute>} />
-                    <Route path='/support' element={<PrivateRoute><Support /></PrivateRoute>} />
-                    {routes.map(({ path, component: Component }) => {
-                      <Route 
-                        path={path}
-                        element={
-                          <Suspense fallback={<Loader />}>
-                            <Component />
-                          </Suspense>
-                        }
-                      />
-                    })}
-                </Route>
-              </Routes>
-          </Router>
-      </AuthContextProvider>
+            <Router>
+                <Routes>
+                  <Route path='/' element={<Landing2 />} />
+                  <Route path='/auth' element={<Auth />} />
+                  <Route path='/services' element={<Services />} />
+                  <Route path='/service' element={<Service />} />
+                  <Route path='/check-json' element={<CheckJSON />} />
+                  <Route path='/status-check' element={<Statuscheck />} />
+                  <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
+                      <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                      <Route path='/application' element={<PrivateRoute><Application /></PrivateRoute>} />
+                      <Route path='/application-detail' element={<PrivateRoute><ApplicationDetail /></PrivateRoute>} />
+                      <Route path='/applications' element={<PrivateRoute><AdminApplications /></PrivateRoute>} />
+                      <Route path='/admin-applications-detail' element={<PrivateRoute><AdminApplicationDetail /></PrivateRoute>} />
+                      <Route path='/users' element={<PrivateRoute><Users /></PrivateRoute>} />
+                      <Route path='/lgas-staff' element={<PrivateRoute><LgasStaff /></PrivateRoute>} />
+                      <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
+                      <Route path='/authorizers' element={<PrivateRoute><Authorizers /></PrivateRoute>} />
+                      <Route path='/support' element={<PrivateRoute><Support /></PrivateRoute>} />
+                      {routes.map(({ path, component: Component }) => {
+                        <Route 
+                          path={path}
+                          element={
+                            <Suspense fallback={<Loader />}>
+                              <Component />
+                            </Suspense>
+                          }
+                        />
+                      })}
+                  </Route>
+                </Routes>
+            </Router>
+        </AuthContextProvider>
     )
 }
 

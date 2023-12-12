@@ -3,6 +3,7 @@ import ButtonLoader from '../../../common/ButtonLoader'
 import { AuthContext } from '../../../context/AuthContext';
 import { paymentConfirm, updateEserviceStep } from '../../../apis/authActions';
 import { FaCheckCircle } from 'react-icons/fa';
+import PaymentContinue from './PaymentContinue';
 
 const InitializePayment = ({ initpay, confirming, confirmPayment, order_no, appID }) => {
 
@@ -81,45 +82,23 @@ const InitializePayment = ({ initpay, confirming, confirmPayment, order_no, appI
 
     return (
         proceed ? 
-            <div className='w-full my-3 md:ml-6 md:border-l border-gray-200 px-4'>
-                <div className='w-full flex space-x-4 items-center bg-green-100 border border-green-400 rounded-md text-green-600 p-2 my-6'>
-                    <FaCheckCircle size={30} />
-                    <span>Payment successful! Please click the button below to continue</span>
-                </div>
-                {
-                    updating ? 
-                        <button className='w-full flex justify-center py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'>
-                            <ButtonLoader />
-                        </button>
-                        :
-                        <button 
-                            className='w-full py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'
-                            onClick={() => updateStep()}
-                        >
-                            Continue
-                        </button>
-                }
-            </div>
+            <PaymentContinue updateStep={updateStep} updating={updating} />
             :
-            <div className='w-full my-3 md:ml-6 md:border-l border-gray-200 px-4'>
+            <div className='w-full my-3 px-4 text-sm'>
                 {error !== null && <div className='w-full my-2 text-red-600'>{error?.message}</div>}
-                <div className='w-full flex py-2'>
+                <div className='w-full flex py-1'>
                     <div className='w-1/2 text-gray-600'>Ref. No.</div>
                     <div className='w-1/2'>{initpay?.paymentInfo?.ref_no}</div>
                 </div>
-                <div className='w-full flex py-2'>
-                    <div className='w-1/2 text-gray-600'>Status</div>
-                    <div className='w-1/2'>{initpay?.paymentInfo?.status}</div>
-                </div>
-                <div className='w-full flex py-2'>
+                <div className='w-full flex py-1'>
                     <div className='w-1/2 text-gray-600'>Payment Gateway</div>
                     <div className='w-1/2'>{initpay?.paymentGateway?.gateway_name}</div>
                 </div>
-                <div className='w-full flex py-2'>
+                <div className='w-full flex py-1'>
                     <div className='w-1/2 text-gray-600'>Amount</div>
                     <div className='w-1/2'>&#8358; {initpay?.tariff?.amount}</div>
                 </div>
-                <div className='w-full flex py-2 mt-4'>
+                <div className='w-full flex py-1 mt-2'>
                     <div className='w-full text-gray-600'>
                         <button 
                             className='w-full py-3 rounded-lg bg-[#0d544c] hover:bg-green-950 text-white'

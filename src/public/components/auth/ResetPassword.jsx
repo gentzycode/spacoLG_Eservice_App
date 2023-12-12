@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MdOutlineLockReset } from 'react-icons/md'
 import ButtonLoader from '../../../common/ButtonLoader';
 import { resetPassword } from '../../../apis/noAuthActions';
+import { ToastContainer, toast } from 'react-toastify';
 
 
 const ResetPassword = ({ handleChildUpdate }) => {
@@ -25,10 +26,16 @@ const ResetPassword = ({ handleChildUpdate }) => {
     }
 
     if(success !== null){
-        alert(success?.message);
-        setSuccess(null);
-        handleChildUpdate('login');
+        toast.success(success?.message);
+        setTimeout(() => handleChildUpdate('login'), 3000);
+        //handleChildUpdate('login');
     }
+
+    if(error !== null){
+        toast.error(error?.message?.errors ? error?.message?.errors : error?.message);
+        setError(null);
+    }
+
 
 
     return (
@@ -37,44 +44,54 @@ const ResetPassword = ({ handleChildUpdate }) => {
                 <MdOutlineLockReset size={25} />
                 <h1 className='text-2xl'>Reset Password</h1>
             </div>
-            {error !== null && <span className='text-red-500'>{error?.message?.errors ? error?.message?.errors : error?.message }</span>}
-            <form onSubmit={handleReset} className='w-full mt-6 mb-6 space-y-8'>
-                <input 
-                    type='text' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Enter OTP'
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
-                />
-                <input 
-                    type='text' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Mobile'
-                    onChange={(e) => setMobile(e.target.value)}
-                    required
-                />
-                <input 
-                    type='password' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Password'
-                    onChange={(e) => setNew_password(e.target.value)}
-                    required
-                />
+            <ToastContainer />
+            <form onSubmit={handleReset} className='w-full mb-6 space-y-6'>
+                <div>
+                    <div className='text-gray-500 mb-1'>OTP</div>
+                    <input 
+                        type='text' 
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        onChange={(e) => setOtp(e.target.value)}
+                        required
+                    />
+                </div>
                 
-                <input 
-                    type='password' 
-                    className='w-full p-3 border-b border-gray-400 bg-transparent'
-                    placeholder='Confirm Password'
-                    onChange={(e) => setNew_password_confirmation(e.target.value)}
-                    required
-                />
+                <div>
+                    <div className='text-gray-500 mb-1'>Mobile</div>
+                    <input 
+                        type='text' 
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        onChange={(e) => setMobile(e.target.value)}
+                        required
+                    />
+                </div>
+                
+                <div>
+                    <div className='text-gray-500 mb-1'>Password</div>
+                    <input 
+                        type='password' 
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        onChange={(e) => setNew_password(e.target.value)}
+                        required
+                    />
+                </div>
+                
+                <div>
+                    <div className='text-gray-500 mb-1'>Confirm Password</div>
+                    <input 
+                        type='password' 
+                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        onChange={(e) => setNew_password_confirmation(e.target.value)}
+                        required
+                    />
+                </div>
 
                 <div className=''>
                     {resetting ? 
-                        <button className='w-full flex justify-center p-3 mt-16 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-8 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-8 rounded-2xl bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-4 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
                             Reset
                         </button>
                     }

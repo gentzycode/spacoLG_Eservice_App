@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { HiDocumentText, HiUserGroup } from 'react-icons/hi'
-import { FaComments, FaUserAlt } from 'react-icons/fa'
+import { FaComments, FaRegListAlt, FaRegUser, FaUserAlt } from 'react-icons/fa'
 import { Link, useLocation } from 'react-router-dom'
 import { AuthContext } from '../context/AuthContext'
 import { AiFillHome } from 'react-icons/ai'
-import { RiWalletFill } from 'react-icons/ri'
+import { RiQuestionnaireLine, RiWalletFill } from 'react-icons/ri'
 import { BiSolidDoughnutChart, BiSolidUser } from 'react-icons/bi'
 import { useContext } from 'react'
 import { setUserLinks } from '../apis/functions'
-import { BsHouses } from 'react-icons/bs'
+import { BsClockHistory, BsHouses } from 'react-icons/bs'
 import { FiSettings } from 'react-icons/fi'
 import { FaFileCircleCheck } from 'react-icons/fa6'
+import { MdOutlineAccountBalanceWallet, MdSupportAgent } from 'react-icons/md'
 
 const NavDB = () => {
 
@@ -27,21 +28,39 @@ const NavDB = () => {
         },
         {
             id: 2,
-            title: "Applications",
-            url: "/application",
-            icon: <HiDocumentText size={17} />
+            title: "Application status",
+            url: "#",
+            icon: <BsClockHistory size={17} />
         },
         {
             id: 3,
-            title: "Payments",
-            url: "/payments",
-            icon: <RiWalletFill size={17} />
+            title: "Application request",
+            url: "/application",
+            icon: <FaRegListAlt size={17} />
         },
         {
             id: 4,
+            title: "Wallet",
+            url: "/payments",
+            icon: <MdOutlineAccountBalanceWallet size={17} />
+        },
+        {
+            id: 5,
+            title: "Profile",
+            url: "#",
+            icon: <FaRegUser size={17} />
+        },
+        {
+            id: 6,
+            title: "FAQ",
+            url: "#",
+            icon: <RiQuestionnaireLine size={17} />
+        },
+        {
+            id: 7,
             title: "Support",
             url: "/support",
-            icon: <FaUserAlt size={17} />
+            icon: <MdSupportAgent  size={17} />
         },
     ]
 

@@ -1,27 +1,31 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { MdKeyboardBackspace } from 'react-icons/md';
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AuthContext } from '../../context/AuthContext';
-import { getApplicationByID } from '../../apis/authActions';
+import { getApplicationByID, getLagById } from '../../apis/authActions';
 import AppStepsTab from '../../common/AppStepsTab';
 import InitLoader from '../../common/InitLoader';
+import { GrFormPreviousLink } from 'react-icons/gr';
 
 const ApplicationDetail = () => {
 
     const { token, logout, record } = useContext(AuthContext);
     const loctn = useLocation();
+    const navigate = useNavigate();
 
     const [appdetail, setAppdetail] = useState(null);
     const [steps, setSteps] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [lga, setLga] = useState(null);
     const id = loctn?.state?.appid;
     const currentStep = loctn?.state?.currentStep;
     const serviceName = appdetail !== null && appdetail?.data?.eservice?.name;
 
     console.log(steps);
     console.log(appdetail);
+    console.log(lga);
 
     if(error !== null && error?.message === 'Token has expired'){
         logout();
@@ -32,21 +36,34 @@ const ApplicationDetail = () => {
     }, [])
 
     useEffect(() => {
+        appdetail !== null && getLagById(token, appdetail?.data?.local_government_id, setLga)
+    }, [appdetail])
+
+    useEffect(() => {
         setTimeout(() => setLoading(false), 1000);
       }, [record])
 
     return (
         <div className='w-full'>
-            <div className='w-full flex justify-end my-2'>
-                <Link
-                    to='/application' 
-                    className='flex justify-center items-center space-x-2 py-3 px-6 rounded-md bg-[#0d544c] hover:bg-green-950 text-white'
+            <div className='w-full my-2'>
+                <div 
+                    className='bg-[#cce2d6] mt-4 rounded-full p-1 w-max cursor-pointer'
+                    onClick={() => navigate('/application')}
                 >
-                    <MdKeyboardBackspace size={22} />
-                    <span>Back to Applications</span>
-                </Link>
+                    <GrFormPreviousLink size={30} />
+                </div>
             </div>
-            <div className='w-full my-12 py-4'>
+            <div className='w-full rounded-md bg-[#d7e88f] px-6 py-4 mt-6 mb-2 md:max-w-max text-gray-700'>
+                <div className='my-1 flex space-x-2'>
+                    <span className='font-bold'>LGA :</span>
+                    <span>{lga !== null && lga?.name}</span>
+                </div>
+                <div className='my-1 flex space-x-2'>
+                    <span className='font-bold'>Application :</span>
+                    <span>{serviceName}</span>
+                </div>
+            </div>
+            <div className='w-full py-4'>
                 {
                     (steps !== null && steps.length > 0) ? 
                         <AppStepsTab 

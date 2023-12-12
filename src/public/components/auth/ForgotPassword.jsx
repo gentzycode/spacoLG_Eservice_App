@@ -2,6 +2,7 @@ import { AiOutlineQuestion } from 'react-icons/ai'
 import { forgotPassword } from '../../../apis/noAuthActions';
 import { useState } from 'react';
 import ButtonLoader from '../../../common/ButtonLoader';
+import { ToastContainer, toast } from 'react-toastify';
 
 
 const ForgotPassword = ({ handleChildUpdate }) => {
@@ -21,6 +22,16 @@ const ForgotPassword = ({ handleChildUpdate }) => {
         forgotPassword(data, setSuccess, setError, setSending);
     }
 
+    if(success !== null){
+        toast.success(success?.message);
+        setTimeout(() => handleChildUpdate('reset-password'), 3000);
+    }
+
+    if(error !== null){
+        toast.error(error?.message);
+        setError(null);
+    }
+
     return (
 
         <div className="w-full">
@@ -28,8 +39,7 @@ const ForgotPassword = ({ handleChildUpdate }) => {
                 <h1 className='text-2xl'>Forgot Password</h1>
                 <AiOutlineQuestion size={25} />
             </div>
-            {success !== null && <p className='text-green-700'>{success?.message}. <span className='cursor-pointer font-bold' onClick={() => handleChildUpdate('reset-password')}>Click here to Reset your Password</span></p>}
-            {error !== null && <p className='text-red-500'>{error?.message}</p>}
+            <ToastContainer />
             <form onSubmit={handleReset} className='w-full mt-6 mb-6 space-y-8'>
                 <div>
                     <div className='text-gray-500 mb-1'>Email</div>

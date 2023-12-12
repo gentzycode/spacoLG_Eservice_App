@@ -46,6 +46,7 @@ export const tableCustomStyles = {
           fontWeight: 'bold',
           padding: '0 15px',
           justifyContent: 'left',
+          backgroundColor: '#c9d8ca'
       },
       rows: {
         style: {
@@ -68,4 +69,33 @@ export const setUserLinks = (role, publicUser, staff, superAdmin, setNavlinks) =
 export const filterAdminusers = (data) => {
     let filterdata = data.filter(item => item?.role?.name !== 'PublicUser');
     return filterdata;
+}
+
+
+export const statusColor = (flag) => {
+    let flagColor;
+
+    if(flag === 'ADD_INFO'){
+        flagColor = 'text-[#cb5a5a]';
+    }
+    else if(flag === 'PAYMENT_REQUIRED'){
+        flagColor = 'text-[#53873e]';
+    }
+    else if(flag === 'AWAITING_PAYMENT_CONFIRMATION'){
+        flagColor = 'text-[#53873e]';
+    }
+    else if(flag === 'INFO_REQ_ADMIN_REVIEW'){
+        flagColor = 'text-[#cd7b06]';
+    }
+    else if(flag === 'REQ_ADMIN_REVIEW'){
+        flagColor = 'text-[#cd7b06]';
+    }
+    else if(flag === 'P_CERT'){
+        flagColor = 'text-[#9ddb85]';
+    }
+    else if(flag === 'D_CERT'){
+        flagColor = 'text-[#0bd09b]';
+    }
+
+    return flagColor;
 }

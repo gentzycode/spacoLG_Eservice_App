@@ -8,6 +8,7 @@ import AuthBanner from '../../common/AuthBanner';
 import VerifyEmail from '../components/auth/VerifyEmail';
 import { Link, useNavigate } from 'react-router-dom';
 import { GrFormPreviousLink } from 'react-icons/gr';
+import PublicLinks from '../../common/PublicLinks';
 
 
 const Auth = () => {
@@ -48,19 +49,23 @@ const Auth = () => {
     }, [])
 
     return (
-        <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
-            <AuthBanner />
-            <div className="w-full col-span-1 my-0 md:my-8 flex justify-center items-center px-4 md:px-0">
-                <div className='w-full md:w-2/3'>
-                    <div className='mt-6 md:mt-0'>
-                        <Link to='/' className='mt-4'>
-                            <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
-                        </Link>
+        <div>
+            <PublicLinks />
+            <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
+                <AuthBanner />
+                <div className="w-full col-span-1 my-0 md:my-8 flex justify-center items-center px-4 md:px-0">
+                    <div className='w-full md:w-2/3'>
+                        <div className='mt-6 md:mt-0'>
+                            <Link to='/' className='mt-4'>
+                                <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
+                            </Link>
+                        </div>
+                        {loading ? <AuthLoader /> : child}
                     </div>
-                    {loading ? <AuthLoader /> : child}
                 </div>
             </div>
         </div>
+        
     )
 }
 

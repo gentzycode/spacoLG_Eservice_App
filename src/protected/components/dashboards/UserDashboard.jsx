@@ -9,9 +9,10 @@ import PieChart from '../../../charts/PieChart';
 import { AuthContext } from '../../../context/AuthContext';
 import StackedBarChart from '../../../charts/StackedBarChart';
 import { useNavigate } from 'react-router-dom';
-import { FaList } from 'react-icons/fa';
-import PublicUserPieChart from '../../../charts/PublicUserPieChart';
-import PublicUserBarChart from '../../../charts/PublicUserBarChart';
+import Wavinghand from '../../../assets/waving_hand.png'
+//import { FaList } from 'react-icons/fa';
+//import PublicUserPieChart from '../../../charts/PublicUserPieChart';
+//import PublicUserBarChart from '../../../charts/PublicUserBarChart';
 
 
 const UserDashboard = ({ username, goToApplications}) => {
@@ -21,9 +22,22 @@ const UserDashboard = ({ username, goToApplications}) => {
 
     return (
         <div className='w-full'>
-            <div className='w-full flex justify-between items-center my-4'>
-                <div className='mb-4'>
-                    <span className='text-gray-500 text-xl font-bold'>Anambra State Government E-services Platforms</span>
+            <div className='w-full flex justify-end my-4'>
+                <div 
+                    className='w-[230px] flex justify-center items-center space-x-2 rounded-md p-4 bg-[#0d544c] hover:bg-green-950 text-white cursor-pointer'
+                    onClick={() => goToApplications()}
+                >
+                    <HiOutlinePlus size={20} />
+                    <span>Application request</span>
+                </div>
+            </div>
+            <div className='w-full md:w-[40%] my-4 bg-white px-6 py-8 rounded-md space-y-2'>
+                <div className='flex justify-between items-baseline'>
+                    <span className='text-xl font-bold'>Hello, {username}</span>
+                    <img src={Wavinghand} alt='waving hand' />
+                </div>
+                <div>
+                    <span className='text-gray-500'>Welcome to Anambra State Government E-services</span>
                 </div>
             </div>
             
@@ -69,19 +83,7 @@ const UserDashboard = ({ username, goToApplications}) => {
             </div>
             <div className='w-full mt-8 hidden md:block'>
                 {
-                    (user && user?.role === 'PublicUser') && 
-                        <div className='grid grid-cols-2'>
-                            <div className='col-span-1'>
-                                <StackedBarChart />
-                                <PublicUserBarChart />
-                            </div>
-                            <div className='col-span-1'>
-                                <PublicUserPieChart />
-                            </div>
-                        </div>
-                }
-                {
-                    (user && user?.role !== 'PublicUser') &&
+                    (user && user?.role === 'SuperAdmin') &&
                         <div className='grid grid-cols-2'>
                         <div className='col-span-1'>
                             <BarChart />

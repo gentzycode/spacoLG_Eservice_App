@@ -4,6 +4,7 @@ import { MdClear } from 'react-icons/md';
 import { getInitServiceData } from '../../../apis/authActions';
 import InitLoader from '../../../common/InitLoader';
 import RequestForm from './RequestForm';
+import { GrFormPreviousLink } from 'react-icons/gr';
 
 const NewServiceApplication = ({ serviceObject }) => {
 
@@ -24,7 +25,13 @@ const NewServiceApplication = ({ serviceObject }) => {
     return (
         <div className="w-full">
             <div className='w-full'>
-                <div className='w-full flex justify-end my-2'>
+                <div className='w-full flex justify-between my-2'>
+                    <div 
+                        className='bg-[#cce2d6] mt-4 rounded-full p-1 w-max cursor-pointer'
+                        onClick={clearRequest}
+                    >
+                        <GrFormPreviousLink size={30} />
+                    </div>
                     <button 
                         className='flex justify-center items-center space-x-2 py-3 px-6 rounded-md bg-[#0d544c] text-white'
                         onClick={clearRequest}
@@ -33,8 +40,15 @@ const NewServiceApplication = ({ serviceObject }) => {
                         <span>Clear Request</span>
                     </button>
                 </div>
-                <div className='pb-3 border-b border-gray-100'>
-                    
+                <div className='w-full rounded-md bg-[#d7e88f] px-6 py-4 my-6 md:max-w-max text-gray-700'>
+                    <div className='my-1 flex space-x-2'>
+                        <span className='font-bold'>LGA :</span>
+                        <span>{serviceObject?.localgovernments?.name}</span>
+                    </div>
+                    <div className='my-1 flex space-x-2'>
+                        <span className='font-bold'>Application :</span>
+                        <span>{serviceObject?.eservice?.name}</span>
+                    </div>
                 </div>
                 {
                     initSteps === null ? <InitLoader /> : 
@@ -56,8 +70,7 @@ const NewServiceApplication = ({ serviceObject }) => {
                             </div>
                             <div className='col-span-5 md:col-span-3 pl-2'>
                                 <div className='w-full bg-white rounded-r-lg p-4'>
-                                    <p className='text-sm text-gray-500'>{serviceObject?.localgovernments?.name}</p>
-                                    <h1 className='text-2xl py-2 border-b border-gray-200'>{serviceObject?.eservice?.name}</h1>
+                                    
                                     <RequestForm 
                                         action_id={initSteps[0]?.action_id} 
                                         eservice_id={serviceObject?.eservice?.id}  

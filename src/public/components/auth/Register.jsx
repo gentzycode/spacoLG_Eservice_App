@@ -5,6 +5,7 @@ import ButtonLoader from '../../../common/ButtonLoader';
 import { signUp } from '../../../apis/noAuthActions';
 import { AuthContext } from '../../../context/AuthContext';
 import { formatError } from '../../../apis/functions';
+import WarningAlert from '../../../common/WarningAlert';
 
 const Register = ( { handleChildUpdate } ) => {
 
@@ -60,7 +61,8 @@ const Register = ( { handleChildUpdate } ) => {
                 <h1 className='text-gray-500'>{locatn.pathname === '/service' ? 'Please provide your information to continue the application process' : <span className='text-2xl'>Register</span>}</h1>
             </div>
 
-            { error !== null && <span className='text-red-500 my-2'>{formatError(error)}</span>}
+            { error !== null && (
+                error?.email[0] === 'The email has already been taken.' ? <WarningAlert error={formatError(error)} handleChildUpdate={handleChildUpdate} /> : <span className='text-red-500 my-2'>{formatError(error)}</span>)}
 
             <form onSubmit={handleRegister} className='w-full mt-0 mb-6 space-y-3'>
                 <div>

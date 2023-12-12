@@ -54,8 +54,18 @@ const RequestForm = ({ action_id, eservice_id, lg_id }) => {
     }
 
     if(success !== null){
+        console.log(success);
         clearRequest();
         navigate('/application');
+        /**navigate(
+            '/application-detail',
+            {
+                state : { 
+                    appid : success?.data?.id, 
+                    currentStep : success?.current_step?.step?.flag
+                }
+            }
+        )*/
     }
 
     if(error !== null && error?.message === 'Token has expired'){

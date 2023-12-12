@@ -4,6 +4,7 @@ import ButtonLoader from '../../../common/ButtonLoader';
 import { signIn } from '../../../apis/noAuthActions';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Login = ({ handleChildUpdate }) => {
 
@@ -41,6 +42,11 @@ const Login = ({ handleChildUpdate }) => {
         handleChildUpdate('verify-email');
     }
 
+    if(error && error?.message){
+        toast.error(error?.message);
+        setError(null);
+    }
+
 
     return (
         <div className="w-full border-gray-300">
@@ -48,7 +54,7 @@ const Login = ({ handleChildUpdate }) => {
                 {locatn.pathname !== '/service' && <RiShieldKeyholeLine size={25} />}
                 {locatn.pathname !== '/service' && <h1 className='text-2xl'>Login</h1>}
             </div>
-            {(error && error?.message) && <p className='text-red-500 my-2'>{error?.message} </p>}
+            <ToastContainer />
             { (error && error?.user_id) && <p className='text-[#0d544c] cursor-pointer' onClick={() => handleChildUpdate('verify-email')}>Click here to verify your email.</p>}
             <form onSubmit={handleLogin} className='w-full mt-0 mb-6 space-y-4'>
                 <div>

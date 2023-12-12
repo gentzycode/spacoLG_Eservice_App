@@ -348,3 +348,25 @@ export const updateEserviceStep = async ( token, appID, data, setSuccess, setErr
 
     setUpdating(false);
 }
+
+
+export const getLagById = async (token, lga_id, setLga) => {
+    try{
+        const response  = await axios.get(`localgovernments/${lga_id}`,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setLga(response.data?.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            //setError(err.response.data);
+        }
+    }
+}

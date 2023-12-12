@@ -20,13 +20,13 @@ const Applications = () => {
                     onClick={() => toggleShowform()}
                 >
                     {showform ? <AiOutlineUnorderedList size={18} /> : <AiOutlineEdit size={18} />}
-                    {showform ? <span>Your Applications</span> : <span>Apply for Service</span>}
+                    {showform ? <span>My Applications</span> : <span>Apply for Service</span>}
                 </button>
             </div>
 
             <div className='w-full'>
                 {
-                    showform ? <ServicesForm /> : <Application />
+                    showform ? <ServicesForm toggleShowform={toggleShowform} /> : <Application />
                 }
             </div>
         </div>

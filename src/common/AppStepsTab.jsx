@@ -17,6 +17,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
 
     const [flag, setFlag] = useState(currentStep);
     const [order, setOrder] = useState(current_step);
+    const [paymodal, setPaymodal] = useState(false);
     console.log(serviceName);
 
     const stepActions = (stepObj) => {
@@ -49,7 +50,6 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
             </div>
             <div className='col-span-5 md:col-span-3 pl-2'>
                 <div className='w-full bg-white rounded-r-lg p-4'>
-                    <h1 className='text-2xl py-2 border-b border-gray-200'>{serviceName}</h1>
                     <div className='w-full'>
                         {
                             order === current_step ? 
@@ -81,7 +81,15 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         {
                                             activestep?.step?.flag === 'PAYMENT_REQUIRED' && (
                                                 user?.role === 'PublicUser' ? 
-                                                    <ManagePayments purpose={activestep?.step?.id} purpose_id={purpose_id} order_no={order} />
+                                                    <Fragment>
+                                                        <div 
+                                                            className='max-w-max px-8 py-4 rounded-md text-white bg-[#0d544c] hover:bg-green-950 cursor-pointer shadow-xl my-8'
+                                                            onClick={() => setPaymodal(true)}
+                                                        >
+                                                            Click to make your payment
+                                                        </div>
+                                                        {paymodal && <ManagePayments purpose={activestep?.step?.id} purpose_id={purpose_id} order_no={order} setPaymodal={setPaymodal} />}
+                                                    </Fragment>
                                                     :
                                                     <div className='w-full my-4 text-gray-700'>
                                                         Yet to receive notification on Applicant's payment...
@@ -136,7 +144,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         }
                                         {
                                             stp?.payment_info && stp?.payment_info.length > 0 && stp?.payment_info.map(pinfo => {
-                                                return <div key={key?.id} className='grid border-gray-100 pb-8'>
+                                                return pinfo?.status === 'Completed' && <div key={key?.id} className='grid border-gray-100 pb-8'>
                                                     <h1 
                                                         className={
                                                             `text-lg 

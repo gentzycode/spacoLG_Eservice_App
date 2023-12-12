@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { OtpResend } from "../apis/noAuthActions";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"
 
 const CountdownTimer = ({ user_id }) => {
 
@@ -86,12 +88,12 @@ const CountdownTimer = ({ user_id }) => {
 
 
     if(error !== null){
-        alert('There is an error!');
+        toast.error('There is an error!');
         setError(null);
     }
 
     if(success !== null){
-        alert(success?.message);
+        toast.info(success?.message);
         setSuccess(null);
         clearTimer(getDeadTime());
     }
@@ -109,9 +111,9 @@ const CountdownTimer = ({ user_id }) => {
     // the countdown is via action event from the
     // button first we create function to be called
     // by the button
-    const onClickReset = () => {
-        clearTimer(getDeadTime());
-    };
+    //const onClickReset = () => {
+    //  clearTimer(getDeadTime());
+    //};
 
     return (
         <div className="bg-gray-100 p-4 rounded-md text-green-700">
@@ -123,6 +125,7 @@ const CountdownTimer = ({ user_id }) => {
                         :
                         <span className="text-blue-900 cursor-pointer" onClick={() => resendOtp()}>Resend OTP</span>) 
             }
+            <ToastContainer />
         </div>
     )
 }

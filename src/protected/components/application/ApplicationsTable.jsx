@@ -16,7 +16,6 @@ const ApplicationsTable = ({ columns, appdata }) => {
                     columns={columns} data={filteredData}
                     paginationTotalRows={filteredData.totalCount}
                     className='w-[100%] table table-responsive'
-                    striped={true}
                     responsive={true}
                     overflowX
                     pagination

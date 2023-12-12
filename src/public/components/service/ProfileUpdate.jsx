@@ -1,12 +1,13 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react'
-import { HiUser } from 'react-icons/hi'
+import React, { useContext, useEffect, useState } from 'react'
 import ButtonLoader from '../../../common/ButtonLoader';
 import { AuthContext } from '../../../context/AuthContext';
 import { getCities, getLGAs, updateProfile } from '../../../apis/noAuthActions';
 import { Combobox } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
 import { formatDate } from '../../../apis/functions';
-import Loader from '../../../common/Loader';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+import Multiselect from 'multiselect-react-dropdown';
 
 const ProfileUpdate = () => {
 
@@ -16,6 +17,10 @@ const ProfileUpdate = () => {
     console.log(user);
 
     const navigate = useNavigate();
+
+    const warningAlert = (msg) => {
+        toast.warning(msg)
+    }
 
     const [first_name, setFirst_name] = useState();
     const [last_name, setLast_name] = useState();
@@ -73,7 +78,7 @@ const ProfileUpdate = () => {
         e.preventDefault();
 
         if(city_id === null || localgovernments_id === null){
-            alert('Local Government Area and City must be selected!');
+            warningAlert('Local Government Area and City must be selected!');
         }
         else{
             const data = {
@@ -97,7 +102,7 @@ const ProfileUpdate = () => {
     if(success !== null){
         console.log(success?.user);
         updateUser(success?.user)
-        alert('You have successfully updated your personal information');
+        toast.success('You have successfully updated your personal information');
         //navigate('/dashboard')
         location.reload();
     }
@@ -216,6 +221,29 @@ const ProfileUpdate = () => {
                         </Combobox>
                     </div>
                 </div>
+
+                <div className='w-full md:w-[33%] my-4 md:pl-2'>
+                    { cities !== null && 
+                        <Multiselect 
+                            displayValue='name' 
+                            options={cities} 
+                            selectionLimit={1} 
+                            style={{
+                                chips: {
+                                  background: 'green'
+                                },
+                                multiselectContainer: {
+                                  color: 'green'
+                                },
+                                searchBox: {
+                                  border: '1px solid gray',
+                                  padding: '8px',
+                                  'border-radius': '5px',
+                                  width: '100%'
+                                }
+                            }}
+                            className='p-4' />}
+                </div>
                 
 
                 <div className='w-full flex justify-end'>
@@ -230,6 +258,7 @@ const ProfileUpdate = () => {
                 </div>
                 
             </form>
+            <ToastContainer />
         </div>
     )
 }
