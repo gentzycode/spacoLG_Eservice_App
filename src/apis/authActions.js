@@ -370,3 +370,28 @@ export const getLagById = async (token, lga_id, setLga) => {
         }
     }
 }
+
+
+export const deleteApplication = async (token, appid, setSuccess, setError, setDeleting) => {
+
+    setDeleting(true);
+    try{
+        const response  = await axios.delete(`applicationdata/${appid}`,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data?.message);
+            setError(err.response.data);
+        }
+    }
+    setDeleting(false);
+}
