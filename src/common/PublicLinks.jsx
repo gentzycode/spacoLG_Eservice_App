@@ -23,7 +23,7 @@ const PublicLinks = () => {
                 </span>
             </div>
             <div className='flex justify-end space-x-6'>
-                <Link to='#'>FAQ</Link>
+                <Link to='https://lg.anambrastate.gov.ng/about'>FAQ</Link>
                 <div className="cursor-pointer" onClick={() => reloadPage()}>Login</div>
             </div>
         </div>
