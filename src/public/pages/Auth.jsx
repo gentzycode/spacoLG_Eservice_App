@@ -53,7 +53,7 @@ const Auth = () => {
             <PublicLinks />
             <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
                 <AuthBanner />
-                <div className="w-full col-span-1 my-0 md:my-8 flex justify-center items-center px-4 md:px-0">
+                <div className="w-full col-span-1 mt-12 md:mt-0 md:my-8 flex justify-center items-center px-4 md:px-0">
                     <div className='w-full md:w-2/3'>
                         <div className='mt-6 md:mt-0'>
                             <Link to='/' className='mt-4'>

@@ -40,7 +40,7 @@ const NavDB = () => {
         },
         {
             id: 4,
-            title: "Wallet",
+            title: "Payments",
             url: "/payments",
             icon: <MdOutlineAccountBalanceWallet size={17} />
         },
