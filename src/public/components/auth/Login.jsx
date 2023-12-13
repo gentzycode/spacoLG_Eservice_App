@@ -58,7 +58,7 @@ const Login = ({ handleChildUpdate }) => {
             { (error && error?.user_id) && <p className='text-[#0d544c] cursor-pointer' onClick={() => handleChildUpdate('verify-email')}>Click here to verify your email.</p>}
             <form onSubmit={handleLogin} className='w-full mt-0 mb-6 space-y-4'>
                 <div>
-                    <div className='text-gray-500 mb-1'>Username</div>
+                    <div className='text-gray-500 mb-1'>Username or email</div>
                     <input 
                         type='text' 
                         className='w-full p-3 border border-gray-400 bg-transparent rounded-md'

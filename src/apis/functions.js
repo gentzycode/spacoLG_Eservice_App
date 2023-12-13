@@ -82,7 +82,7 @@ export const statusColor = (flag) => {
         flagColor = 'text-[#53873e]';
     }
     else if(flag === 'AWAITING_PAYMENT_CONFIRMATION'){
-        flagColor = 'text-[#53873e]';
+        flagColor = 'text-[#3d7fc8]';
     }
     else if(flag === 'INFO_REQ_ADMIN_REVIEW'){
         flagColor = 'text-[#cd7b06]';
