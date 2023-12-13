@@ -57,7 +57,7 @@ const ServicesForm = ({ toggleShowform }) => {
     return (
         <div className={`${lcn.pathname === '/application' ? 'w-full' : 'w-4/5'}`}>
             {lcn.pathname === '/services' ?
-                <div className='mt-2'>
+                <div className='mt-12'>
                     <Link to='/' className='mt-4'>
                         <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
                     </Link>
@@ -127,7 +127,7 @@ const ServicesForm = ({ toggleShowform }) => {
                 </div>
                 <div>
                     <p className='text-gray-600 font-semibold'>NOTE:</p>
-                    <p>To request for any service, you must select a Local Government Area to which you want to make the request. Above is a list of Local Government Areas in the state. Select any to divroceed with your request</p>
+                    <p>To request for any service, you must select a Local Government Area to which you want to make the request. Above is a list of Local Government Areas in the state. Select any to proceed with your request</p>
                 </div>
             </div>}
         </div>
