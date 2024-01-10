@@ -57,6 +57,7 @@ const AdminApplicationDetail = () => {
                                 purpose_id={id}
                                 admin_notes={appdetail?.data?.admin_notes}
                                 authorizations={appdetail?.data?.authorizations}
+                                authorizers={appdetail?.data?.authorizers}
                             />
                         </Fragment>
                         : <InitLoader />

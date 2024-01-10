@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react'
 import { AuthContext } from '../context/AuthContext'
 import { updateApproval } from '../apis/adminActions';
 import ButtonLoader from './ButtonLoader';
-import { AiOutlineQuestionCircle } from 'react-icons/ai';
+//import { AiOutlineQuestionCircle } from 'react-icons/ai';
+import { IoHandRightOutline } from 'react-icons/io5'
 
 const Reviews = ({ id, flag }) => {
 
@@ -61,11 +62,11 @@ const Reviews = ({ id, flag }) => {
                             flag === 'AWAITING_PAYMENT_CONFIRMATION' ? 'Payment yet to be Confirmed...' : 'Reveiw in progress. Check back please.'
                         }
                     </span>
-                    <AiOutlineQuestionCircle size={30} />
+                    <IoHandRightOutline size={30} />
                 </div>
             }
             {
-                user?.role === 'Staff' && 
+                user?.role !== 'PublicUser' && 
                     <div className='w-full grid md:grid-cols-2'>
                         <div className='col-span-1 py-3 md:pr-3 md:border-r border-gray-200'>
                             {
