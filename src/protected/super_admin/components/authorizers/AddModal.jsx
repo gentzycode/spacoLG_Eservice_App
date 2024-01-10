@@ -133,7 +133,7 @@ const AddModal = ({ setShowmodal }) => {
                                         <option value=''>{loading ? 'loading...' : 'select'}</option>
                                         {
                                             activeservices !== null && activeservices.map(actserv => {
-                                                return <option key={actserv?.id} value={actserv?.id}>{actserv?.eservice?.name}</option>
+                                                return <option key={actserv?.eservices_id} value={actserv?.id}>{actserv?.eservice?.name}</option>
                                             })
                                         }
                                     </select>
