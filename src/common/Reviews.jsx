@@ -66,7 +66,7 @@ const Reviews = ({ id, flag }) => {
                 </div>
             }
             {
-                user?.role === 'Staff' && 
+                user?.role !== 'PublicUser' && 
                     <div className='w-full grid md:grid-cols-2'>
                         <div className='col-span-1 py-3 md:pr-3 md:border-r border-gray-200'>
                             {

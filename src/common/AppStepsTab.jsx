@@ -10,7 +10,7 @@ import { AuthContext } from '../context/AuthContext';
 import Approvals from './Approvals';
 import Authorizations from '../protected/lga_admin/components/Authorizations';
 
-const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes, authorizations, app_lga_id }) => {
+const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, steps_completed, purpose_id, admin_notes, authorizations, authorizers, app_lga_id }) => {
 
     const { user } =  useContext(AuthContext);
     console.log(user);
@@ -113,6 +113,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                         <Authorizations 
                                                             authorizations={authorizations} 
                                                             flag={activestep?.step?.flag}
+                                                            authorizers={authorizers}
                                                         />
                                                     }
                                                     <Approvals 
