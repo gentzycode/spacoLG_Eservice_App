@@ -38,6 +38,22 @@ export const formatDate = (dt) => {
 }
 
 
+export const formatDateAndTime = (dt) => {
+
+    const date = new Date(dt);
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+    const month = date.getMonth();
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hour = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+  
+    return `${monthNames[month]} ${day}, ${year} ${hour}:${minutes}:${seconds}`;
+}
+
+
 
 export const tableCustomStyles = {
     headCells: {

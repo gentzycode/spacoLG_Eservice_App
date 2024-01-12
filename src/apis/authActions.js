@@ -106,6 +106,34 @@ export const submitApplication = async ( token, data, setSuccess, setError, setS
 }
 
 
+export const updateApplication = async ( token, appid, data, setSuccess, setError, setSubmitting ) => {
+
+    setSubmitting(true);
+
+    try{
+        const response  = await axios.put(`applicationdata/${appid}`,
+            data,
+            {
+                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
+            }
+        );    
+
+        console.log(response.data)
+        setSuccess(response.data);
+    }
+    catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            setError(err.response.data);
+        }
+    }
+
+    setSubmitting(false);
+}
+
+
 export const getApplicationByID = async ( token, id, setAppdetail, setSteps, setError, setFetching ) => {
 
     setFetching(true);
