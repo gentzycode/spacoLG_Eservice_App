@@ -62,8 +62,10 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                             {
                                             (activestep?.step?.flag !== 'P_CERT' && activestep?.step?.flag !== 'D_CERT' && activestep?.step?.flag !== 'PAYMENT_REQUIRED') && 
                                                 admin_notes && admin_notes.length > 0 && admin_notes.map(note => {
-                                                    return current_step < note?.eservice_step_id && <p key={note?.id} className='text-orange-600 py-1'>
-                                                            {note?.notification?.message}
+                                                    return current_step < note?.eservice_step_id && <p key={note?.id} className='grid md:flex items-center md:space-x-4 py-1'>
+                                                            <span className='text-orange-600'>{note?.notification?.message}</span>
+                                                            <span className='hidden md:flex'>-</span>
+                                                            <span className='text-gray-400' style={{ fontSize : '12px' }}>{formatDateAndTime(note?.notification?.created_at)}</span>
                                                         </p>
                                                 })
                                             }
@@ -138,9 +140,9 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                 return stp?.order_no === order &&
                                     <div className='w-full' key={stp?.id}>
                                         <h1 className='text-lg my-2'>{stp?.step_name}</h1>
-                                        <div>
+                                        <div className='flex flex-col-reverse'>
                                         {
-                                            stp?.submission && stp?.submission.length > 0 && (stp?.submission.sort().reverse()).map((sub, index) => {
+                                            stp?.submission && stp?.submission.length > 0 && stp?.submission.map((sub, index) => {
                                                 return <div key={sub?.id} className='mb-3 shadow-md p-4'>
                                                             <div className={`${infoToShow === index ? 'max-h-max' : 'h-4'} overflow-hidden`}>
                                                                 <div className='col-span-2 flex justify-between'>
@@ -158,7 +160,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                                                             onClick={() => setInfoToShow(index)}
                                                                         />
                                                                     }
-                                                                    <span className='text-xs text-gray-600'>{index === (stp?.submission.length - 1) ? 'First submission' : 'Resubmitted'} on {formatDateAndTime(sub?.created_at)}</span>
+                                                                    <span className='text-xs text-gray-600'>{index === (stp?.submission.length - 1) ? <span className='text-blue-500'>Latest submission</span> : 'Submitted'} on {formatDateAndTime(sub?.created_at)}</span>
                                                                 </div>
                                                                 <div className={`grid md:grid-cols-2`}>
                                                                     {Object.keys(JSON.parse(sub?.data)).map((key, i) => (

@@ -124,11 +124,22 @@ const NewServiceApplication = ({ serviceObject }) => {
                                     }
                                     {
                                         initSteps[0]?.step?.flag === 'ADD_INFO' &&
-                                            <RequestForm 
-                                                action_id={initSteps[0]?.action_id} 
-                                                eservice_id={serviceObject?.eservice?.id}  
-                                                lg_id={serviceObject?.local_government_id}
-                                            />
+                                        (
+                                            submitting ? 
+                                            <div 
+                                                className='w-full p-4 bg-green-100 text-green-800 cursor-pointer'
+                                            >
+                                                <i>loading form window...</i>
+                                            </div> 
+                                            :
+                                            <div 
+                                                className='w-full p-4 bg-green-100 text-green-800 cursor-pointer'
+                                                onClick={initiateApplication}
+                                            >
+                                                Information for this E-service is required. Click here to proceed with filling the required information form.
+                                            </div> 
+                                           
+                                        )
                                     }
                                     
                                 </div>

@@ -6,15 +6,8 @@ import ButtonLoader from "../../../common/ButtonLoader";
 import InitLoader from "../../../common/InitLoader";
 import { useNavigate } from "react-router-dom";
 import RejectedSubmission from "./RejectedSubmission";
-import { ToastContainer, toast } from "react-toastify";
-
 
 const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed, app_id }) => {
-
-    console.log(action_id);
-    console.log(lg_id);
-    console.log(order_id);
-    console.log(steps_completed);
 
     const navigate = useNavigate();
     const { token, user, updateServiceObject, logout } = useContext(AuthContext);
@@ -27,7 +20,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
     const [success, setSuccess] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [defaulted, setDefaulted] = useState(false);
-    const [hasRecord, setHasRecord] = useState(false);
+    //const [hasRecord, setHasRecord] = useState(false);
     const [resubmitted, setResubmitted] = useState(null);
 
     const toggelDefaulted = () => {
@@ -35,7 +28,8 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
     }
 
     const clearRequest = () => {
-        updateServiceObject(null);
+        //updateServiceObject(null);
+        localStorage.removeItem('selectedService');
     }
 
     const setValue = (e) => {
@@ -47,7 +41,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
     }
 
 
-    const isToUpdate = () => {
+    /**const isToUpdate = () => {
         steps_completed && steps_completed.map(st_comp => {
             if(st_comp?.order_no === order_id && st_comp?.submission.length > 0)
             {
@@ -57,7 +51,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
                 setHasRecord(false);
             }
         })
-    }
+    }*/
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -70,14 +64,14 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
             data :JSON.stringify(fmdata),
         }
 
-        console.log(data);
+        updateApplication(token, app_id, data, setResubmitted, setError, setSubmitting)
 
-        if(hasRecord){
+        /**if(hasRecord){
             updateApplication(token, app_id, data, setResubmitted, setError, setSubmitting)
         }
         else{
             submitApplication(token, data, setSuccess, setError, setSubmitting)
-        }
+        }*/
     }
 
     if(success !== null){
@@ -95,8 +89,8 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
 
 
     if(resubmitted !== null){
-        //clearRequest();
-        toast.success('Application resubmitted successfully!');
+        clearRequest();
+        //toast.success('Application resubmitted successfully!');
         location.reload();
         /**navigate(
             '/application-detail',
@@ -124,9 +118,9 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
         })
     }, [])
 
-    useEffect(() => {
+    /**useEffect(() => {
         isToUpdate()
-    }, [])
+    }, [])*/
 
     return (
         <div className="w-full">
@@ -152,7 +146,6 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
                                 )
                     })}
                 </div>
-                <ToastContainer />
                 <form onSubmit={handleSubmit}>
                     <div className="flex justify-between flex-wrap bg-white rounded-md p-6">
                         {loading ? <InitLoader /> : (formdata !== null ? (
