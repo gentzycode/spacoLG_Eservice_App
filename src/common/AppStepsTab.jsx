@@ -3,7 +3,7 @@ import { FcApproval } from 'react-icons/fc'
 import InitLoader from './InitLoader'
 import RequestForm from '../protected/components/application/RequestForm';
 import ManagePayments from '../protected/components/payments/ManagePayments';
-import { AiOutlineCheckCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { AiOutlineCheckCircle, AiOutlineMinus, AiOutlinePlus, AiOutlineQuestionCircle } from 'react-icons/ai';
 import { formatDate, formatDateAndTime } from '../apis/functions';
 import Reviews from './Reviews';
 import { AuthContext } from '../context/AuthContext';
@@ -18,6 +18,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
     const [flag, setFlag] = useState(currentStep);
     const [order, setOrder] = useState(current_step);
     const [paymodal, setPaymodal] = useState(false);
+    const [infoToShow, setInfoToShow] = useState(null);
     console.log(serviceName);
 
     const stepActions = (stepObj) => {
@@ -140,16 +141,34 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         <div>
                                         {
                                             stp?.submission && stp?.submission.length > 0 && (stp?.submission.sort().reverse()).map((sub, index) => {
-                                                return <div key={sub?.id} className='grid md:grid-cols-2 mb-3 shadow-md p-4'>
-                                                            <div className='col-span-2 flex justify-end'>
-                                                                <span className='text-xs text-gray-600'>Submitted on {formatDateAndTime(sub?.created_at)}</span>
-                                                            </div>
-                                                            {Object.keys(JSON.parse(sub?.data)).map((key, i) => (
-                                                                key !== 'user_id'&& <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
-                                                                    <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ').replace('_', ' ')}</p>
-                                                                    <p className='w-full text-gray-700'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
+                                                return <div key={sub?.id} className='mb-3 shadow-md p-4'>
+                                                            <div className={`${infoToShow === index ? 'max-h-max' : 'h-4'} overflow-hidden`}>
+                                                                <div className='col-span-2 flex justify-between'>
+                                                                    {
+                                                                        infoToShow === index ?
+                                                                        <AiOutlineMinus 
+                                                                            size={15} 
+                                                                            className='cursor-pointer text-gray-700 font-bold' 
+                                                                            onClick={() => setInfoToShow(null)}
+                                                                        />
+                                                                        :
+                                                                        <AiOutlinePlus 
+                                                                            size={15} 
+                                                                            className='cursor-pointer text-gray-700 font-bold' 
+                                                                            onClick={() => setInfoToShow(index)}
+                                                                        />
+                                                                    }
+                                                                    <span className='text-xs text-gray-600'>{index === (stp?.submission.length - 1) ? 'First submission' : 'Resubmitted'} on {formatDateAndTime(sub?.created_at)}</span>
                                                                 </div>
-                                                            ))}
+                                                                <div className={`grid md:grid-cols-2`}>
+                                                                    {Object.keys(JSON.parse(sub?.data)).map((key, i) => (
+                                                                        key !== 'user_id'&& <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
+                                                                            <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ').replace('_', ' ')}</p>
+                                                                            <p className='w-full text-gray-700'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                             })
                                         }

@@ -46,7 +46,7 @@ const AdminApplicationDetail = () => {
                 {
                     (steps !== null && steps.length > 0) ? 
                         <Fragment>
-                            <ApplicantInfo user={appdetail?.data?.user} />
+                            <ApplicantInfo appinfo={appdetail} user={appdetail?.data?.user} />
                             <AppStepsTab 
                                 steps={steps} 
                                 fetching={fetching} 

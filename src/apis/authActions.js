@@ -106,7 +106,7 @@ export const submitApplication = async ( token, data, setSuccess, setError, setS
 }
 
 
-export const updateApplication = async ( token, appid, data, setSuccess, setError, setSubmitting ) => {
+export const updateApplication = async ( token, appid, data, setResubmitted, setError, setSubmitting ) => {
 
     setSubmitting(true);
 
@@ -119,7 +119,7 @@ export const updateApplication = async ( token, appid, data, setSuccess, setErro
         );    
 
         console.log(response.data)
-        setSuccess(response.data);
+        setResubmitted(response.data);
     }
     catch (err) {
         if (!err?.response) {

@@ -6,6 +6,7 @@ import ButtonLoader from "../../../common/ButtonLoader";
 import InitLoader from "../../../common/InitLoader";
 import { useNavigate } from "react-router-dom";
 import RejectedSubmission from "./RejectedSubmission";
+import { ToastContainer, toast } from "react-toastify";
 
 
 const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed, app_id }) => {
@@ -27,6 +28,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
     const [submitting, setSubmitting] = useState(false);
     const [defaulted, setDefaulted] = useState(false);
     const [hasRecord, setHasRecord] = useState(false);
+    const [resubmitted, setResubmitted] = useState(null);
 
     const toggelDefaulted = () => {
         setDefaulted(!defaulted);
@@ -71,7 +73,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
         console.log(data);
 
         if(hasRecord){
-            updateApplication(token, app_id, data, setSuccess, setError, setSubmitting)
+            updateApplication(token, app_id, data, setResubmitted, setError, setSubmitting)
         }
         else{
             submitApplication(token, data, setSuccess, setError, setSubmitting)
@@ -79,9 +81,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
     }
 
     if(success !== null){
-        console.log(success);
-        //clearRequest();
-        //navigate('/application');
+        clearRequest();
         navigate(
             '/application-detail',
             {
@@ -91,6 +91,22 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
                 }
             }
         )
+    }
+
+
+    if(resubmitted !== null){
+        //clearRequest();
+        toast.success('Application resubmitted successfully!');
+        location.reload();
+        /**navigate(
+            '/application-detail',
+            {
+                state : { 
+                    appid : app_id, 
+                    currentStep : resubmitted?.next_step?.step?.flag
+                }
+            }
+        )*/
     }
 
     if(error !== null && error?.message === 'Token has expired'){
@@ -118,7 +134,6 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
                 {error && <span className="text-red-500">{error?.message}</span>}
 
                 <div className="w-full">
-                    <div>{hasRecord ? 'Submission record exists' : 'Submission record does not exist'}</div>
                     { steps_completed && steps_completed.map(stp_comp => {
                         return stp_comp?.order_no === order_id && 
                             (stp_comp?.submission.length > 0 && 
@@ -137,7 +152,7 @@ const RequestForm = ({ action_id, eservice_id, lg_id, order_id, steps_completed,
                                 )
                     })}
                 </div>
-
+                <ToastContainer />
                 <form onSubmit={handleSubmit}>
                     <div className="flex justify-between flex-wrap bg-white rounded-md p-6">
                         {loading ? <InitLoader /> : (formdata !== null ? (
