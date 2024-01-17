@@ -62,7 +62,7 @@ const Register = ( { handleChildUpdate } ) => {
             </div>
 
             { error !== null && (
-                error?.email[0] === 'The email has already been taken.' ? <WarningAlert error={formatError(error)} handleChildUpdate={handleChildUpdate} /> : <span className='text-red-500 my-2'>{formatError(error)}</span>)}
+                (error?.email && error?.email[0] === 'The email has already been taken.') ? <WarningAlert error={formatError(error)} handleChildUpdate={handleChildUpdate} /> : <span className='text-red-500 my-2'>{formatError(error)}</span>)}
 
             <form onSubmit={handleRegister} className='w-full mt-0 mb-6 space-y-3'>
                 <div>
