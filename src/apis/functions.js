@@ -20,7 +20,7 @@ export const formatError = (err) => {
         }
     }
 
-    return `${emailErr} ${usernameErr} ${password_hashErr} ${error}`;
+    return `${emailErr} ${usernameErr}${password_hashErr} ${error}`;
 
 }
 

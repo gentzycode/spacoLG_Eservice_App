@@ -3,6 +3,7 @@ import { AiOutlineCloseCircle } from 'react-icons/ai'
 import { AuthContext } from '../../../../context/AuthContext'
 import { createUser, getAllRoles, getUserById, updateUser } from '../../../../apis/adminActions';
 import ButtonLoader from '../../../../common/ButtonLoader';
+import { formatError } from '../../../../apis/functions';
 
 const CreateUser = ({ useredit, closeUserform }) => {
 
@@ -105,10 +106,10 @@ const CreateUser = ({ useredit, closeUserform }) => {
                         </div>
                         <div className='py-4'>
                             
-                            {error !== null && <span className='text-red-500 py-2'>{error?.message}</span>}
+                            {error !== null && <span className='text-red-500 py-2'>{formatError(error?.errors)}</span>}
                             <form onSubmit={handleSubmit} className='space-y-4 text-gray-700'>
                                 <div className='w-full grid space-y-1'>
-                                    <label>Username</label>
+                                    <label>Username</label> 
                                     <input 
                                         type='text'
                                         className='w-full border border-gray-400 rounded-md p-2'
