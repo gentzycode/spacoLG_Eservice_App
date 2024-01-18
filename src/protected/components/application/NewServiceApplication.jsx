@@ -1,22 +1,55 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../../../context/AuthContext';
 import { MdClear } from 'react-icons/md';
-import { getInitServiceData } from '../../../apis/authActions';
+import { getInitServiceData, submitApplication } from '../../../apis/authActions';
 import InitLoader from '../../../common/InitLoader';
 import RequestForm from './RequestForm';
 import { GrFormPreviousLink } from 'react-icons/gr';
+import ManagePayments from '../payments/ManagePayments';
+import { useNavigate } from 'react-router-dom';
 
 const NewServiceApplication = ({ serviceObject }) => {
 
     const { token, user, updateServiceObject } = useContext(AuthContext);
 
+    const navigate = useNavigate();
+
     const [initSteps, setInitSteps] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [paymodal, setPaymodal] = useState(false);
+    const [success, setSuccess] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
 
     const clearRequest = () => {
         updateServiceObject(null);
     }
+
+    console.log(initSteps);
+
+    const initiateApplication  = () => {
+        const data = {
+            local_government_id: serviceObject?.local_government_id,
+            eservices_id: serviceObject?.eservice?.id
+        }
+        submitApplication(token, data, setSuccess, setError, setSubmitting)
+    }
+
+
+    if(success !== null){
+        //clearRequest();
+        //navigate('/application');
+        navigate(
+            '/application-detail',
+            {
+                state : { 
+                    appid : success?.application?.id, 
+                    currentStep : success?.next_step?.step?.flag
+                }
+            }
+        )
+    }
+
 
     useEffect(() => {
         getInitServiceData(token, serviceObject?.eservice?.id, setInitSteps, setError, setLoading);
@@ -58,24 +91,57 @@ const NewServiceApplication = ({ serviceObject }) => {
                                 initSteps.map(istep => {
                                     return <div 
                                         key={istep?.id} 
-                                        className={`w-full flex justify-between pl-6 py-4 ${initSteps.length !== istep?.id && 'border-b'} border-gray-100 ${ istep?.id === 1 ? 'text-[#0d544c] hover:text-green-600 font-bold cursor-pointer' : 'hover:font-medium text-gray-600 hover:text-gray-900' } items-center`}
+                                        className={`w-full flex justify-between pl-6 py-4 ${istep?.order_no !== 1 && 'border-b'} border-gray-100 ${ istep?.order_no === 1 ? 'text-[#0d544c] hover:text-green-600 font-bold cursor-pointer' : 'hover:font-medium text-gray-600 hover:text-gray-900' } items-center`}
                                     >
-                                        <span className={`md:hidden rounded-full ${ istep?.id === 1 ? 'bg-[#0d544c] text-white' : 'text-[#0d544c] border-[#0d544c]'} px-2`}>
-                                            {istep?.id}
+                                        <span className={`md:hidden rounded-full ${ istep?.order_no === 1 ? 'bg-[#0d544c] text-white' : 'text-[#0d544c] border-[#0d544c]'} px-2`}>
+                                            {istep?.order_no}
                                         </span>
-                                        {istep?.id === 1 ? <span className='hidden md:block'>{istep?.step?.step_name}</span> : <span className='hidden md:block'><i className='text-gray-300'>{istep?.step?.step_name}</i></span> }
+                                        {istep?.order_no === 1 ? <span className='hidden md:block'>{istep?.step?.step_name}</span> : <span className='hidden md:block'><i className='text-gray-300'>{istep?.step?.step_name}</i></span> }
                                     </div>
                                 })
                             }
                             </div>
                             <div className='col-span-5 md:col-span-3 pl-2'>
                                 <div className='w-full bg-white rounded-r-lg p-4'>
+                                    {
+                                        initSteps[0]?.step?.flag === 'PAYMENT_REQUIRED' && 
+                                            (
+                                                submitting ? 
+                                                <div 
+                                                    className='w-full p-4 bg-green-100 text-green-800 cursor-pointer'
+                                                >
+                                                    <i>loading payment window...</i>
+                                                </div> 
+                                                :
+                                                <div 
+                                                    className='w-full p-4 bg-green-100 text-green-800 cursor-pointer'
+                                                    onClick={initiateApplication}
+                                                >
+                                                    Payment for application form is required for this E-service. Click here to proceed with payment.
+                                                </div> 
+                                               
+                                            )
+                                    }
+                                    {
+                                        initSteps[0]?.step?.flag === 'ADD_INFO' &&
+                                        (
+                                            submitting ? 
+                                            <div 
+                                                className='w-full p-4 bg-green-100 text-green-800 cursor-pointer'
+                                            >
+                                                <i>loading form window...</i>
+                                            </div> 
+                                            :
+                                            <div 
+                                                className='w-full p-4 bg-green-100 text-green-800 cursor-pointer'
+                                                onClick={initiateApplication}
+                                            >
+                                                Information for this E-service is required. Click here to proceed with filling the required information form.
+                                            </div> 
+                                           
+                                        )
+                                    }
                                     
-                                    <RequestForm 
-                                        action_id={initSteps[0]?.action_id} 
-                                        eservice_id={serviceObject?.eservice?.id}  
-                                        lg_id={serviceObject?.local_government_id}
-                                    />
                                 </div>
                             </div>
                         </div>

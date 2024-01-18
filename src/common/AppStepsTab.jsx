@@ -3,8 +3,8 @@ import { FcApproval } from 'react-icons/fc'
 import InitLoader from './InitLoader'
 import RequestForm from '../protected/components/application/RequestForm';
 import ManagePayments from '../protected/components/payments/ManagePayments';
-import { AiOutlineCheckCircle, AiOutlineQuestionCircle } from 'react-icons/ai';
-import { formatDate } from '../apis/functions';
+import { AiOutlineCheckCircle, AiOutlineMinus, AiOutlinePlus, AiOutlineQuestionCircle } from 'react-icons/ai';
+import { formatDate, formatDateAndTime } from '../apis/functions';
 import Reviews from './Reviews';
 import { AuthContext } from '../context/AuthContext';
 import Approvals from './Approvals';
@@ -18,6 +18,7 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
     const [flag, setFlag] = useState(currentStep);
     const [order, setOrder] = useState(current_step);
     const [paymodal, setPaymodal] = useState(false);
+    const [infoToShow, setInfoToShow] = useState(null);
     console.log(serviceName);
 
     const stepActions = (stepObj) => {
@@ -59,18 +60,27 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                         <h1 className='text-lg my-2'>{activestep?.step?.step_name}</h1>
                                         <div className='w-full my-4'>
                                             {
-                                            (activestep?.step?.flag !== 'P_CERT' && activestep?.step?.flag !== 'D_CERT') && 
+                                            (activestep?.step?.flag !== 'P_CERT' && activestep?.step?.flag !== 'D_CERT' && activestep?.step?.flag !== 'PAYMENT_REQUIRED') && 
                                                 admin_notes && admin_notes.length > 0 && admin_notes.map(note => {
-                                                    return <span key={note?.id} className='text-orange-600 py-2'>
-                                                            {note?.notification?.message}
-                                                        </span>
+                                                    return current_step < note?.eservice_step_id && <p key={note?.id} className='grid md:flex items-center md:space-x-4 py-1'>
+                                                            <span className='text-orange-600'>{note?.notification?.message}</span>
+                                                            <span className='hidden md:flex'>-</span>
+                                                            <span className='text-gray-400' style={{ fontSize : '12px' }}>{formatDateAndTime(note?.notification?.created_at)}</span>
+                                                        </p>
                                                 })
                                             }
                                         </div>
                                         {
                                             activestep?.step?.flag === 'ADD_INFO' && (
                                                 user?.role === 'PublicUser' ? 
-                                                    <RequestForm action_id={activestep?.action_id} eservice_id={activestep?.eservices_id} lg_id={app_lga_id} />
+                                                    <RequestForm 
+                                                        action_id={activestep?.action_id} 
+                                                        eservice_id={activestep?.eservices_id} 
+                                                        lg_id={app_lga_id} 
+                                                        order_id={activestep?.order_no}
+                                                        steps_completed={steps_completed}
+                                                        app_id={purpose_id}
+                                                    />
                                                     :
                                                     <div className='w-full my-4 text-gray-700'>
                                                         Applicant yet to provide required information...
@@ -130,17 +140,38 @@ const AppStepsTab = ({ steps, fetching, current_step, serviceName, currentStep, 
                                 return stp?.order_no === order &&
                                     <div className='w-full' key={stp?.id}>
                                         <h1 className='text-lg my-2'>{stp?.step_name}</h1>
-                                        <div>
+                                        <div className='flex flex-col-reverse'>
                                         {
-                                            stp?.submission && stp?.submission.length > 0 && stp?.submission.map(sub => {
-                                                return <div key={sub?.id} className='grid md:grid-cols-2'>
-                                                {Object.keys(JSON.parse(sub?.data)).map((key, i) => (
-                                                    key !== 'user_id'&& <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
-                                                        <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ').replace('_', ' ')}</p>
-                                                        <p className='w-full text-gray-700'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
-                                                    </div>
-                                                ))}
-                                                </div>
+                                            stp?.submission && stp?.submission.length > 0 && stp?.submission.map((sub, index) => {
+                                                return <div key={sub?.id} className='mb-3 shadow-md p-4'>
+                                                            <div className={`${infoToShow === index ? 'max-h-max' : 'h-4'} overflow-hidden`}>
+                                                                <div className='col-span-2 flex justify-between'>
+                                                                    {
+                                                                        infoToShow === index ?
+                                                                        <AiOutlineMinus 
+                                                                            size={15} 
+                                                                            className='cursor-pointer text-gray-700 font-bold' 
+                                                                            onClick={() => setInfoToShow(null)}
+                                                                        />
+                                                                        :
+                                                                        <AiOutlinePlus 
+                                                                            size={15} 
+                                                                            className='cursor-pointer text-gray-700 font-bold' 
+                                                                            onClick={() => setInfoToShow(index)}
+                                                                        />
+                                                                    }
+                                                                    <span className='text-xs text-gray-600'>{index === (stp?.submission.length - 1) ? <span className='text-blue-500'>Latest submission</span> : 'Submitted'} on {formatDateAndTime(sub?.created_at)}</span>
+                                                                </div>
+                                                                <div className={`grid md:grid-cols-2`}>
+                                                                    {Object.keys(JSON.parse(sub?.data)).map((key, i) => (
+                                                                        key !== 'user_id'&& <div key={i} className="col-span-1 py-2 border-b border-gray-100 text-gray-500">
+                                                                            <p className='w-full text-xs capitalize py-1'>{key.replace('_', ' ').replace('_', ' ')}</p>
+                                                                            <p className='w-full text-gray-700'>{JSON.parse(sub?.data)[key] === 'on' ? 'Yes' : JSON.parse(sub?.data)[key]}</p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                             })
                                         }
                                         {

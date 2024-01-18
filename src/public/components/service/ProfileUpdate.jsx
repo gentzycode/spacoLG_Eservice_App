@@ -8,6 +8,8 @@ import { formatDate } from '../../../apis/functions';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import Multiselect from 'multiselect-react-dropdown';
+import LGAsList from '../../../common/LGAsList';
+import CitiesList from '../../../common/CitiesList';
 
 const ProfileUpdate = () => {
 
@@ -132,7 +134,7 @@ const ProfileUpdate = () => {
                     <div className='text-gray-500 font-semibold mb-1.5'>First name</div>
                     <input 
                         type='text' 
-                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        className='w-full p-3.5 rounded-md border border-gray-400 bg-transparent'
                         onChange={(e) => setFirst_name(e.target.value)}
                         required
                     />
@@ -142,7 +144,7 @@ const ProfileUpdate = () => {
                     <div className='text-gray-500 font-semibold mb-1.5'>Last name</div>
                     <input 
                         type='text' 
-                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        className='w-full p-3.5 rounded-md border border-gray-400 bg-transparent'
                         onChange={(e) => setLast_name(e.target.value)}
                         required
                     />
@@ -165,7 +167,7 @@ const ProfileUpdate = () => {
                     <div className='text-gray-500 font-semibold mb-1.5'>Date of Birth</div>
                     <input 
                         type='date' 
-                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        className='w-full p-3.5 rounded-md border border-gray-400 bg-transparent'
                         placeholder='Date of birth'
                         onChange={(e) => setDate_of_birth(e.target.value)}
                         required
@@ -176,73 +178,20 @@ const ProfileUpdate = () => {
                     <div className='text-gray-500 font-semibold mb-1.5'>Address</div>
                     <input 
                         type='text' 
-                        className='w-full p-3 rounded-md border border-gray-400 bg-transparent'
+                        className='w-full p-3.5 rounded-md border border-gray-400 bg-transparent'
                         onChange={(e) => setAddress(e.target.value)}
                         required
                     />
                 </div>
                 
-                <div className='w-full md:w-[31%] my-4'>
-                    <div className='w-full'>
-                        <div className='text-gray-500 font-semibold mb-1.5'>Local Government Area</div>
-                        <Combobox value={lgas} onChange={(event) => handleLgasChange(event)}>
-                            <Combobox.Input 
-                                onChange={(event) => setLgasquery(event.target.value)}
-                                className='w-full p-3 bg-transparent rounded-md border border-gray-400 text-gray-600' 
-                                placeholder={lgaselected !== '' && lgaselected}
-                            />
-                            <Combobox.Options className='w-full md:w-[22.5%] md:fixed z-10 bg-white border border-gray-200 px-4 rounded-b-md'>
-                                {lgas !== null && filteredLgas.map((lga) => (
-                                    <Combobox.Option key={lga.id} value={lga.id} className='cursor-pointer text-gray-700 py-3 rounded-md border border-gray-100'>
-                                        {lga.name}
-                                    </Combobox.Option>
-                                ))}
-                            </Combobox.Options>
-                        </Combobox>
-                    </div>
+                <div className='w-full md:w-[32%] my-4 md:pl-2'>
+                    <div className='text-gray-500 font-semibold mb-1.5'>Local Government Area</div>
+                    <LGAsList setLocalgovernments_id={setLocalgovernments_id} />
                 </div>
                 
                 <div className='w-full md:w-[31%] my-4'>
-                    <div className='w-full'>
-                        <div className='text-gray-500 font-semibold mb-1.5'>City</div>
-                        <Combobox value={cities} onChange={(event) => handleCitiesChange(event)}>
-                            <Combobox.Input 
-                                onChange={(event) => setCitiesquery(event.target.value)}
-                                className='w-full p-3 bg-transparent rounded-md border border-gray-400 text-gray-600' 
-                                placeholder={cityselected !== '' && cityselected}
-                            />
-                            <Combobox.Options className='w-full md:w-[22.5%] md:fixed z-10 bg-white border border-gray-200 px-4 rounded-b-md'>
-                                {cities !== null && filteredCities.map((cty) => (
-                                    <Combobox.Option key={cty.id} value={cty.id} className='cursor-pointer text-gray-700 py-3 border-b border-gray-100'>
-                                        {cty.name}
-                                    </Combobox.Option>
-                                ))}
-                            </Combobox.Options>
-                        </Combobox>
-                    </div>
-                </div>
-
-                <div className='w-full md:w-[33%] my-4 md:pl-2'>
-                    { cities !== null && 
-                        <Multiselect 
-                            displayValue='name' 
-                            options={cities} 
-                            selectionLimit={1} 
-                            style={{
-                                chips: {
-                                  background: 'green'
-                                },
-                                multiselectContainer: {
-                                  color: 'green'
-                                },
-                                searchBox: {
-                                  border: '1px solid gray',
-                                  padding: '8px',
-                                  'border-radius': '5px',
-                                  width: '100%'
-                                }
-                            }}
-                            className='p-4' />}
+                    <div className='text-gray-500 font-semibold mb-1.5'>City</div>
+                    <CitiesList setCity_id={setCity_id} />
                 </div>
                 
 
