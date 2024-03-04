@@ -29,7 +29,7 @@ const NavDB = () => {
         {
             id: 2,
             title: "Application status",
-            url: "#",
+            url: "/check-status",
             icon: <BsClockHistory size={17} />
         },
         {
