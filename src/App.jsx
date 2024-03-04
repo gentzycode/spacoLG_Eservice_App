@@ -22,6 +22,7 @@ import Authorizers from './protected/super_admin/pages/Authorizers';
 import Statuscheck from './public/pages/Statuscheck';
 import CheckJSON from './public/pages/CheckJSON';
 import Support from './protected/pages/Support';
+import ApplicationStatus from './public/pages/ApplicationStatus';
 
 function App() {
 
@@ -52,6 +53,7 @@ function App() {
                       <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
                       <Route path='/authorizers' element={<PrivateRoute><Authorizers /></PrivateRoute>} />
                       <Route path='/support' element={<PrivateRoute><Support /></PrivateRoute>} />
+                      <Route path='/check-status' element={<PrivateRoute><ApplicationStatus /></PrivateRoute>} />
                       {routes.map(({ path, component: Component }) => {
                         <Route 
                           path={path}
