@@ -3,6 +3,8 @@ import { AuthContext } from '../../context/AuthContext';
 import { getIndividuals, createIndividual, updateIndividual, getCorporates, createCorporate, updateCorporate } from '../../apis/authActions';
 import IndividualModal from '../components/payerManagement/IndividualModal';
 import CorporateModal from '../components/payerManagement/CorporateModal';
+import { AiOutlineSearch } from 'react-icons/ai';
+import ReactPaginate from 'react-paginate';
 
 const PayerManagement = () => {
     const { token } = useContext(AuthContext);
@@ -14,6 +16,10 @@ const PayerManagement = () => {
     const [showCorporateModal, setShowCorporateModal] = useState(false);
     const [selectedIndividual, setSelectedIndividual] = useState(null);
     const [selectedCorporate, setSelectedCorporate] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPageIndividuals, setCurrentPageIndividuals] = useState(0);
+    const [currentPageCorporates, setCurrentPageCorporates] = useState(0);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchIndividuals();
@@ -68,6 +74,29 @@ const PayerManagement = () => {
         }
     };
 
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const filteredIndividuals = individuals.filter(individual => 
+        individual.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        individual.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        individual.individual_ref.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const filteredCorporates = corporates.filter(corporate => 
+        corporate.company_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        corporate.corporate_ref.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handlePageClickIndividuals = ({ selected }) => {
+        setCurrentPageIndividuals(selected);
+    };
+
+    const handlePageClickCorporates = ({ selected }) => {
+        setCurrentPageCorporates(selected);
+    };
+
     return (
         <div className="w-full p-4">
             {error && <div className="text-red-500">{error}</div>}
@@ -88,27 +117,67 @@ const PayerManagement = () => {
                     </button>
                 </div>
             </div>
+            <div className="flex mb-4">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="w-full p-2 border rounded-l-lg"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                />
+                <button className="px-4 py-2 bg-gray-300 rounded-r-lg">
+                    <AiOutlineSearch size={24} />
+                </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white p-4 rounded shadow">
                     <h2 className="text-2xl font-bold text-gray-700 mb-4">Individuals</h2>
                     {loading ? (
                         <div className="text-center">Loading...</div>
                     ) : (
-                        <ul className="space-y-2">
-                            {individuals.map(individual => (
-                                <li
-                                    key={individual.id}
-                                    className="p-2 border rounded flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                    onClick={() => {
-                                        setSelectedIndividual(individual);
-                                        setShowIndividualModal(true);
-                                    }}
-                                >
-                                    <span>{individual.first_name} {individual.last_name}</span>
-                                    <span className="font-bold">{individual.individual_ref}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        <div>
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="border-b p-2">Name</th>
+                                        <th className="border-b p-2">Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredIndividuals.slice(currentPageIndividuals * itemsPerPage, (currentPageIndividuals + 1) * itemsPerPage).map(individual => (
+                                        <tr
+                                            key={individual.id}
+                                            className="hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => {
+                                                setSelectedIndividual(individual);
+                                                setShowIndividualModal(true);
+                                            }}
+                                        >
+                                            <td className="border-b p-2">{individual.first_name} {individual.last_name}</td>
+                                            <td className="border-b p-2 font-bold">{individual.individual_ref}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <ReactPaginate
+                                previousLabel={'Previous'}
+                                nextLabel={'Next'}
+                                breakLabel={'...'}
+                                breakClassName={'break-me'}
+                                pageCount={Math.ceil(filteredIndividuals.length / itemsPerPage)}
+                                marginPagesDisplayed={2}
+                                pageRangeDisplayed={5}
+                                onPageChange={handlePageClickIndividuals}
+                                containerClassName={'pagination flex justify-center mt-4'}
+                                pageClassName={'mx-2'}
+                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                previousClassName={'mx-2'}
+                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                nextClassName={'mx-2'}
+                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                activeClassName={'bg-blue-500 text-white'}
+                            />
+                        </div>
                     )}
                 </div>
                 <div className="bg-white p-4 rounded shadow">
@@ -116,21 +185,49 @@ const PayerManagement = () => {
                     {loading ? (
                         <div className="text-center">Loading...</div>
                     ) : (
-                        <ul className="space-y-2">
-                            {corporates.map(corporate => (
-                                <li
-                                    key={corporate.id}
-                                    className="p-2 border rounded flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                                    onClick={() => {
-                                        setSelectedCorporate(corporate);
-                                        setShowCorporateModal(true);
-                                    }}
-                                >
-                                    <span>{corporate.company_name}</span>
-                                    <span className="font-bold">{corporate.corporate_ref}</span>
-                                </li>
-                            ))}
-                        </ul>
+                        <div>
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="border-b p-2">Company Name</th>
+                                        <th className="border-b p-2">Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCorporates.slice(currentPageCorporates * itemsPerPage, (currentPageCorporates + 1) * itemsPerPage).map(corporate => (
+                                        <tr
+                                            key={corporate.id}
+                                            className="hover:bg-gray-100 cursor-pointer"
+                                            onClick={() => {
+                                                setSelectedCorporate(corporate);
+                                                setShowCorporateModal(true);
+                                            }}
+                                        >
+                                            <td className="border-b p-2">{corporate.company_name}</td>
+                                            <td className="border-b p-2 font-bold">{corporate.corporate_ref}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <ReactPaginate
+                                previousLabel={'Previous'}
+                                nextLabel={'Next'}
+                                breakLabel={'...'}
+                                breakClassName={'break-me'}
+                                pageCount={Math.ceil(filteredCorporates.length / itemsPerPage)}
+                                marginPagesDisplayed={2}
+                                pageRangeDisplayed={5}
+                                onPageChange={handlePageClickCorporates}
+                                containerClassName={'pagination flex justify-center mt-4'}
+                                pageClassName={'mx-2'}
+                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                previousClassName={'mx-2'}
+                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                nextClassName={'mx-2'}
+                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                activeClassName={'bg-blue-500 text-white'}
+                            />
+                        </div>
                     )}
                 </div>
             </div>

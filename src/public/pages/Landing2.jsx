@@ -164,7 +164,7 @@ const Landing2 = () => {
                 </button>
             </div>
             <footer className="bg-[#0d544c] dark:bg-gray-900 text-white py-4 text-center mt-12">
-                <p>© {new Date().getFullYear()} Anambra State. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} Local Government Council E-Services Solution. All rights reserved.</p>
             </footer>
         </div>
     );
