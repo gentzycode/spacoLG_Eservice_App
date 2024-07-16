@@ -28,6 +28,8 @@ const CorporateModal = ({ corporate, onClose, onSave }) => {
                 receive_sms: corporate.receive_sms || false,
                 receive_email: corporate.receive_email || false
             });
+        } else {
+            setIsEditing(true); // Enable editing for new corporate
         }
     }, [corporate]);
 
@@ -68,7 +70,7 @@ const CorporateModal = ({ corporate, onClose, onSave }) => {
             <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-full transform transition-all duration-300 scale-100 hover:scale-105 overflow-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-3xl font-bold text-gray-800">
-                        {isEditing ? 'Edit Corporate' : (corporate ? 'View Corporate' : 'Add Corporate')}
+                        {isEditing ? (corporate ? 'Edit Corporate' : 'Add Corporate') : 'View Corporate'}
                     </h2>
                     <div className="flex space-x-2">
                         {corporate && !isEditing && (

@@ -53,37 +53,37 @@ const InvoiceHistory = ({ token, agentId }) => {
         },
         {
             name: "Reference Number",
-            selector: (row) => row.reference_number,
+            selector: (row) => row.reference_number.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Amount",
-            selector: (row) => `₦${Number(row.amount).toLocaleString()}`,
+            selector: (row) => `₦${Number(row.amount).toLocaleString()}`.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Purpose",
-            selector: (row) => row.purpose,
+            selector: (row) => row.purpose.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Status",
-            selector: (row) => row.status,
+            selector: (row) => row.status.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Created At",
-            selector: (row) => formatDate(row.created_at),
+            selector: (row) => formatDate(row.created_at).toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Updated At",
-            selector: (row) => formatDate(row.updated_at),
+            selector: (row) => formatDate(row.updated_at).toUpperCase(),
             sortable: true,
             wrap: true,
         },
@@ -108,25 +108,31 @@ const InvoiceHistory = ({ token, agentId }) => {
         rows: {
             style: {
                 fontSize: '14px',
-                backgroundColor: '#fff',
+                backgroundColor: '#f8f9fa',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#ecf6ec',
+                },
                 '&:hover': {
                     backgroundColor: '#e2e8f0',
+                    cursor: 'pointer',
                 },
+                border: '1px solid #e2e8f0',
             },
         },
         headCells: {
             style: {
-                fontSize: '15px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 backgroundColor: '#4a5568',
                 color: '#fff',
-                border: '0.5px solid #e2e8f0',
+                border: '1px solid #e2e8f0',
             },
         },
         cells: {
             style: {
-                padding: '15px',
-                border: '0.5px solid #e2e8f0',
+                padding: '10px',
+                fontSize: '14px',
+                border: '1px solid #e2e8f0',
             },
         },
     };
@@ -151,7 +157,7 @@ const InvoiceHistory = ({ token, agentId }) => {
 
     return (
         <div className="mt-8 container">
-            <h2 className="text-xl font-bold mb-4">Invoice History</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#0d544c]">Invoice History</h2>
             <div className="mb-4 flex justify-between items-center">
                 <input
                     type="text"

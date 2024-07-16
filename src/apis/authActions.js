@@ -453,7 +453,13 @@ export const getUserWallet = async (token, userId, setWallet, setError, setLoadi
             },
         });
 
-        setWallet(response.data.wallet);
+        const walletData = {
+            ...response.data.wallet,
+            agent_name: response.data.agent_name,
+            local_government: response.data.local_government
+        };
+
+        setWallet(walletData);
     } catch (err) {
         if (!err?.response) {
             setError('No Response from Server');

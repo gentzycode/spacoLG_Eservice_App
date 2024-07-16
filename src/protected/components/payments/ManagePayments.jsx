@@ -1,16 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { AuthContext } from '../../../context/AuthContext'
+import React, { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../../../context/AuthContext';
 import { getEnabledPaymentGateways, getPaymentGatewayByID, initiatePayment, paymentConfirm } from '../../../apis/authActions';
-import { GrFormNextLink } from 'react-icons/gr';
-import InitializePayment from './InitializePayment';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
-import ProgressBarComponent from '../../../common/ProgressBarComponent';
+import InitializePayment from './InitializePayment';
 
 const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
-
     const { token, refreshRecord } = useContext(AuthContext);
 
-    const [gateways, setGateways] = useState(null);
+    const [gateways, setGateways] = useState([]);
     const [pgateway, setPgateway] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
@@ -21,22 +18,19 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
     const [confirming, setConfirming] = useState(false);
     const [selected, setSelected] = useState(null);
 
-
     const selectPaymentGateway = (e) => {
         getPaymentGatewayByID(token, e, setPgateway, setError, setLoading);
     }
-
 
     const initializePayment = (payment_gateway_id) => {
         setSelected(payment_gateway_id);
         const data = {
             payment_gateway_id,
-            purpose : "CERT_APP",
+            purpose: "CERT_APP",
             purpose_id
         }
         initiatePayment(token, data, setInitpay, setError, setInitializing);
     }
-
 
     const confirmPayment = (id) => {
         paymentConfirm(token, id, setConfirm, setError, setConfirming);
@@ -47,19 +41,30 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
         refreshRecord(Date.now());
     }
 
-    if(confirm !== null){
+    if (confirm !== null) {
         setTimeout(() => afterPaymentConfirmation(), 2000);
     }
 
-    if(error !== null){
+    if (error !== null) {
         alert(error?.message);
         setError(null);
     }
 
+    useEffect(() => {
+        getEnabledPaymentGateways(token, (response) => {
+            console.log('API Response:', response); // Log the response
+            if (response.status === 'success' && response.data) {
+                setGateways(response.data);
+                console.log('Gateways Set:', response.data); // Log the gateways set
+            } else {
+                setError('Failed to fetch payment gateways');
+            }
+        }, setError, setFetching);
+    }, [token]);
 
     useEffect(() => {
-        getEnabledPaymentGateways(token, setGateways, setError, setFetching);
-    }, [])
+        console.log('Gateways State:', gateways); // Log the gateways state
+    }, [gateways]);
 
     return (
         <div>
@@ -74,40 +79,34 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
                             <span
                                 className='cursor-pointer text-red-600'
                                 onClick={() => setPaymodal(false)}
-                            >    
+                            >
                                 <AiOutlineCloseCircle size={20} />
                             </span>
                         </div>
                         <div className='py-4'>
                             <div className='w-full flex justify-between flex-wrap'>
-                                {
-                                    gateways !== null ? gateways.map(gtway => {
-                                        return <div 
-                                            key={gtway?.id} 
-                                            className={`w-[48%] flex justify-center items-center rounded-md bg-gray-100 p-4 cursor-pointer ${(selected !== null && selected === gtway?.id) && 'border border-[#0d544c]'}`}
-                                            onClick={() => initializePayment(gtway?.id)}
-                                        >
-                                            <img src={`/assets/${gtway?.gateway_name}.png`} alt={gtway?.gateway_name} />
-                                        </div>
-                                    }) : <i className='text-gray-500'>loading payment gateway...</i>
-                                }
+                                {gateways.length > 0 ? gateways.map(gtway => (
+                                    <div
+                                        key={gtway?.id}
+                                        className={`w-[48%] flex justify-center items-center rounded-md bg-gray-100 p-4 cursor-pointer ${(selected !== null && selected === gtway?.id) && 'border border-[#0d544c]'}`}
+                                        onClick={() => initializePayment(gtway?.id)}
+                                    >
+                                        <img src={gtway.logo_url} alt={gtway.gateway_name} />
+                                    </div>
+                                )) : <i className='text-gray-500'>Loading payment gateways...</i>}
                             </div>
                             <div className='my-6'>
-                                {
-                                    initializing ? <i className='text-gray-500'>initializing...</i>
-                                        :
-                                        initpay !== null && 
-                                        (
-                                            confirm !==  null ? <div className='p-3 bg-green-200 text-[#0d544c] font-bold'>{confirm?.message}</div> : 
-                                                <InitializePayment 
-                                                    initpay={initpay} 
-                                                    confirming={confirming} 
-                                                    confirmPayment={confirmPayment} 
-                                                    order_no={order_no}
-                                                    appID={purpose_id}
-                                                />
-                                        )
-                                    }
+                                {initializing ? <i className='text-gray-500'>Initializing...</i>
+                                    : initpay !== null && (
+                                        confirm !== null ? <div className='p-3 bg-green-200 text-[#0d544c] font-bold'>{confirm?.message}</div>
+                                            : <InitializePayment
+                                                initpay={initpay}
+                                                confirming={confirming}
+                                                confirmPayment={confirmPayment}
+                                                order_no={order_no}
+                                                appID={purpose_id}
+                                            />
+                                    )}
                             </div>
                         </div>
                     </div>
@@ -117,4 +116,4 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
     )
 }
 
-export default ManagePayments
+export default ManagePayments;

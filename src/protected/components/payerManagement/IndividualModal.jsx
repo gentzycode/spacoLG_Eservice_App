@@ -26,6 +26,8 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                 address: individual.address || '',
                 email: individual.email || ''
             });
+        } else {
+            setIsEditing(true); // Enable editing for new individual
         }
     }, [individual]);
 
@@ -61,10 +63,10 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-auto">
-            <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-full transform transition-all duration-300 scale-100 hover:scale-105 overflow-auto">
+            <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-height-full transform transition-all duration-300 scale-100 hover:scale-105 overflow-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-3xl font-bold text-gray-800">
-                        {isEditing ? 'Edit Individual' : (individual ? 'View Individual' : 'Add Individual')}
+                        {isEditing ? (individual ? 'Edit Individual' : 'Add Individual') : 'View Individual'}
                     </h2>
                     <div className="flex space-x-2">
                         {individual && !isEditing && (

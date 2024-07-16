@@ -79,14 +79,16 @@ const PayerManagement = () => {
     };
 
     const filteredIndividuals = individuals.filter(individual => 
-        individual.first_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        individual.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        individual.individual_ref.toLowerCase().includes(searchTerm.toLowerCase())
+        individual.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        individual.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        individual.individual_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        individual.mobile_number?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredCorporates = corporates.filter(corporate => 
-        corporate.company_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        corporate.corporate_ref.toLowerCase().includes(searchTerm.toLowerCase())
+        corporate.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        corporate.corporate_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        corporate.phone_number?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handlePageClickIndividuals = ({ selected }) => {
@@ -101,26 +103,26 @@ const PayerManagement = () => {
         <div className="w-full p-4">
             {error && <div className="text-red-500">{error}</div>}
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-3xl font-bold text-gray-700">Payer Management</h1>
+                <h1 className="text-2xl font-bold text-gray-700">PAYER MANAGEMENT</h1>
                 <div className="flex space-x-4">
                     <button
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all duration-300"
                         onClick={() => setShowIndividualModal(true)}
                     >
-                        Add Individual
+                        ADD INDIVIDUAL
                     </button>
                     <button
                         className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-all duration-300"
                         onClick={() => setShowCorporateModal(true)}
                     >
-                        Add Corporate
+                        ADD CORPORATE
                     </button>
                 </div>
             </div>
             <div className="flex mb-4">
                 <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="SEARCH..."
                     className="w-full p-2 border rounded-l-lg"
                     value={searchTerm}
                     onChange={handleSearch}
@@ -131,30 +133,32 @@ const PayerManagement = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white p-4 rounded shadow">
-                    <h2 className="text-2xl font-bold text-gray-700 mb-4">Individuals</h2>
+                    <h2 className="text-xl font-bold text-gray-700 mb-4">INDIVIDUALS</h2>
                     {loading ? (
-                        <div className="text-center">Loading...</div>
+                        <div className="text-center">LOADING...</div>
                     ) : (
                         <div>
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse text-sm">
                                 <thead>
                                     <tr>
-                                        <th className="border-b p-2">Name</th>
-                                        <th className="border-b p-2">Reference</th>
+                                        <th className="p-2 bg-gray-100 border border-gray-200">NAME</th>
+                                        <th className="p-2 bg-gray-100 border border-gray-200">REFERENCE</th>
+                                        <th className="p-2 bg-gray-100 border border-gray-200">MOBILE NUMBER</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredIndividuals.slice(currentPageIndividuals * itemsPerPage, (currentPageIndividuals + 1) * itemsPerPage).map(individual => (
+                                    {filteredIndividuals.slice(currentPageIndividuals * itemsPerPage, (currentPageIndividuals + 1) * itemsPerPage).map((individual, index) => (
                                         <tr
                                             key={individual.id}
-                                            className="hover:bg-gray-100 cursor-pointer"
+                                            className={`cursor-pointer ${index % 2 === 0 ? 'bg-gray-50' : 'bg-[#ecf6ec]'} hover:bg-gray-100`}
                                             onClick={() => {
                                                 setSelectedIndividual(individual);
                                                 setShowIndividualModal(true);
                                             }}
                                         >
-                                            <td className="border-b p-2">{individual.first_name} {individual.last_name}</td>
-                                            <td className="border-b p-2 font-bold">{individual.individual_ref}</td>
+                                            <td className="p-2 border border-gray-200">{`${individual.first_name?.toUpperCase()} ${individual.last_name?.toUpperCase()}`}</td>
+                                            <td className="p-2 border border-gray-200 font-bold">{individual.individual_ref?.toUpperCase()}</td>
+                                            <td className="p-2 border border-gray-200">{individual.mobile_number?.toUpperCase()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -170,41 +174,43 @@ const PayerManagement = () => {
                                 onPageChange={handlePageClickIndividuals}
                                 containerClassName={'pagination flex justify-center mt-4'}
                                 pageClassName={'mx-2'}
-                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
                                 previousClassName={'mx-2'}
-                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
                                 nextClassName={'mx-2'}
-                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
                                 activeClassName={'bg-blue-500 text-white'}
                             />
                         </div>
                     )}
                 </div>
                 <div className="bg-white p-4 rounded shadow">
-                    <h2 className="text-2xl font-bold text-gray-700 mb-4">Corporates</h2>
+                    <h2 className="text-xl font-bold text-gray-700 mb-4">CORPORATES</h2>
                     {loading ? (
-                        <div className="text-center">Loading...</div>
+                        <div className="text-center">LOADING...</div>
                     ) : (
                         <div>
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse text-sm">
                                 <thead>
                                     <tr>
-                                        <th className="border-b p-2">Company Name</th>
-                                        <th className="border-b p-2">Reference</th>
+                                        <th className="p-2 bg-gray-100 border border-gray-200">COMPANY NAME</th>
+                                        <th className="p-2 bg-gray-100 border border-gray-200">REFERENCE</th>
+                                        <th className="p-2 bg-gray-100 border border-gray-200">MOBILE NUMBER</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredCorporates.slice(currentPageCorporates * itemsPerPage, (currentPageCorporates + 1) * itemsPerPage).map(corporate => (
+                                    {filteredCorporates.slice(currentPageCorporates * itemsPerPage, (currentPageCorporates + 1) * itemsPerPage).map((corporate, index) => (
                                         <tr
                                             key={corporate.id}
-                                            className="hover:bg-gray-100 cursor-pointer"
+                                            className={`cursor-pointer ${index % 2 === 0 ? 'bg-gray-50' : 'bg-[#ecf6ec]'} hover:bg-gray-100`}
                                             onClick={() => {
                                                 setSelectedCorporate(corporate);
                                                 setShowCorporateModal(true);
                                             }}
                                         >
-                                            <td className="border-b p-2">{corporate.company_name}</td>
-                                            <td className="border-b p-2 font-bold">{corporate.corporate_ref}</td>
+                                            <td className="p-2 border border-gray-200">{corporate.company_name?.toUpperCase()}</td>
+                                            <td className="p-2 border border-gray-200 font-bold">{corporate.corporate_ref?.toUpperCase()}</td>
+                                            <td className="p-2 border border-gray-200">{corporate.phone_number?.toUpperCase()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -220,11 +226,11 @@ const PayerManagement = () => {
                                 onPageChange={handlePageClickCorporates}
                                 containerClassName={'pagination flex justify-center mt-4'}
                                 pageClassName={'mx-2'}
-                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
                                 previousClassName={'mx-2'}
-                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
                                 nextClassName={'mx-2'}
-                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-gray-300'}
+                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
                                 activeClassName={'bg-blue-500 text-white'}
                             />
                         </div>

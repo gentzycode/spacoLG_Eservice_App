@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import { getEnabledPaymentGateways2, payInvoiceByReference } from '../../../apis/authActions';
-import { AiOutlineClose, AiOutlineLoading } from 'react-icons/ai';
+import { AiOutlineClose } from 'react-icons/ai';
 
 const PayInvoiceModal = ({ closeModal }) => {
     const { token } = useContext(AuthContext);
@@ -23,8 +23,7 @@ const PayInvoiceModal = ({ closeModal }) => {
         setIsLoading(true);
         try {
             await getEnabledPaymentGateways2(token, (data) => {
-                const filteredGateways = data.filter(gateway => gateway.gateway_name === 'E-Wallet' || gateway.gateway_name === 'Token');
-                setGateways(filteredGateways);
+                setGateways(data);
             }, setError, setIsLoading);
         } catch (err) {
             setError('Failed to fetch payment gateways');

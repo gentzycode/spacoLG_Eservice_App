@@ -1,4 +1,3 @@
-// src/protected/components/tokens/TokensHistory.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from 'react-data-table-component';
 import { formatDate } from '../../../apis/functions';
@@ -44,37 +43,37 @@ const TokensHistory = ({ token, agentId }) => {
         },
         {
             name: "Token",
-            selector: (row) => row.token,
+            selector: (row) => row.token.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Value",
-            selector: (row) => `₦${Number(row.value).toLocaleString()}`,
+            selector: (row) => `₦${Number(row.value).toLocaleString()}`.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Current Value",
-            selector: (row) => `₦${Number(row.current_value).toLocaleString()}`,
+            selector: (row) => `₦${Number(row.current_value).toLocaleString()}`.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Used Value",
-            selector: (row) => `₦${Number(row.used_value).toLocaleString()}`,
+            selector: (row) => `₦${Number(row.used_value).toLocaleString()}`.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Created At",
-            selector: (row) => formatDate(row.created_at),
+            selector: (row) => formatDate(row.created_at).toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Updated At",
-            selector: (row) => formatDate(row.updated_at),
+            selector: (row) => formatDate(row.updated_at).toUpperCase(),
             sortable: true,
             omit: !columnsVisible.updatedAt,
             wrap: true,
@@ -93,7 +92,7 @@ const TokensHistory = ({ token, agentId }) => {
     const customStyles = {
         header: {
             style: {
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 backgroundColor: '#4a5568',
                 color: '#fff',
@@ -102,27 +101,32 @@ const TokensHistory = ({ token, agentId }) => {
         },
         rows: {
             style: {
-                fontSize: '16px',
+                fontSize: '14px',
                 backgroundColor: '#f8f9fa',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#ecf6ec',
+                },
                 '&:hover': {
                     backgroundColor: '#e2e8f0',
                     cursor: 'pointer',
                 },
+                border: '1px solid #e2e8f0',
             },
         },
         headCells: {
             style: {
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 backgroundColor: '#4a5568',
                 color: '#fff',
-                border: '0.5px solid #e2e8f0',
+                border: '1px solid #e2e8f0',
             },
         },
         cells: {
             style: {
-                padding: '15px',
-                border: '0.5px solid #e2e8f0',
+                padding: '10px',
+                fontSize: '14px',
+                border: '1px solid #e2e8f0',
             },
         },
     };

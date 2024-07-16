@@ -1,4 +1,3 @@
-// src/protected/components/wallet/WalletHistory.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from 'react-data-table-component';
 import { formatDate } from '../../../apis/functions';
@@ -48,51 +47,51 @@ const WalletHistory = ({ token, agentId }) => {
         },
         {
             name: "Amount",
-            selector: (row) => `₦${Number(row.amount).toLocaleString()}`,
+            selector: (row) => `₦${Number(row.amount).toLocaleString()}`.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Payment Method",
-            selector: (row) => row.payment_method,
+            selector: (row) => row.payment_method.toUpperCase(),
             sortable: true,
             omit: !columnsVisible.paymentMethod,
             wrap: true,
         },
         {
             name: "Payment Type",
-            selector: (row) => row.payment_type,
+            selector: (row) => row.payment_type.toUpperCase(),
             sortable: true,
             omit: !columnsVisible.paymentType,
             wrap: true,
         },
         {
             name: "Payment Gateway",
-            selector: (row) => row.payment_gateway,
+            selector: (row) => row.payment_gateway.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Status",
-            selector: (row) => row.status,
+            selector: (row) => row.status.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Transaction Reference",
-            selector: (row) => row.transaction_reference,
+            selector: (row) => row.transaction_reference.toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Created At",
-            selector: (row) => formatDate(row.created_at),
+            selector: (row) => formatDate(row.created_at).toUpperCase(),
             sortable: true,
             wrap: true,
         },
         {
             name: "Updated At",
-            selector: (row) => formatDate(row.updated_at),
+            selector: (row) => formatDate(row.updated_at).toUpperCase(),
             sortable: true,
             omit: !columnsVisible.updatedAt,
             wrap: true,
@@ -111,7 +110,7 @@ const WalletHistory = ({ token, agentId }) => {
     const customStyles = {
         header: {
             style: {
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 backgroundColor: '#4a5568',
                 color: '#fff',
@@ -120,27 +119,32 @@ const WalletHistory = ({ token, agentId }) => {
         },
         rows: {
             style: {
-                fontSize: '16px',
+                fontSize: '14px',
                 backgroundColor: '#f8f9fa',
+                '&:nth-of-type(odd)': {
+                    backgroundColor: '#ecf6ec',
+                },
                 '&:hover': {
                     backgroundColor: '#e2e8f0',
                     cursor: 'pointer',
                 },
+                border: '1px solid #e2e8f0',
             },
         },
         headCells: {
             style: {
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 backgroundColor: '#4a5568',
                 color: '#fff',
-                border: '0.5px solid #e2e8f0',
+                border: '1px solid #e2e8f0',
             },
         },
         cells: {
             style: {
-                padding: '15px',
-                border: '0.5px solid #e2e8f0',
+                padding: '10px',
+                fontSize: '14px',
+                border: '1px solid #e2e8f0',
             },
         },
     };

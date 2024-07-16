@@ -12,7 +12,7 @@ const Wallet = ({ wallet }) => {
                 <h1 className="text-2xl font-bold">My Wallet 💼</h1>
                 <p><strong>Agent Name:</strong> {wallet.agent_name}</p>
                 <p><strong>Local Government:</strong> {wallet.local_government}</p>
-                <p><strong>Balance:</strong> <span className="text-3xl font-bold text-green-700">₦{Number(wallet.balance).toLocaleString()}</span></p>
+                <p><strong>Balance:</strong> <span className="text-2xl font-bold text-green-700">₦{Number(wallet.balance).toLocaleString()}</span></p>
             </div>
             <div className="relative w-1/3" style={{ marginTop: '-50px' }}>
                 <img src={illustration} alt="Wallet Illustration" className="w-full h-full object-cover" />

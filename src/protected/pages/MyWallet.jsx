@@ -14,7 +14,6 @@ const MyWallet = () => {
     const [loading, setLoading] = useState(true);
     const [showRefillModal, setShowRefillModal] = useState(false);
     const [paymentGateways, setPaymentGateways] = useState([]);
-    const [paymentInitiated, setPaymentInitiated] = useState(false);
 
     useEffect(() => {
         if (user && user.id) {
@@ -32,44 +31,33 @@ const MyWallet = () => {
         setShowRefillModal(true);
     };
 
-    const handlePaymentInitiated = () => {
-        setPaymentInitiated(true);
+    const handleSuccess = () => {
         setShowRefillModal(false);
+        // Reload wallet data after successful transaction
+        getUserWallet(token, user.id, setWallet, setError, setLoading);
     };
-
-    useEffect(() => {
-        console.log("Payment gateways state:", paymentGateways);
-    }, [paymentGateways]);
 
     return (
         <div className="w-full">
             {error && <span className='text-red-600'>{error}</span>}
             {loading ? <ProgressBarComponent /> : <div className="mt-8"><Wallet wallet={wallet} /></div>}
             <div className="w-full flex justify-end my-4">
-                {!paymentInitiated ? (
-                    <div
-                        className='w-[160px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
-                        onClick={handleRefillClick}
-                    >
-                        <span>Refill Wallet</span>
-                    </div>
-                ) : (
-                    <div
-                        className='w-[160px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
-                    >
-                        <span>Check Status</span>
-                    </div>
-                )}
+                <div
+                    className='w-[160px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
+                    onClick={handleRefillClick}
+                >
+                    <span>Refill Wallet</span>
+                </div>
             </div>
             {showRefillModal && (
                 <RefillModal
                     paymentGateways={paymentGateways}
                     closeModal={() => setShowRefillModal(false)}
-                    agentId={user?.id}  // Added null check here
-                    onPaymentInitiated={handlePaymentInitiated}
+                    agentId={user?.id}
+                    onSuccess={handleSuccess} // Pass the handleSuccess callback
                 />
             )}
-            <WalletHistory token={token} agentId={user?.id} />  
+            <WalletHistory token={token} agentId={user?.id} />
         </div>
     );
 };
