@@ -1,7 +1,7 @@
 import { lazy } from "react";
 
-const Dashboard = lazy(() => import('../protected/pages/Dashboard'))
-
+const Dashboard = lazy(() => import('../protected/pages/Dashboard'));
+// Import other components as needed
 
 const coreRoutes = [
     {
@@ -9,7 +9,8 @@ const coreRoutes = [
         title: 'Dashboard',
         component: Dashboard,
     },
+    // Add other routes here
 ];
 
 const routes = [...coreRoutes];
-export default routes
+export default routes;

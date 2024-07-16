@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { GiArchiveRegister } from 'react-icons/gi'
+import { GiArchiveRegister } from 'react-icons/gi';
 import { useLocation } from 'react-router-dom';
 import ButtonLoader from '../../../common/ButtonLoader';
 import { signUp } from '../../../apis/noAuthActions';
@@ -7,16 +7,16 @@ import { AuthContext } from '../../../context/AuthContext';
 import { formatError } from '../../../apis/functions';
 import WarningAlert from '../../../common/WarningAlert';
 
-const Register = ( { handleChildUpdate } ) => {
-
+const Register = ({ handleChildUpdate }) => {
     const locatn = useLocation();
     const { storeAuthObject, tempUserid } = useContext(AuthContext);
 
-    const [username, setUsername] = useState();
-    const [email, setEmail] = useState();
-    const [mobile, setMobile] = useState();
-    const [password_hash, setPassword_hash] = useState();
-    const [password_hash_confirmation, setPassword_hash_confirmation] = useState();
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [mobile, setMobile] = useState('');
+    const [password_hash, setPassword_hash] = useState('');
+    const [password_hash_confirmation, setPassword_hash_confirmation] = useState('');
+    const [userType, setUserType] = useState('user');
     const [registering, setRegistering] = useState(false);
 
     const [success, setSuccess] = useState(null);
@@ -26,28 +26,27 @@ const Register = ( { handleChildUpdate } ) => {
         e.preventDefault();
         setError(null);
 
-        if(username.length < 6) {
+        if (username.length < 6) {
             setError('The username must be at least 6 characters!');
-        }
-        else {
+        } else {
             const data = {
                 username,
                 email,
                 mobile,
                 password_hash,
-                password_hash_confirmation
-            }
+                password_hash_confirmation,
+                type: userType
+            };
             console.log(data);
 
-            signUp(data, setSuccess, setError, setRegistering)
+            signUp(data, setSuccess, setError, setRegistering);
         }
-    }
+    };
 
-
-    if(success && success?.status === 'success'){
+    if (success && success?.status === 'success') {
         storeAuthObject({
             username,
-            password : password_hash
+            password: password_hash
         });
 
         tempUserid(success?.data?.id);
@@ -61,7 +60,7 @@ const Register = ( { handleChildUpdate } ) => {
                 <h1 className='text-gray-500'>{locatn.pathname === '/service' ? 'Please provide your information to continue the application process' : <span className='text-2xl'>Register</span>}</h1>
             </div>
 
-            { error !== null && (
+            {error !== null && (
                 (error?.email && error?.email[0] === 'The email has already been taken.') ? <WarningAlert error={formatError(error)} handleChildUpdate={handleChildUpdate} /> : <span className='text-red-500 my-2'>{formatError(error)}</span>)}
 
             <form onSubmit={handleRegister} className='w-full mt-0 mb-6 space-y-3'>
@@ -109,7 +108,24 @@ const Register = ( { handleChildUpdate } ) => {
                         required
                     />
                 </div>
-                
+                <div className='flex items-center space-x-4'>
+                    <label className='text-gray-500 mb-1'>
+                        <input 
+                            type='checkbox' 
+                            checked={userType === 'user'} 
+                            onChange={() => setUserType('user')}
+                        />
+                        <span className='ml-2'>User</span>
+                    </label>
+                    <label className='text-gray-500 mb-1'>
+                        <input 
+                            type='checkbox' 
+                            checked={userType === 'agent'} 
+                            onChange={() => setUserType('agent')}
+                        />
+                        <span className='ml-2'>Agent</span>
+                    </label>
+                </div>
 
                 <div className=''>
                     {registering ? 
@@ -132,7 +148,7 @@ const Register = ( { handleChildUpdate } ) => {
                 
             </form>
         </div>
-    )
-}
+    );
+};
 
-export default Register
+export default Register;

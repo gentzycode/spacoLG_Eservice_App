@@ -3,13 +3,11 @@ import ButtonLoader from "../../../common/ButtonLoader";
 import { signIn, verifyEmailCode } from "../../../apis/noAuthActions";
 import { AuthContext } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import Envelope from "../../../assets/refresh_data.png"
+import Envelope from "../../../assets/refresh_data.png";
 import CountdownTimer from "../../../common/CountdownTimer";
 
-
 const VerifyEmail = ({ handleChildUpdate }) => {
-
-    const { authObject, userid } = useContext(AuthContext);
+    const { authObject, userid, userType } = useContext(AuthContext); // Ensure userType is available in the context
     const navigate = useNavigate();
 
     const [verification_code, setVerification_code] = useState();
@@ -23,36 +21,32 @@ const VerifyEmail = ({ handleChildUpdate }) => {
         e.preventDefault();
 
         const data = {
-            user_id : userid,
-            verification_code
-        }
+            user_id: userid,
+            verification_code,
+            type: userType // Include type in the verification data
+        };
 
         verifyEmailCode(data, setVerified, setError, setVerifying);
-    }
+    };
 
-
-    if(verified !== null){
-
-        if(authObject !== null){
+    if (verified !== null) {
+        if (authObject !== null) {
             const data = {
-                username : authObject?.username,
-                password : authObject?.password
-            }
-    
+                username: authObject?.username,
+                password: authObject?.password
+            };
+
             signIn(data, setSuccess, setError, setLoggingin);
             setVerified(null);
-        }
-        else{
-            handleChildUpdate('login')
+        } else {
+            handleChildUpdate('login');
         }
     }
 
-
-    if(success !== null){
+    if (success !== null) {
         localStorage.setItem('isLoggedIn', JSON.stringify(success));
         setSuccess(null);
-        //location.reload();
-        navigate('/application')
+        navigate('/application');
     }
 
     return (
@@ -73,7 +67,7 @@ const VerifyEmail = ({ handleChildUpdate }) => {
                     onChange={(e) => setVerification_code(e.target.value)}
                     required
                 />
-                <CountdownTimer user_id={userid} />
+                <CountdownTimer user_id={userid} userType={userType} /> {/* Pass userType to CountdownTimer */}
                 <div className=''>
                     {verifying ? 
                         <button className='w-full flex justify-center p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
@@ -88,14 +82,13 @@ const VerifyEmail = ({ handleChildUpdate }) => {
                             className='cursor-pointer text-orange-500'
                             onClick={() => handleChildUpdate('login')}
                         >
-                                Go to Login
+                            Go to Login
                         </span>
                     </div>
                 </div>
-                
             </form>
         </div>
-    )
+    );
 }
 
-export default VerifyEmail
+export default VerifyEmail;

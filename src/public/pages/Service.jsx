@@ -84,7 +84,7 @@ const Service = () => {
                         <div className='mt-12 p-4 bg-[#d7e88f] rounded-md'>
                             <p className='text-lg mb-1 text-gray-600'><span className='mr-1 text-gray-600 font-bold'>LGA: </span>{servObj?.localgovernments?.name}</p>
                             <h1 className='text-lg text-gray-600'>   
-                                <span className='mr-1 text-gray-600 font-bold'>Application: </span>{servObj?.eservice?.name}
+                                <span className='mr-1 text-gray-600 font-bold'>Service Request:</span>{servObj?.eservice?.name}
                             </h1>
                         </div>
                         <div className='mt-0'>

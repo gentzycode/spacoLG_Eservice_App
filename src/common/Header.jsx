@@ -1,13 +1,12 @@
-import React, { useContext } from 'react'
-import { AiOutlineBell } from 'react-icons/ai'
-import { RxHamburgerMenu } from 'react-icons/rx'
-import { MdOutlineLogout } from 'react-icons/md'
-import { FaUserCircle } from 'react-icons/fa'
-import { AuthContext } from '../context/AuthContext'
-import { useLocation } from 'react-router-dom'
+import React, { useContext } from 'react';
+import { AiOutlineBell } from 'react-icons/ai';
+import { RxHamburgerMenu } from 'react-icons/rx';
+import { MdOutlineLogout } from 'react-icons/md';
+import { FaUserCircle } from 'react-icons/fa';
+import { AuthContext } from '../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 const Header = ({ toggleSidebar }) => {
-
     const { user, logout } = useContext(AuthContext);
     const locatn = useLocation();
 
@@ -16,14 +15,14 @@ const Header = ({ toggleSidebar }) => {
     return (
         <header className='sticky w-full top-0 z-40 bg-white'>
             <div className='flex flex-grow items-center justify-between p-2 md:px-3 2xl:px-11'>
-                <div className='flex items-center space-x-3'>   
+                <div className='flex items-center space-x-3'>
                     <RxHamburgerMenu size={30} className='text-gray-600 cursor-pointer' onClick={toggleSidebar} />
-                    <div className='text-xl font-bold hidden md:block md:pl-[180px] capitalize'>{pageTitle}</div>
+                    <div className='text-xl font-bold hidden md:block capitalize md:pl-4'>{pageTitle}</div>
                 </div>
-                <div className='flex  items-center space-x-4 md:space-x-8'>
-                    {/**<div className='bg-gray-100 p-2 rounded-full'>   
+                <div className='flex items-center space-x-4 md:space-x-8'>
+                    {/* <div className='bg-gray-100 p-2 rounded-full'>
                         <AiOutlineBell size={25} className='cursor-pointer' />
-                    </div>*/}
+                    </div> */}
                     <div className='flex items-center space-x-2'>
                         <div className='grid text-end text-gray-600'>
                             <span>{user && user?.email}</span>
@@ -40,7 +39,7 @@ const Header = ({ toggleSidebar }) => {
                 </div>
             </div>
         </header>
-    )
+    );
 }
 
-export default Header
+export default Header;

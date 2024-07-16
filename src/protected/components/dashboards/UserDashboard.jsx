@@ -37,7 +37,7 @@ const UserDashboard = ({ username, goToApplications}) => {
                     <img src={Wavinghand} alt='waving hand' />
                 </div>
                 <div>
-                    <span className='text-gray-500'>Welcome to Anambra State Government E-services</span>
+                    <span className='text-gray-500'>Welcome to the Local Government E-Services Portal.</span>
                 </div>
             </div>
             

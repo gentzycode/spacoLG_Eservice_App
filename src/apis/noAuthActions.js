@@ -47,33 +47,37 @@ export const getCities = async ( setCities , setError) => {
     }
 }
 
-
-export const getActiveservices = async ( lga_id, setActiveservices, setLoading ) => {
-
+export const getActiveservices = async (lga_id, setActiveservices, setLoading, setNoServicesMessage) => {
     setLoading(true);
 
-    try{
-        const response  = await axios.get(`activeeservices?local_government_id=${lga_id}`,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
+    try {
+        const response = await axios.get(`activeeservices?local_government_id=${lga_id}`, {
+            headers: { 'Accept': 'application/json' }
+        });
 
-        console.log(response.data?.data)
-        setActiveservices(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
+        console.log(response.data?.data);
+
+        if (response.status === 404 || (response.data?.status === 'error' && response.data?.code === 0)) {
+            setNoServicesMessage('No Services Found for this Local Government Area. Please, select another LGA to proceed.');
+            setActiveservices(null);
+        } else {
+            setActiveservices(response.data?.data);
+            setNoServicesMessage('');
+        }
+    } catch (err) {
+        if (err.response && err.response.status === 404) {
+            setNoServicesMessage('No Services Found for this Local Government Area. Please, select another LGA to proceed.');
+            setActiveservices(null);
+        } else if (!err?.response) {
             setError('No Response from Server');
         } else {
             console.log(err.response.data);
-            //setError(err.response.data);
+            // setError(err.response.data);
         }
     }
 
     setLoading(false);
 }
-
 
 
 export const signUp = async ( data, setSuccess, setError, setRegistering ) => {

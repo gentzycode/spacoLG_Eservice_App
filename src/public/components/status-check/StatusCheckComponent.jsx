@@ -6,7 +6,6 @@ import ButtonLoader from '../../../common/ButtonLoader';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 
 const StatusCheckComponent = () => {
-
     const loc = useLocation();
     const [refno, setRefno] = useState();
     const [success, setSuccess] = useState(null);
@@ -20,30 +19,30 @@ const StatusCheckComponent = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
         getPublicApplicationStatus(refno, setSuccess, setError, setLoading);
     }
 
     return (
         <div className="w-full col-span-1 my-0 md:my-8 flex justify-center px-4 md:px-0">
             <div className={`w-full ${loc.pathname === '/status-check' && 'md:w-2/3'}`}>
-            {
-                loc.pathname === '/status-check' &&
-                    <div className='my-6 md:mt-0'>
-                        <Link to='/' className='mt-4'>
-                            <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
-                        </Link>
-                    </div>
-            }
-                
-                <div className='w-full'>
                 {
-                    loc.pathname === '/status-check' &&
+                    loc.pathname === '/status-check' ?
+                        <div className='mt-12'>
+                            <Link to='/' className='mt-4'>
+                                <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
+                            </Link>
+                        </div> : 
+                        <div className='mt-2'>
+                            <div className='bg-[#cce2d6] mt-4 rounded-full p-1 w-max cursor-pointer'><GrFormPreviousLink size={30} /></div>
+                        </div>
+                }
+                <div className='w-full'>
+                    {
+                        loc.pathname === '/status-check' &&
                         <h1 className='mt-10 text-xl md:text-2xl font-semibold'>
                             Check Application Status
                         </h1>
-                }
-                    
+                    }
                     {error !== null && <p className='text-red-600'>{error}</p>}
                     <form onSubmit={handleSubmit}>
                         <div className='w-full my-8 flex'>
@@ -68,7 +67,6 @@ const StatusCheckComponent = () => {
                                         Check
                                     </button>
                             }
-                            
                         </div>
                     </form>
 
@@ -88,8 +86,7 @@ const StatusCheckComponent = () => {
                                             success?.status?.step?.flag === 'D_CERT' ?
                                                 <div className='w-full bg-green-600 p-1 rounded-full'></div>
                                                 :
-                                                <div className={`${success?.status?.order_no < 5 ? 'w-[30%]' : 'w-[70%]'} bg-orange-600 p-1 rounded-full`}>
-                                                </div>
+                                                <div className={`${success?.status?.order_no < 5 ? 'w-[30%]' : 'w-[70%]'} bg-orange-600 p-1 rounded-full`}></div>
                                         }
                                     </div>
 
@@ -124,14 +121,11 @@ const StatusCheckComponent = () => {
                                         {
                                             success?.form_submission !== null ?   
                                                 Object.keys(JSON.parse(success?.form_submission?.data)).map((key, i) => {
-                                                    {
-                                                        return key !== 'user_id' && 
+                                                    return key !== 'user_id' && 
                                                         <div key={i} className="flex space-x-3 py-2">
                                                             <span className='font-semibold capitalize'>{key.replace('_', ' ').replace('_', ' ')} :</span>
                                                             <span>{JSON.parse(success?.form_submission?.data)[key] === 'on' ? 'Yes' : JSON.parse(success?.form_submission?.data)[key]}</span>
                                                         </div>
-                                                    }
-                                                    
                                                 }) :
                                                 <div className='text-gray-700'>No detail found on this application because registration form has not been completed </div>
                                         }
@@ -139,7 +133,6 @@ const StatusCheckComponent = () => {
                                 </div>
                         }
                     </div>
-                    
                 </div>
             </div>
         </div>

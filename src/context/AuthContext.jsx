@@ -3,7 +3,6 @@ import { createContext, useEffect, useState } from "react";
 export const AuthContext = createContext();
 
 const AuthContextProvider = (props) => {
-
     const userData = JSON.parse(localStorage.getItem('isLoggedIn'));
     const serviceData = JSON.parse(localStorage.getItem('selectedService'));
     
@@ -24,25 +23,19 @@ const AuthContextProvider = (props) => {
         window.location.reload();
     }
 
-    /**const updateActivenav = (val) => {
-        setActivenav(val);
-    }*/
-
     useEffect(() => {
-        
         if(localStorage.getItem('isLoggedIn')){
-            
             setToken(userData?.access_token);
             setUser(userData?.user);
         }
-    }, [])
+    }, []);
 
     const updateShownav = () => {
         setShownav(!shownav);
     }
 
     const storeAuthObject = (obj) => {
-        setAuthObject(obj)
+        setAuthObject(obj);
     }
 
     const tempUserid = (id) => {
@@ -61,16 +54,11 @@ const AuthContextProvider = (props) => {
         setRecord(val);
     }
 
-    /**const changeTheme = () => {
-        setDark(!dark);
-    }*/
-
-
-    return(
-        <AuthContext.Provider value={{ token, user, shownav,  updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout, updateUser, record, refreshRecord }}>
+    return (
+        <AuthContext.Provider value={{ token, user, shownav, updateShownav, authObject, storeAuthObject, userid, tempUserid, serviceObject, updateServiceObject, logout, updateUser, record, refreshRecord }}>
             {props.children}
         </AuthContext.Provider>
-    )
+    );
 }
 
-export default AuthContextProvider
+export default AuthContextProvider;

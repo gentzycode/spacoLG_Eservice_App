@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { OtpResend } from "../apis/noAuthActions";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"
+import "react-toastify/dist/ReactToastify.css";
 
-const CountdownTimer = ({ user_id }) => {
-
+const CountdownTimer = ({ user_id, userType }) => {
     const [resending, setResending] = useState(false);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
@@ -12,10 +11,10 @@ const CountdownTimer = ({ user_id }) => {
     // with JS setInterval to keep track of it and
     // stop it when needed
     const Ref = useRef(null);
- 
+
     // The state for our timer
     const [timer, setTimer] = useState();
- 
+
     const getTimeRemaining = (e) => {
         const total =
             Date.parse(e) - Date.parse(new Date());
@@ -36,12 +35,13 @@ const CountdownTimer = ({ user_id }) => {
 
     const resendOtp = () => {
         const data = {
-            user_id
-        }
+            user_id,
+            type: userType // Ensure type is included in the request data
+        };
 
         OtpResend(data, setSuccess, setError, setResending);
-    }
- 
+    };
+
     const startTimer = (e) => {
         let { total, hours, minutes, seconds } =
             getTimeRemaining(e);
@@ -60,13 +60,13 @@ const CountdownTimer = ({ user_id }) => {
             );
         }
     };
- 
+
     const clearTimer = (e) => {
         // If you adjust it you should also need to
         // adjust the Endtime formula we are about
         // to code next
         setTimer("00:00:00");
- 
+
         // If you try to remove this line the
         // updating of timer Variable will be
         // after 1000ms or 1sec
@@ -76,37 +76,36 @@ const CountdownTimer = ({ user_id }) => {
         }, 1000);
         Ref.current = id;
     };
- 
+
     const getDeadTime = () => {
         let deadline = new Date();
- 
+
         // This is where you need to adjust if
         // you entend to add more time
         deadline.setSeconds(deadline.getSeconds() + 60);
         return deadline;
     };
 
-
-    if(error !== null){
+    if (error !== null) {
         toast.error('There is an error!');
         setError(null);
     }
 
-    if(success !== null){
+    if (success !== null) {
         toast.info(success?.message);
         setSuccess(null);
         clearTimer(getDeadTime());
     }
- 
+
     // We can use useEffect so that when the component
     // mount the timer will start as soon as possible
- 
+
     // We put empty array to act as componentDid
     // mount only
     useEffect(() => {
         clearTimer(getDeadTime());
     }, []);
- 
+
     // Another way to call the clearTimer() to start
     // the countdown is via action event from the
     // button first we create function to be called
@@ -127,7 +126,7 @@ const CountdownTimer = ({ user_id }) => {
             }
             <ToastContainer />
         </div>
-    )
-}
+    );
+};
 
-export default CountdownTimer
+export default CountdownTimer;
