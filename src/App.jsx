@@ -1,16 +1,17 @@
-import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
-import Landing from './public/pages/Landing';
-import { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Loader from './common/Loader';
+import AuthContextProvider from './context/AuthContext';
+import PrivateRoute from './protected/PrivateRoute';
+import DefaultLayout from './protected/DefaultLayout';
+import Landing2 from './public/pages/Landing2';
 import Auth from './public/pages/Auth';
 import Services from './public/pages/Services';
 import Service from './public/pages/Service';
-import AuthContextProvider from './context/AuthContext';
-import DefaultLayout from './protected/DefaultLayout';
+import Statuscheck from './public/pages/Statuscheck';
+import CheckJSON from './public/pages/CheckJSON';
 import routes from './routes';
 import Dashboard from './protected/pages/Dashboard';
-import PrivateRoute from './protected/PrivateRoute';
-import Landing2 from './public/pages/Landing2';
 import Application from './protected/pages/Application';
 import ApplicationDetail from './protected/pages/ApplicationDetail';
 import AdminApplications from './protected/lga_admin/pages/AdminApplications';
@@ -19,20 +20,19 @@ import Users from './protected/super_admin/pages/Users';
 import LgasStaff from './protected/super_admin/pages/LgasStaff';
 import Payments from './protected/pages/Payments';
 import Authorizers from './protected/super_admin/pages/Authorizers';
-import Statuscheck from './public/pages/Statuscheck';
-import CheckJSON from './public/pages/CheckJSON';
 import Support from './protected/pages/Support';
 import ApplicationStatus from './public/pages/ApplicationStatus';
 import MyWallet from './protected/pages/MyWallet';
 import TransactionStatus from './protected/pages/TransactionStatus';
 import ManageTokens from './protected/pages/ManageTokens';
-import ManageInvoices from './protected/pages/ManageInvoices'; // New import
+import ManageInvoices from './protected/pages/ManageInvoices';
+import PayerManagement from './protected/pages/PayerManagement'; // New import
 
 function App() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      setTimeout(() => setLoading(false), 1000);
+        setTimeout(() => setLoading(false), 1000);
     }, []);
 
     return (
@@ -46,21 +46,22 @@ function App() {
                     <Route path='/check-json' element={<CheckJSON />} />
                     <Route path='/status-check' element={<Statuscheck />} />
                     <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
-                        <Route path='/dashboard' element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-                        <Route path='/application' element={<PrivateRoute><Application /></PrivateRoute>} />
-                        <Route path='/application-detail' element={<PrivateRoute><ApplicationDetail /></PrivateRoute>} />
-                        <Route path='/applications' element={<PrivateRoute><AdminApplications /></PrivateRoute>} />
-                        <Route path='/admin-applications-detail' element={<PrivateRoute><AdminApplicationDetail /></PrivateRoute>} />
-                        <Route path='/users' element={<PrivateRoute><Users /></PrivateRoute>} />
-                        <Route path='/lgas-staff' element={<PrivateRoute><LgasStaff /></PrivateRoute>} />
-                        <Route path='/payments' element={<PrivateRoute><Payments /></PrivateRoute>} />
-                        <Route path='/authorizers' element={<PrivateRoute><Authorizers /></PrivateRoute>} />
-                        <Route path='/support' element={<PrivateRoute><Support /></PrivateRoute>} />
-                        <Route path='/check-status' element={<PrivateRoute><ApplicationStatus /></PrivateRoute>} />
-                        <Route path='/my-wallet' element={<PrivateRoute><MyWallet /></PrivateRoute>} />
+                        <Route path='/dashboard' element={<Dashboard />} />
+                        <Route path='/application' element={<Application />} />
+                        <Route path='/application-detail' element={<ApplicationDetail />} />
+                        <Route path='/applications' element={<AdminApplications />} />
+                        <Route path='/admin-applications-detail' element={<AdminApplicationDetail />} />
+                        <Route path='/users' element={<Users />} />
+                        <Route path='/lgas-staff' element={<LgasStaff />} />
+                        <Route path='/payments' element={<Payments />} />
+                        <Route path='/authorizers' element={<Authorizers />} />
+                        <Route path='/support' element={<Support />} />
+                        <Route path='/check-status' element={<ApplicationStatus />} />
+                        <Route path='/my-wallet' element={<MyWallet />} />
                         <Route path='/wallet/status' element={<TransactionStatus />} />
                         <Route path="/manage-tokens" element={<ManageTokens />} />
-                        <Route path="/manage-invoices" element={<ManageInvoices />} /> {/* New route */}
+                        <Route path="/manage-invoices" element={<ManageInvoices />} />
+                        <Route path="/manage-payers" element={<PayerManagement />} /> {/* New route */}
                         {routes.map(({ path, component: Component }) => (
                             <Route
                                 key={path}

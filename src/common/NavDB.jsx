@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { HiDocumentText, HiUserGroup } from 'react-icons/hi';
-import { FaRegListAlt, FaRegUser, FaFileAlt } from 'react-icons/fa'; // Corrected import
+import { FaRegListAlt, FaRegUser, FaFileAlt } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { AiFillHome } from 'react-icons/ai';
@@ -43,11 +43,10 @@ const NavDB = () => {
         { id: 2, title: "My Wallet", url: "/my-wallet", icon: <MdOutlineAccountBalanceWallet size={17} /> },
         { id: 3, title: "Manage Tokens", url: "/manage-tokens", icon: <RiWalletFill size={17} /> },
         { id: 4, title: "Applications", url: "/applications", icon: <HiDocumentText size={17} /> },
-        { id: 5, title: "General Invoices", url: "/manage-invoices", icon: <MdOutlineAccountBalanceWallet size={17} /> }, // New link
-        { id: 6, title: "Manage Payers", url: "#", icon: <FaRegUser size={17} /> },
+        { id: 5, title: "General Invoices", url: "/manage-invoices", icon: <MdOutlineAccountBalanceWallet size={17} /> },
+        { id: 6, title: "Manage Payers", url: "/manage-payers", icon: <FaRegUser size={17} /> },
         { id: 7, title: "Reports", url: "#", icon: <FaRegListAlt size={17} /> },
     ];
-
 
     useEffect(() => {
         const setUserLinks = (role, publicUserLinks, staffLinks, superAdminLinks, agentLinks, setLinks) => {
@@ -76,7 +75,7 @@ const NavDB = () => {
     return (
         <ul className='w-full space-y-2'>
             {navlinks !== null && navlinks.map(nav => (
-                <li key={nav.id} className={`${locatn.pathname === nav.url || locatn.pathname.includes(nav.url.replace("/",'')) ? 'bg-[#2b7d54] text-gray-100 font-semibold' : 'text-gray-300'} px-3 py-2 rounded-md`}>
+                <li key={nav.id} className={`${locatn.pathname === nav.url || locatn.pathname.includes(nav.url.replace("/", '')) ? 'bg-[#2b7d54] text-gray-100 font-semibold' : 'text-gray-300'} px-3 py-2 rounded-md`}>
                     <Link to={nav.url} key={nav.id} className='flex justify-start items-center space-x-3 my-1'>
                         {nav.icon}
                         <span>{nav.title}</span>

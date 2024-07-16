@@ -3,6 +3,7 @@ import { formatDate } from '../../../apis/functions';
 import { getEnabledPaymentGateways, payInvoiceById, getUserWallet } from '../../../apis/authActions';
 import logo from '../../../assets/abia512_512logo.png';
 import { AiOutlineLoading } from 'react-icons/ai';
+import './InvoiceDetailModal.css'; // Import the CSS file
 
 const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -35,8 +36,9 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
     const fetchWalletBalance = async () => {
         setIsLoading(true);
         try {
-            const walletData = await getUserWallet(token, agentId, setError, setIsLoading);
-            setWalletBalance(walletData.balance);
+            await getUserWallet(token, agentId, (data) => {
+                setWalletBalance(data.balance);
+            }, setError, setIsLoading);
         } catch (err) {
             setError('Failed to fetch wallet balance');
             console.error('Error fetching wallet balance:', err);
@@ -45,39 +47,45 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
 
     const handlePayWithToken = async () => {
         setIsLoading(true);
+        setError(null); // Clear any previous errors
         try {
             const payload = { token: tokenValue };
-            await payInvoiceById(token, invoice.id, payload, () => {}, (err) => {
-                if (err === 'Insufficient token balance') {
-                    setError('Insufficient token balance');
-                }
-            }, setIsLoading);
-            onPaymentSuccess();
-            alert('Invoice paid successfully');
-            onClose();
+            const response = await payInvoiceById(token, invoice.id, payload);
+            if (response.status === 'error' && response.message === 'Insufficient token balance') {
+                setError('Insufficient token balance');
+            } else {
+                onPaymentSuccess();
+                alert('Invoice paid successfully');
+                onClose();
+            }
         } catch (err) {
             setError('Failed to pay invoice with token');
             console.error('Error paying invoice with token:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handlePayWithWallet = async () => {
         setIsLoading(true);
+        setError(null); // Clear any previous errors
         try {
             const payload = { value: invoice.amount };
-            await payInvoiceById(token, invoice.id, payload, () => {}, setError, setIsLoading);
+            await payInvoiceById(token, invoice.id, payload);
             onPaymentSuccess();
             alert('Invoice paid successfully');
             onClose();
         } catch (err) {
             setError('Failed to pay invoice with wallet');
             console.error('Error paying invoice with wallet:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
+            <div className="modal-container bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
                 <div className="flex justify-between items-center mb-6">
                     <img src={logo} alt="Logo" className="h-16" />
                     <button onClick={onClose} className="text-red-600 font-bold text-lg">Close</button>
@@ -133,7 +141,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                                                 }}
                                                 className={`cursor-pointer p-4 rounded-lg ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow' : ''}`}
                                             >
-                                                <img src={gateway.logo_url} alt={gateway.gateway_name} style={{ height: '100px', width: 'auto' }} />
+                                                <img src={gateway.logo_url} alt={gateway.gateway_name} style={{ height: '50px', width: 'auto' }} />
                                             </div>
                                         ))
                                     )}

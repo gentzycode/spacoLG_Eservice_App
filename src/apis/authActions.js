@@ -759,42 +759,45 @@ export const generateInvoice = async (token, payload, setInvoiceData, setError, 
 };
 
 // Pay Invoice by ID
-export const payInvoiceById = async (token, id, payload, setInvoiceData, setError, setLoading) => {
-    setLoading(true);
+export const payInvoiceById = async (token, id, payload) => {
     try {
         const response = await axios.post(`/invoices/${id}/pay`, payload, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
         });
-        setInvoiceData(response.data.invoice);
-        setError(null);
+
+        return response.data;
     } catch (err) {
-        setError(err.response.data.message);
-    } finally {
-        setLoading(false);
+        console.error('Error paying invoice by ID:', err);
+        throw err.response ? err.response.data : new Error('No response from server');
     }
 };
 
 // Pay Invoice by Reference Number
-export const payInvoiceByReference = async (token, payload, setInvoiceData, setError, setLoading) => {
-    setLoading(true);
+export const payInvoiceByReference = async (token, payload) => {
     try {
-        const response = await axios.post('/invoices/pay-by-reference', payload, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        const response = await axios.post('/invoices/pay', payload, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
         });
-        setInvoiceData(response.data.invoice);
-        setError(null);
+
+        return response.data;
     } catch (err) {
-        setError(err.response.data.message);
-    } finally {
-        setLoading(false);
+        console.error('Error paying invoice by reference:', err);
+        throw err.response ? err.response.data : new Error('No response from server');
     }
 };
+
 
 export const getEnabledPaymentGateways2 = async (token, setGateways, setError, setFetching) => {
     setFetching(true);
 
     try {
-        const response = await axios.get('paymentgateways/enabled', {
+        const response = await axios.get('paymentgateway/enabled', {
             headers: { 
                 'Accept': 'application/json', 
                 'Authorization': `Bearer ${token}` 
@@ -816,20 +819,17 @@ export const getEnabledPaymentGateways2 = async (token, setGateways, setError, s
     }
 };
 
-export const getUserWallet2 = async (token, agentId, setWalletBalance, setError, setLoading) => {
+export const getUserWallets = async (token, agentId, setWallet, setError, setLoading) => {
     setLoading(true);
 
     try {
-        const response = await axios.get(`/agents/${agentId}/wallet`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
+        const response = await axios.get(`agents/${agentId}/wallet`, {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
         });
 
-        setWalletBalance(response.data.wallet.balance);
+        setWallet(response.data.wallet);
     } catch (err) {
-        if (!err?.response) {
+        if (!err.response) {
             setError('No Response from Server');
         } else {
             console.log(err.response.data);
@@ -840,3 +840,74 @@ export const getUserWallet2 = async (token, agentId, setWalletBalance, setError,
     setLoading(false);
 };
 
+// INDIVIDUAL AND CORPORATE MANAGEMENT
+
+export const getIndividuals = async (token, setIndividuals, setError, setLoading) => {
+    setLoading(true);
+    try {
+        const response = await axios.get('/individuals', {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        setIndividuals(response.data.data);
+    } catch (err) {
+        setError(err.response ? err.response.data.message : 'No Response from Server');
+    }
+    setLoading(false);
+};
+
+export const createIndividual = async (token, payload) => {
+    try {
+        const response = await axios.post('/individuals', payload, {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        return response.data.data;
+    } catch (err) {
+        throw err.response ? err.response.data : new Error('No response from server');
+    }
+};
+
+export const updateIndividual = async (token, id, payload) => {
+    try {
+        const response = await axios.put(`/individuals/${id}`, payload, {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        return response.data.data;
+    } catch (err) {
+        throw err.response ? err.response.data : new Error('No response from server');
+    }
+};
+
+export const getCorporates = async (token, setCorporates, setError, setLoading) => {
+    setLoading(true);
+    try {
+        const response = await axios.get('/corporates', {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        setCorporates(response.data.data);
+    } catch (err) {
+        setError(err.response ? err.response.data.message : 'No Response from Server');
+    }
+    setLoading(false);
+};
+
+export const createCorporate = async (token, payload) => {
+    try {
+        const response = await axios.post('/corporates', payload, {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        return response.data.data;
+    } catch (err) {
+        throw err.response ? err.response.data : new Error('No response from server');
+    }
+};
+
+export const updateCorporate = async (token, id, payload) => {
+    try {
+        const response = await axios.put(`/corporates/${id}`, payload, {
+            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+        });
+        return response.data.data;
+    } catch (err) {
+        throw err.response ? err.response.data : new Error('No response from server');
+    }
+};

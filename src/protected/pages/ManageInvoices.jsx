@@ -36,13 +36,13 @@ const ManageInvoices = () => {
                     <InvoiceStatistics statistics={statistics} />
                     <div className="w-full flex justify-end my-4 space-x-4">
                         <button
-                            className='w-[160px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
+                            className='w-[180px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
                             onClick={handleGenerateClick}
                         >
                             Generate Invoice
                         </button>
                         <button
-                            className='w-[160px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
+                            className='w-[180px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
                             onClick={handlePayClick}
                         >
                             Pay Invoice

@@ -9,7 +9,7 @@ import RefillModal from '../components/wallet/RefillModal';
 const MyWallet = () => {
     const { token, user } = useContext(AuthContext);
 
-    const [wallet, setWallet] = useState(null); // Initial state is null
+    const [wallet, setWallet] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showRefillModal, setShowRefillModal] = useState(false);
@@ -17,7 +17,7 @@ const MyWallet = () => {
     const [paymentInitiated, setPaymentInitiated] = useState(false);
 
     useEffect(() => {
-        if (user) {
+        if (user && user.id) {
             getUserWallet(token, user.id, setWallet, setError, setLoading);
         }
     }, [token, user]);
@@ -65,11 +65,11 @@ const MyWallet = () => {
                 <RefillModal
                     paymentGateways={paymentGateways}
                     closeModal={() => setShowRefillModal(false)}
-                    agentId={user.id}
+                    agentId={user?.id}  // Added null check here
                     onPaymentInitiated={handlePaymentInitiated}
                 />
             )}
-            <WalletHistory token={token} agentId={user.id} />
+            <WalletHistory token={token} agentId={user?.id} />  
         </div>
     );
 };

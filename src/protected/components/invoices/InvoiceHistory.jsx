@@ -132,11 +132,11 @@ const InvoiceHistory = ({ token, agentId }) => {
     };
 
     const handleView = async (id) => {
-        setIsModalOpen(true);
         setIsFetching(true);
         try {
             const invoice = await getInvoiceById(token, id);
             setSelectedInvoice(invoice);
+            setIsModalOpen(true);
         } catch (err) {
             setError('Failed to fetch invoice details');
         } finally {
@@ -146,7 +146,7 @@ const InvoiceHistory = ({ token, agentId }) => {
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setSelectedInvoice(null); // Clear the selected invoice when the modal is closed
+        setSelectedInvoice(null); // Clear the selected invoice
     };
 
     return (
@@ -167,7 +167,7 @@ const InvoiceHistory = ({ token, agentId }) => {
                     <div>Loading unpaid invoices...</div>
                 ) : error ? (
                     <div className="text-red-500">{error}</div>
-                ) : unpaidInvoices && unpaidInvoices.length === 0 ? (
+                ) : unpaidInvoices.length === 0 ? (
                     <div>No unpaid invoices found.</div>
                 ) : (
                     <DataTable
@@ -184,7 +184,7 @@ const InvoiceHistory = ({ token, agentId }) => {
                     <div>Loading paid invoices...</div>
                 ) : error ? (
                     <div className="text-red-500">{error}</div>
-                ) : paidInvoices && paidInvoices.length === 0 ? (
+                ) : paidInvoices.length === 0 ? (
                     <div>No paid invoices found.</div>
                 ) : (
                     <DataTable
