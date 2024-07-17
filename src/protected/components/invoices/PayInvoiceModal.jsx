@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import { getEnabledPaymentGateways2, payInvoiceByReference } from '../../../apis/authActions';
-import { AiOutlineClose, AiOutlineLoading } from 'react-icons/ai';
+import { AiOutlineClose } from 'react-icons/ai';
 
 const PayInvoiceModal = ({ closeModal }) => {
     const { token } = useContext(AuthContext);
@@ -23,8 +23,7 @@ const PayInvoiceModal = ({ closeModal }) => {
         setIsLoading(true);
         try {
             await getEnabledPaymentGateways2(token, (data) => {
-                const filteredGateways = data.filter(gateway => ['E-Wallet', 'Token', 'Cash'].includes(gateway.gateway_name));
-                setGateways(filteredGateways);
+                setGateways(data);
             }, setError, setIsLoading);
         } catch (err) {
             setError('Failed to fetch payment gateways');
@@ -40,17 +39,16 @@ const PayInvoiceModal = ({ closeModal }) => {
         try {
             const payload = {
                 reference_number: referenceNumber,
-                token: selectedGateway === 'Token' ? tokenValue : null,
-                payment_gateway: selectedGateway !== 'Token' ? selectedGateway : null,
+                token: tokenValue,
             };
             const response = await payInvoiceByReference(token, payload);
-            if (response.status === 'error') {
-                setError(response.message);
+            if (response.status === 'error' && response.message === 'Insufficient token balance') {
+                setError('Insufficient token balance');
             } else {
-                setSuccessMessage(response.message || 'Invoice paid successfully');
+                setSuccessMessage('Invoice paid successfully');
                 setTimeout(() => {
                     window.location.reload(); // Refresh the page after payment
-                }, 3000);
+                }, 2000);
             }
         } catch (err) {
             setError('Failed to pay invoice');
@@ -79,18 +77,16 @@ const PayInvoiceModal = ({ closeModal }) => {
                         placeholder="Enter Invoice Reference Number"
                     />
                 </div>
-                {selectedGateway === 'Token' && (
-                    <div className="mb-6">
-                        <label className="block mb-2 text-lg font-medium text-gray-700">Token</label>
-                        <input
-                            type="text"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                            value={tokenValue}
-                            onChange={(e) => setTokenValue(e.target.value)}
-                            placeholder="Enter Token"
-                        />
-                    </div>
-                )}
+                <div className="mb-6">
+                    <label className="block mb-2 text-lg font-medium text-gray-700">Token</label>
+                    <input
+                        type="text"
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
+                        value={tokenValue}
+                        onChange={(e) => setTokenValue(e.target.value)}
+                        placeholder="Enter Token"
+                    />
+                </div>
                 <div className="mb-6">
                     <label className="block mb-2 text-lg font-medium text-gray-700">Payment Method</label>
                     <div className="flex justify-center space-x-8 mb-6">

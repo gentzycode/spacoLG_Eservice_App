@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
-import { getEnabledPaymentGateways2, getPaymentGatewayByID, initiatePayment, paymentConfirm } from '../../../apis/authActions';
+import { getEnabledPaymentGateways, getPaymentGatewayByID, initiatePayment, paymentConfirm } from '../../../apis/authActions';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import InitializePayment from './InitializePayment';
 
@@ -51,7 +51,7 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
     }
 
     useEffect(() => {
-        getEnabledPaymentGateways2(token, (response) => {
+        getEnabledPaymentGateways(token, (response) => {
             console.log('API Response:', response); // Log the response
             if (response.status === 'success' && response.data) {
                 setGateways(response.data);
