@@ -13,6 +13,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
     const [tokenValue, setTokenValue] = useState('');
     const [error, setError] = useState(null);
     const [walletChecked, setWalletChecked] = useState(false);
+    const [successMessage, setSuccessMessage] = useState(null);
 
     useEffect(() => {
         if (invoice.status === 'unpaid') {
@@ -24,12 +25,13 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
         setIsLoading(true);
         try {
             await getEnabledPaymentGateways(token, (data) => {
-                const filteredGateways = data.filter(gateway => gateway.gateway_name === 'E-Wallet' || gateway.gateway_name === 'Token');
-                setGateways(filteredGateways);
+                setGateways(data);
             }, setError, setIsLoading);
         } catch (err) {
             setError('Failed to fetch payment gateways');
             console.error('Error fetching payment gateways:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -42,6 +44,8 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
         } catch (err) {
             setError('Failed to fetch wallet balance');
             console.error('Error fetching wallet balance:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -54,9 +58,11 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
             if (response.status === 'error' && response.message === 'Insufficient token balance') {
                 setError('Insufficient token balance');
             } else {
-                onPaymentSuccess();
-                alert('Invoice paid successfully');
-                onClose();
+                setSuccessMessage('Invoice paid successfully');
+                setTimeout(() => {
+                    onPaymentSuccess();
+                    onClose();
+                }, 3000); // Show success message for 3 seconds before closing the modal
             }
         } catch (err) {
             setError('Failed to pay invoice with token');
@@ -71,15 +77,54 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
         setError(null); // Clear any previous errors
         try {
             const payload = { value: invoice.amount };
-            await payInvoiceById(token, invoice.id, payload);
-            onPaymentSuccess();
-            alert('Invoice paid successfully');
-            onClose();
+            const response = await payInvoiceById(token, invoice.id, payload);
+            if (response.status === 'error') {
+                setError(response.message);
+            } else {
+                setSuccessMessage('Invoice paid successfully');
+                setTimeout(() => {
+                    onPaymentSuccess();
+                    onClose();
+                }, 3000); // Show success message for 3 seconds before closing the modal
+            }
         } catch (err) {
             setError('Failed to pay invoice with wallet');
             console.error('Error paying invoice with wallet:', err);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handlePayWithCash = async () => {
+        setIsLoading(true);
+        setError(null); // Clear any previous errors
+        try {
+            const payload = { payment_gateway: 'Cash' };
+            const response = await payInvoiceById(token, invoice.id, payload);
+            if (response.status === 'error') {
+                setError(response.message);
+            } else {
+                setSuccessMessage('Invoice paid successfully. We have recorded that you have collected cash from the client and will remit the same to the office.');
+                setTimeout(() => {
+                    onPaymentSuccess();
+                    onClose();
+                }, 3000); // Show success message for 3 seconds before closing the modal
+            }
+        } catch (err) {
+            setError('Failed to pay invoice with cash');
+            console.error('Error paying invoice with cash:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handlePayment = () => {
+        if (selectedGateway === 'Token') {
+            handlePayWithToken();
+        } else if (selectedGateway === 'E-Wallet') {
+            handlePayWithWallet();
+        } else if (selectedGateway === 'Cash') {
+            handlePayWithCash();
         }
     };
 
@@ -175,7 +220,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                                 )}
                                 <div className="flex justify-end">
                                     <button
-                                        onClick={selectedGateway === 'Token' ? handlePayWithToken : handlePayWithWallet}
+                                        onClick={handlePayment}
                                         className={`bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700 transition-all duration-300 ${isLoading || (!tokenValue && selectedGateway === 'Token') || (selectedGateway === 'E-Wallet' && !walletChecked) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         disabled={isLoading || (!tokenValue && selectedGateway === 'Token') || (selectedGateway === 'E-Wallet' && !walletChecked)}
                                     >
@@ -184,6 +229,9 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                                 </div>
                                 {error && (
                                     <div className="text-red-500 mt-4 text-center">{error}</div>
+                                )}
+                                {successMessage && (
+                                    <div className="text-green-500 mt-4 text-center">{successMessage}</div>
                                 )}
                             </>
                         )}
