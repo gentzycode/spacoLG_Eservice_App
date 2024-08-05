@@ -34,7 +34,7 @@ const MyWallet = () => {
     const handleSuccess = () => {
         setShowRefillModal(false);
         // Reload wallet data after successful transaction
-        getUserWallet(token, user.id, setWallet, setError, setLoading);
+        getUserWallet(token, user?.id, setWallet, setError, setLoading);
     };
 
     return (
@@ -53,11 +53,11 @@ const MyWallet = () => {
                 <RefillModal
                     paymentGateways={paymentGateways}
                     closeModal={() => setShowRefillModal(false)}
-                    agentId={user?.id}
+                    agentId={user?.id} // Add optional chaining
                     onSuccess={handleSuccess} // Pass the handleSuccess callback
                 />
             )}
-            <WalletHistory token={token} agentId={user?.id} />
+            <WalletHistory token={token} agentId={user?.id} /> {/* Add optional chaining */}
         </div>
     );
 };

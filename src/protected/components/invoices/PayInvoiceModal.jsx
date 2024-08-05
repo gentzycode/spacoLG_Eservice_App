@@ -77,16 +77,18 @@ const PayInvoiceModal = ({ closeModal }) => {
                         placeholder="Enter Invoice Reference Number"
                     />
                 </div>
-                <div className="mb-6">
-                    <label className="block mb-2 text-lg font-medium text-gray-700">Token</label>
-                    <input
-                        type="text"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                        value={tokenValue}
-                        onChange={(e) => setTokenValue(e.target.value)}
-                        placeholder="Enter Token"
-                    />
-                </div>
+                {selectedGateway === 'Token' && (
+                    <div className="mb-6">
+                        <label className="block mb-2 text-lg font-medium text-gray-700">Token</label>
+                        <input
+                            type="text"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
+                            value={tokenValue}
+                            onChange={(e) => setTokenValue(e.target.value)}
+                            placeholder="Enter Token"
+                        />
+                    </div>
+                )}
                 <div className="mb-6">
                     <label className="block mb-2 text-lg font-medium text-gray-700">Payment Method</label>
                     <div className="flex justify-center space-x-8 mb-6">

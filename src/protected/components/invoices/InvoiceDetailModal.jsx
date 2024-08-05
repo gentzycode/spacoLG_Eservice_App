@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { formatDate } from '../../../apis/functions';
-import { getEnabledPaymentGateways, payInvoiceById, getUserWallet } from '../../../apis/authActions';
+import { getEnabledPaymentGateways2, payInvoiceById, getUserWallet } from '../../../apis/authActions';
 import logo from '../../../assets/abia512_512logo.png';
 import { AiOutlineLoading } from 'react-icons/ai';
-import './InvoiceDetailModal.css'; // Import the CSS file
 
 const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -23,9 +22,8 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
     const fetchPaymentGateways = async () => {
         setIsLoading(true);
         try {
-            await getEnabledPaymentGateways(token, (data) => {
-                const filteredGateways = data.filter(gateway => gateway.gateway_name === 'E-Wallet' || gateway.gateway_name === 'Token');
-                setGateways(filteredGateways);
+            await getEnabledPaymentGateways2(token, (data) => {
+                setGateways(data);
             }, setError, setIsLoading);
         } catch (err) {
             setError('Failed to fetch payment gateways');
@@ -36,9 +34,8 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
     const fetchWalletBalance = async () => {
         setIsLoading(true);
         try {
-            await getUserWallet(token, agentId, (data) => {
-                setWalletBalance(data.balance);
-            }, setError, setIsLoading);
+            const walletData = await getUserWallet(token, agentId, setError, setIsLoading);
+            setWalletBalance(walletData.wallet.balance);
         } catch (err) {
             setError('Failed to fetch wallet balance');
             console.error('Error fetching wallet balance:', err);
@@ -47,17 +44,23 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
 
     const handlePayWithToken = async () => {
         setIsLoading(true);
-        setError(null); // Clear any previous errors
         try {
             const payload = { token: tokenValue };
-            const response = await payInvoiceById(token, invoice.id, payload);
-            if (response.status === 'error' && response.message === 'Insufficient token balance') {
-                setError('Insufficient token balance');
-            } else {
-                onPaymentSuccess();
-                alert('Invoice paid successfully');
-                onClose();
-            }
+            await payInvoiceById(token, invoice.id, payload, () => {}, (err) => {
+                if (err.status === 'error' && err.message.errors) {
+                    const errors = err.message.errors;
+                    if (errors.includes('The token field is required.')) {
+                        setError('Please enter a token to proceed with this payment method.');
+                    } else {
+                        setError('Validation error: ' + errors.join(', '));
+                    }
+                } else {
+                    setError('Failed to pay invoice with token');
+                }
+            }, setIsLoading);
+            onPaymentSuccess();
+            alert('Invoice paid successfully');
+            onClose();
         } catch (err) {
             setError('Failed to pay invoice with token');
             console.error('Error paying invoice with token:', err);
@@ -68,10 +71,9 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
 
     const handlePayWithWallet = async () => {
         setIsLoading(true);
-        setError(null); // Clear any previous errors
         try {
             const payload = { value: invoice.amount };
-            await payInvoiceById(token, invoice.id, payload);
+            await payInvoiceById(token, invoice.id, payload, () => {}, setError, setIsLoading);
             onPaymentSuccess();
             alert('Invoice paid successfully');
             onClose();
@@ -85,7 +87,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="modal-container bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
+            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl">
                 <div className="flex justify-between items-center mb-6">
                     <img src={logo} alt="Logo" className="h-16" />
                     <button onClick={onClose} className="text-red-600 font-bold text-lg">Close</button>
@@ -128,23 +130,26 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                         </table>
                         {invoice.status === 'unpaid' && (
                             <>
-                                <div className="flex justify-center space-x-8 mb-6">
-                                    {gateways.length === 0 ? (
-                                        <div>No payment gateways available</div>
-                                    ) : (
-                                        gateways.map((gateway) => (
-                                            <div
-                                                key={gateway.id}
-                                                onClick={() => {
-                                                    setSelectedGateway(gateway.gateway_name);
-                                                    if (gateway.gateway_name === 'E-Wallet') fetchWalletBalance();
-                                                }}
-                                                className={`cursor-pointer p-4 rounded-lg ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow' : ''}`}
-                                            >
-                                                <img src={gateway.logo_url} alt={gateway.gateway_name} style={{ height: '50px', width: 'auto' }} />
-                                            </div>
-                                        ))
-                                    )}
+                                <div className="mb-6">
+                                    <label className="block mb-2 text-lg font-medium text-gray-700">Payment Method</label>
+                                    <div className="flex justify-center space-x-8 mb-6">
+                                        {gateways.length === 0 ? (
+                                            <div>No payment gateways available</div>
+                                        ) : (
+                                            gateways.map((gateway) => (
+                                                <div
+                                                    key={gateway.id}
+                                                    onClick={() => {
+                                                        setSelectedGateway(gateway.gateway_name);
+                                                        if (gateway.gateway_name === 'E-Wallet') fetchWalletBalance();
+                                                    }}
+                                                    className={`cursor-pointer p-4 rounded-lg ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow' : ''}`}
+                                                >
+                                                    <img src={gateway.logo_url} alt={gateway.gateway_name} style={{ height: '50px', width: 'auto' }} />
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
                                 </div>
                                 {selectedGateway === 'Token' && (
                                     <div className="mb-6">

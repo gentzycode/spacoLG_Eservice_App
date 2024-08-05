@@ -18,7 +18,7 @@ const ManageTokens = () => {
     const [refresh, setRefresh] = useState(false);
 
     const fetchData = () => {
-        if (user) {
+        if (user && user.id) {
             setLoading(true);
             getTotalTokens(token, user.id, setTotalTokens, setError, setLoading);
             getTotalTokenValue(token, user.id, setTotalValue, setError, setLoading);
@@ -59,10 +59,10 @@ const ManageTokens = () => {
             {showGenerateModal && (
                 <GenerateTokenModal
                     closeModal={handleCloseModal}
-                    agentId={user.id}
+                    agentId={user?.id} // Add optional chaining
                 />
             )}
-            <TokensHistory token={token} agentId={user.id} />
+            <TokensHistory token={token} agentId={user?.id} /> {/* Add optional chaining */}
         </div>
     );
 };

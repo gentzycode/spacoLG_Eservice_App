@@ -12,11 +12,7 @@ const TokenUsageHistoryModal = ({ tokenId, closeModal }) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                await getTokenUsageHistory(token, user.id, setUsageHistory, setError, setLoading);
-            } catch (err) {
-                setError('Failed to fetch usage history');
-            }
+            await getTokenUsageHistory(token, user.id, setUsageHistory, setError, setLoading);
         };
         fetchData();
     }, [token, user.id]);
@@ -47,8 +43,8 @@ const TokenUsageHistoryModal = ({ tokenId, closeModal }) => {
                         <tbody>
                             {usageHistory.map((history, index) => (
                                 <tr key={index} className="border border-gray-300">
-                                    <td className="p-2 text-gray-600 border border-gray-300">{history.created_at}</td>
-                                    <td className="p-2 text-gray-600 border border-gray-300">₦{Number(history.amount).toLocaleString()}</td>
+                                    <td className="p-2 text-gray-600 border border-gray-300">{history.date_used}</td>
+                                    <td className="p-2 text-gray-600 border border-gray-300">₦{Number(history.amount_used).toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>

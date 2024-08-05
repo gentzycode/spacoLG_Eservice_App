@@ -80,7 +80,7 @@ const Landing2 = () => {
 
                 <div className="w-full flex justify-center py-12">
                     <div className="grid gap-12 md:grid-cols-3 px-6">
-                        <div className="bg-[#f4f7f4] dark:bg-gray-600 rounded-md p-8 shadow-md">
+                        <div className="bg-[#f4f7f4] dark:bg-gray-700 rounded-md p-8 shadow-md">
                             <h1 className="text-2xl mb-4 font-semibold text-center text-[#0d544c] dark:text-white">
                                 Request for a Service
                             </h1>
@@ -96,7 +96,7 @@ const Landing2 = () => {
                                 </button>
                             </div>
                         </div>
-                        <div className="bg-[#f4f7f4] dark:bg-gray-600 rounded-md p-8 shadow-md">
+                        <div className="bg-[#f4f7f4] dark:bg-gray-700 rounded-md p-8 shadow-md">
                             <h1 className="text-2xl mb-4 font-semibold text-center text-[#0d544c] dark:text-white">
                                 Manage your Requests
                             </h1>
@@ -112,7 +112,7 @@ const Landing2 = () => {
                                 </button>
                             </div>
                         </div>
-                        <div className="bg-[#f4f7f4] dark:bg-gray-600 rounded-md p-8 shadow-md">
+                        <div className="bg-[#f4f7f4] dark:bg-gray-700 rounded-md p-8 shadow-md">
                             <h1 className="text-2xl mb-4 font-semibold text-center text-[#0d544c] dark:text-white">
                                 Check your Request Status
                             </h1>
@@ -131,7 +131,7 @@ const Landing2 = () => {
                     </div>
                 </div>
 
-                <div className="w-full bg-[#f4f7f4] dark:bg-gray-600 py-12">
+                <div className="w-full bg-[#f4f7f4] dark:bg-gray-800 py-12">
                     <div className="flex justify-center text-2xl font-bold pt-6 border-[#0d544c] dark:text-white">
                         <span className="py-3 uppercase">Available E-Services</span>
                     </div>
@@ -141,7 +141,7 @@ const Landing2 = () => {
                     <div className="flex justify-center my-16">
                         <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4 px-4">
                             {services.map((service, index) => (
-                                <div key={index} className="bg-white dark:bg-gray-600 rounded-md py-6 px-4 shadow-md cursor-pointer transition duration-300 ease-in-out transform hover:scale-105" onClick={() => navigate(service.url)}>
+                                <div key={index} className="bg-[#f4f7f4] dark:bg-gray-700 rounded-md py-6 px-4 shadow-md cursor-pointer transition duration-300 ease-in-out transform hover:scale-105" onClick={() => navigate(service.url)}>
                                     <div className="flex justify-center text-4xl text-[#0d544c] dark:text-white mb-4">
                                         <service.icon />
                                     </div>

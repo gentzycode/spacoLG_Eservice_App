@@ -4,12 +4,12 @@ import { formatDate } from '../../../apis/functions';
 import TokenUsageHistoryModal from './TokenUsageHistoryModal';
 import { getUserTokens } from '../../../apis/authActions';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Logo from '../../../assets/abia512_512logo.png'; // Import your logo
 
 const TokensHistory = ({ token, agentId }) => {
+    const [selectedTokens, setSelectedTokens] = useState([]);
     const [selectedToken, setSelectedToken] = useState(null);
-    const [columnsVisible, setColumnsVisible] = useState({
-        updatedAt: false,
-    });
+    const [columnsVisible, setColumnsVisible] = useState({ updatedAt: false });
     const [filterText, setFilterText] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -34,6 +34,18 @@ const TokensHistory = ({ token, agentId }) => {
     }, [filterText, tokens]);
 
     const columns = [
+        {
+            name: <input type="checkbox" onChange={e => handleSelectAll(e.target.checked)} />,
+            selector: (row) => (
+                <input
+                    type="checkbox"
+                    checked={selectedTokens.includes(row.id)}
+                    onChange={() => handleSelectToken(row.id)}
+                />
+            ),
+            width: '60px',
+            center: true,
+        },
         {
             name: "No.",
             selector: (row, index) => index + 1,
@@ -131,6 +143,88 @@ const TokensHistory = ({ token, agentId }) => {
         },
     };
 
+    const handleSelectToken = (id) => {
+        setSelectedTokens(prev =>
+            prev.includes(id) ? prev.filter(tokenId => tokenId !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = (isSelected) => {
+        if (isSelected) {
+            setSelectedTokens(filteredItems.map(item => item.id));
+        } else {
+            setSelectedTokens([]);
+        }
+    };
+
+    const handlePrint = () => {
+        if (selectedTokens.length === 0) return;
+    
+        const printWindow = window.open('', '', 'height=600,width=800');
+        const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-GB');
+    
+        const getExpiryDate = (dateString) => {
+            const date = new Date(dateString);
+            date.setMonth(date.getMonth() + 1);
+            date.setDate(0); // Set to the last day of the month
+            return formatDate(date.toISOString());
+        };
+    
+        // Generate a random number for watermark
+        const generateRandomNumber = () => Math.floor(Math.random() * 1000000);
+        const randomNumber = generateRandomNumber();
+    
+        const watermarkText = `AUTHENTIC ${randomNumber}`;
+    
+        const printContent = selectedTokens
+            .map(tokenId => tokens.find(token => token.id === tokenId))
+            .filter(token => token)
+            .map(token => `
+                <div style="display: inline-block; width: 30%; position: relative; border: 2px solid #000; border-radius: 8px; padding: 20px; margin: 10px;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.1; font-size: 60px; color: #000; pointer-events: none;">
+                        ${watermarkText}
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <img src="${Logo}" style="width: 60px; height: auto; margin-right: 20px;" />
+                       <p style="margin: 5px 0;"> ${token.agent_id}</p>
+                        <div>
+                            <p style="margin: 5px 0;"><strong>Token:</strong> <strong>${token.token}</strong></p>
+                            <p style="margin: 5px 0;"><strong>Value:</strong> ₦${Number(token.value).toLocaleString()}</p>
+                            <p style="margin: 5px 0;"><strong>Created At:</strong> ${formatDate(token.created_at)}</p>
+                            <p style="margin: 5px 0;"><strong>Expiry Date:</strong> ${getExpiryDate(token.created_at)}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <strong>To:</strong> _______________
+                    </div>
+                </div>
+            `).join('');
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print Tokens</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    h2 { margin: 0; }
+                    p { margin: 0; }
+                    img { display: block; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #555; }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+                <div class="footer">
+                    <p>For verification of this token, visit the LGA E-Services Portal.</p>
+                    <p>© 2024 Copyright LGA E-Services Solution.</p>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    };    
+    
     return (
         <div className="mt-8 container">
             <h2 className="text-2xl font-bold mb-4 text-[#0d544c]">Tokens History</h2>
@@ -160,12 +254,26 @@ const TokensHistory = ({ token, agentId }) => {
                 ) : tokens.length === 0 ? (
                     <div>No tokens found.</div>
                 ) : (
-                    <DataTable
-                        columns={columns}
-                        data={filteredItems}
-                        pagination
-                        customStyles={customStyles}
-                    />
+                    <>
+                        <DataTable
+                            columns={columns}
+                            data={filteredItems}
+                            pagination
+                            paginationPerPage={10}
+                            paginationRowsPerPageOptions={[10, 20, 30, 50, 100, 150, 200, filteredItems.length]}
+                            customStyles={customStyles}
+                        />
+                        {selectedTokens.length > 0 && (
+                            <div className="flex justify-end mt-4">
+                                <button
+                                    onClick={handlePrint}
+                                    className="bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700 transition-all duration-300"
+                                >
+                                    Print Selected Tokens
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
             {selectedToken && (

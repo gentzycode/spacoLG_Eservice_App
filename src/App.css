@@ -1,4 +1,4 @@
-/* src/App.css */
+/* Existing styles in App.css */
 body {
   background-color: #f4f6f8;
 }
@@ -381,4 +381,84 @@ h2 {
   color: #fff;
   background-color: #007bff;
   border-color: #007bff;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
+/* Modal Container */
+.modal-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, rgba(13, 84, 76, 1) 0%, rgba(72, 187, 120, 1) 100%);
+  padding: 10px;
+  border-radius: 8px 8px 0 0;
+  color: white;
+}
+
+/* Modal Title */
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Close Button */
+.close-button {
+  color: white;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Pulse effect for the success message */
+.animate-pulse {
+  animation: pulse 1s ease-out infinite;
 }

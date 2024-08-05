@@ -740,6 +740,28 @@ export const getInvoiceById = async (token, invoiceId) => {
     }
 };
 
+export const fetchEserviceItems = async (token, setEserviceItems, setError, setLoading) => {
+    setLoading(true);
+
+    try {
+        const response = await axios.get('/eservice-items', {
+            headers: { 
+                'Accept': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            }
+        });
+        setEserviceItems(response.data.data);
+    } catch (err) {
+        if (!err.response) {
+            setError('No Response from Server');
+        } else {
+            setError(err.response.data.message || 'Failed to fetch e-service items');
+        }
+    } finally {
+        setLoading(false);
+    }
+};
+
 export const generateInvoice = async (token, payload, setInvoiceData, setError, setLoading) => {
     setLoading(true);
 
@@ -757,15 +779,15 @@ export const generateInvoice = async (token, payload, setInvoiceData, setError, 
             setError('No Response from Server');
         } else {
             console.log(err.response.data);
-            setError(err.response.data);
+            setError(err.response.data.message || 'Failed to generate invoice');
         }
+    } finally {
+        setLoading(false);
     }
-
-    setLoading(false);
 };
 
 // Pay Invoice by ID
-export const payInvoiceById = async (token, id, payload) => {
+export const payInvoiceById = async (token, id, payload, onSuccess, onError, setIsLoading) => {
     try {
         const response = await axios.post(`/invoices/${id}/pay`, payload, {
             headers: {
@@ -774,12 +796,28 @@ export const payInvoiceById = async (token, id, payload) => {
             },
         });
 
+        // Call onSuccess callback if provided
+        if (onSuccess) {
+            onSuccess(response.data);
+        }
+        
         return response.data;
     } catch (err) {
-        console.error('Error paying invoice by ID:', err);
-        throw err.response ? err.response.data : new Error('No response from server');
+        // Set error and log detailed information
+        const errorResponse = err.response ? err.response.data : new Error('No response from server');
+        console.error('Error paying invoice by ID:', errorResponse);
+
+        // Call onError callback if provided
+        if (onError) {
+            onError(errorResponse);
+        }
+
+        throw errorResponse;
+    } finally {
+        setIsLoading(false);
     }
 };
+
 
 // Pay Invoice by Reference Number
 export const payInvoiceByReference = async (token, payload) => {
@@ -915,5 +953,75 @@ export const updateCorporate = async (token, id, payload) => {
         return response.data.data;
     } catch (err) {
         throw err.response ? err.response.data : new Error('No response from server');
+    }
+};
+
+export const generateBulkTokens = async (token, agentId, payload) => {
+    try {
+        const response = await axios.post(`/agents/${agentId}/tokens/generate-bulk`, payload, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (err) {
+        if (!err?.response) {
+            throw new Error('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            throw new Error(err.response.data);
+        }
+    }
+};
+
+export const quickUseToken = async (token, agentId, payload) => {
+    try {
+        const response = await axios.post(`/agents/${agentId}/tokens/quick-use`, payload, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (err) {
+        if (!err.response) {
+            throw new Error('No Response from Server');
+        } else {
+            console.log(err.response.data);
+            throw new Error(err.response.data.message || 'Failed to use token');
+        }
+    }
+};
+
+export const getEserviceItems = async (token) => {
+    try {
+        const response = await axios.get('/eservice-items', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        console.log('Fetched eService Items:', response.data.data); // Debugging line
+        return response.data.data; // Access the data field correctly
+    } catch (err) {
+        console.error('Error fetching eService Items:', err); // Debugging line
+        throw new Error(err.response?.data?.message || 'Failed to fetch eService items');
+    }
+};
+
+export const getIdentifiers = async (token) => {
+    try {
+        const response = await axios.get('/identifiers', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.data.data;
+    } catch (err) {
+        console.error('Error fetching identifiers:', err);
+        throw new Error(err.response?.data?.message || 'Failed to fetch identifiers');
     }
 };
