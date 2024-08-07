@@ -29,7 +29,7 @@ const RefillModal = ({ paymentGateways, closeModal, agentId, onSuccess }) => {
                 closeModal();
             }
         } catch (err) {
-            setError('Failed to initiate refill');
+            setError('Failed to initiate refill. Please try another payment option');
             setLoading(false);
         }
     };
