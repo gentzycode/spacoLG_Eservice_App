@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaSun, FaMoon, FaBaby, FaIdBadge, FaUsers, FaTrashAlt, FaRoad, FaCertificate, FaMoneyCheckAlt, FaTicketAlt } from 'react-icons/fa';
 import PublicLinks from '../../common/PublicLinks';
 import Confetti from 'react-confetti';
-import Logo from '../../assets/abia512_512logo.png';
+import Logo from '../../assets/ansg_logo.png';
 
 const services = [
     { title: "Birth Certificate", icon: FaBaby, url: "/services" },

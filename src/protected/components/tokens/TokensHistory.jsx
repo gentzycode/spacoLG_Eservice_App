@@ -4,7 +4,7 @@ import { formatDate } from '../../../apis/functions';
 import TokenUsageHistoryModal from './TokenUsageHistoryModal';
 import { getUserTokens } from '../../../apis/authActions';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Logo from '../../../assets/abia512_512logo.png'; // Import your logo
+import Logo from '../../../assets/ansg_logo.png'; // Import your logo
 
 const TokensHistory = ({ token, agentId }) => {
     const [selectedTokens, setSelectedTokens] = useState([]);
