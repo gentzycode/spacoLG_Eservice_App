@@ -1,238 +1,288 @@
-import React, { useState, useEffect } from 'react';
-import { AiOutlineClose, AiOutlineCopy, AiOutlineEdit } from 'react-icons/ai';
+import React, { useState, useContext, useEffect } from 'react';
+import { AuthContext } from '../../../context/AuthContext';
+import { createCorporate, updateCorporate, checkEmailExists, checkMobileExists, checkRegistrationNumberExists } from '../../../apis/authActions';
+import { AiOutlineClose, AiOutlineEdit } from 'react-icons/ai';
+import Confetti from 'react-confetti';
+import QRCode from 'qrcode.react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const CorporateModal = ({ corporate, onClose, onSave }) => {
+const CorporateModal = ({ closeModal, corporate, viewMode = false, onSave }) => {
+    const { token, user } = useContext(AuthContext);
     const [formData, setFormData] = useState({
-        company_name: '',
-        registration_number: '',
-        address: '',
-        contact_person: '',
-        email: '',
-        phone_number: '',
-        receive_sms: false,
-        receive_email: false
+        company_name: corporate?.company_name || '',
+        registration_number: corporate?.registration_number || '',
+        address: corporate?.address || '',
+        contact_person: corporate?.contact_person || '',
+        email: corporate?.email || '',
+        phone_number: corporate?.phone_number || '',
+        receive_sms: corporate?.receive_sms || false,
+        receive_email: corporate?.receive_email || false,
     });
-    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const [isEditing, setIsEditing] = useState(false);
+    const [corporateData, setCorporateData] = useState(null);
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [isFormValid, setIsFormValid] = useState(false);
+    const [emailExists, setEmailExists] = useState(false);
+    const [mobileExists, setMobileExists] = useState(false);
+    const [registrationNumberExists, setRegistrationNumberExists] = useState(false);
+    const [isEditable, setIsEditable] = useState(!viewMode);
 
     useEffect(() => {
-        if (corporate) {
-            setFormData({
-                company_name: corporate.company_name || '',
-                registration_number: corporate.registration_number || '',
-                address: corporate.address || '',
-                contact_person: corporate.contact_person || '',
-                email: corporate.email || '',
-                phone_number: corporate.phone_number || '',
-                receive_sms: corporate.receive_sms || false,
-                receive_email: corporate.receive_email || false
-            });
-        } else {
-            setIsEditing(true); // Enable editing for new corporate
-        }
-    }, [corporate]);
+        const isValid = formData.company_name && formData.registration_number && formData.address && formData.contact_person && formData.email && !emailExists && !mobileExists && !registrationNumberExists;
+        setIsFormValid(isValid);
+    }, [formData, emailExists, mobileExists, registrationNumberExists]);
 
-    const handleChange = (e) => {
+    const handleChange = async (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+        setFormData({
+            ...formData,
+            [name]: type === 'checkbox' ? checked : value,
+        });
+
+        if (name === 'email') {
+            try {
+                const exists = await checkEmailExists(value);
+                setEmailExists(exists);
+                if (exists) {
+                    toast.error('Email already exists. Please use another one.');
+                }
+            } catch (error) {
+                console.error('Error during email validation:', error);
+            }
+        } else if (name === 'phone_number') {
+            try {
+                const exists = await checkMobileExists(value);
+                setMobileExists(exists);
+                if (exists) {
+                    toast.error('Phone number already exists. Please use another one.');
+                }
+            } catch (error) {
+                console.error('Error during phone number validation:', error);
+            }
+        } else if (name === 'registration_number') {
+            try {
+                const exists = await checkRegistrationNumberExists(value);
+                setRegistrationNumberExists(exists);
+                if (exists) {
+                    toast.error('Registration number already exists. Please use another one.');
+                }
+            } catch (error) {
+                console.error('Error during registration number validation:', error);
+            }
+        }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setLoading(true);
-        setErrors({});
+        setShowConfetti(false);
+
         try {
-            await onSave(corporate ? corporate.id : null, formData);
-            onClose();  // Close modal on successful save
+            const payload = {
+                ...formData,
+                created_by_id: user.id,
+            };
+
+            let response;
+            if (corporate) {
+                response = await updateCorporate(token, corporate.id, payload);
+            } else {
+                response = await createCorporate(token, payload);
+            }
+
+            setCorporateData(response);
+            if (response) {
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 3000);
+                toast.success('Corporate saved successfully!');
+                if (onSave) onSave();
+                closeModal();
+            }
         } catch (err) {
-            console.error('Error submitting form data:', err.response.data);  // Log error response
-            setErrors(err.response.data.errors || {});  // Capture and set errors from the response
+            console.error("Error saving corporate:", err);
+            if (err.response && err.response.status === 422) {
+                const errorMessages = err.response.data.errors;
+                Object.keys(errorMessages).forEach((key) => {
+                    toast.error(errorMessages[key].join(', '));
+                });
+            } else {
+                toast.error('Failed to save corporate.');
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const handleCopy = (text) => {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Reference copied to clipboard');
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-        });
-    };
-
-    const toggleEdit = () => {
-        setIsEditing(!isEditing);
-    };
-
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-auto">
-            <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl max-h-full transform transition-all duration-300 scale-100 hover:scale-105 overflow-auto">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-3xl font-bold text-gray-800">
-                        {isEditing ? (corporate ? 'Edit Corporate' : 'Add Corporate') : 'View Corporate'}
-                    </h2>
-                    <div className="flex space-x-2">
-                        {corporate && !isEditing && (
-                            <button
-                                className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                                onClick={toggleEdit}
-                            >
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+            {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
+            <div className="modal-container max-w-2xl w-full p-8 rounded-lg shadow-xl transform transition-all duration-300 scale-100 hover:scale-105 bg-white overflow-y-auto max-h-[80vh]">
+                <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-blue-700 to-blue-500 p-4 rounded-t-lg">
+                    <h2 className="text-2xl font-bold text-white">{corporate ? 'Corporate Details' : 'Add New Corporate'}</h2>
+                    <div className="flex items-center space-x-2">
+                        {viewMode && (
+                            <button className="text-white" onClick={() => setIsEditable(true)}>
                                 <AiOutlineEdit size={24} />
                             </button>
                         )}
-                        <button className="text-gray-500 hover:text-gray-700 transition-colors duration-200" onClick={onClose}>
+                        <button className="text-white" onClick={closeModal}>
                             <AiOutlineClose size={24} />
                         </button>
                     </div>
                 </div>
-                {errors.message && <div className="text-red-500 mb-4 text-center">{errors.message}</div>}
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-gray-700 font-bold mb-2">Company Name</label>
+                <div className="form-container">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-gray-700">
+                                Company Name <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 transition-all duration-200"
                                 name="company_name"
                                 value={formData.company_name}
                                 onChange={handleChange}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
+                                disabled={!isEditable}
                             />
-                            {errors.company_name && <div className="text-red-500">{errors.company_name[0]}</div>}
                         </div>
-                        <div>
-                            <label className="block text-gray-700 font-bold mb-2">Registration Number</label>
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-gray-700">
+                                Registration Number <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 transition-all duration-200"
                                 name="registration_number"
                                 value={formData.registration_number}
                                 onChange={handleChange}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
+                                disabled={!isEditable}
                             />
-                            {errors.registration_number && <div className="text-red-500">{errors.registration_number[0]}</div>}
+                            {registrationNumberExists && <p className="text-red-500 mt-2">Registration number already exists. Please use another one.</p>}
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-gray-700 font-bold mb-2">Address</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-gray-700">
+                                Address <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 transition-all duration-200"
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
+                                disabled={!isEditable}
                             />
-                            {errors.address && <div className="text-red-500">{errors.address[0]}</div>}
                         </div>
-                        <div>
-                            <label className="block text-gray-700 font-bold mb-2">Contact Person</label>
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-gray-700">
+                                Contact Person <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 transition-all duration-200"
                                 name="contact_person"
                                 value={formData.contact_person}
                                 onChange={handleChange}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
+                                disabled={!isEditable}
                             />
-                            {errors.contact_person && <div className="text-red-500">{errors.contact_person[0]}</div>}
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-gray-700 font-bold mb-2">Email</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-gray-700">
+                                Email <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="email"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 transition-all duration-200"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
+                                disabled={!isEditable}
                             />
-                            {errors.email && <div className="text-red-500">{errors.email[0]}</div>}
+                            {emailExists && <p className="text-red-500 mt-2">Email already exists. Please use another one.</p>}
                         </div>
-                        <div>
-                            <label className="block text-gray-700 font-bold mb-2">Phone Number</label>
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-gray-700">
+                                Phone Number <span className="text-red-500">*</span>
+                            </label>
                             <input
                                 type="text"
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 transition-all duration-200"
                                 name="phone_number"
                                 value={formData.phone_number}
                                 onChange={handleChange}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
+                                disabled={!isEditable}
                             />
-                            {errors.phone_number && <div className="text-red-500">{errors.phone_number[0]}</div>}
+                            {mobileExists && <p className="text-red-500 mt-2">Phone number already exists. Please use another one.</p>}
                         </div>
                     </div>
-                    {corporate && (
-                        <div className="mb-4">
-                            <label className="block text-gray-700 font-bold mb-2">Corporate Reference</label>
-                            <div className="flex items-center">
+                    <div className="mb-6">
+                        <label className="block mb-2 text-lg font-medium text-gray-700">Receive Notifications</label>
+                        <div className="flex items-center space-x-4">
+                            <label className="flex items-center">
                                 <input
-                                    type="text"
-                                    name="corporate_ref"
-                                    value={corporate.corporate_ref}
-                                    className="w-full p-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                    readOnly
+                                    type="checkbox"
+                                    className="form-checkbox h-5 w-5 text-blue-600"
+                                    name="receive_sms"
+                                    checked={formData.receive_sms}
+                                    onChange={handleChange}
+                                    disabled={!isEditable}
                                 />
-                                <button
-                                    type="button"
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-all duration-300"
-                                    onClick={() => handleCopy(corporate.corporate_ref)}
-                                >
-                                    <AiOutlineCopy size={24} />
-                                </button>
-                            </div>
+                                <span className="ml-2 text-gray-700">Receive SMS</span>
+                            </label>
+                            <label className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    className="form-checkbox h-5 w-5 text-blue-600"
+                                    name="receive_email"
+                                    checked={formData.receive_email}
+                                    onChange={handleChange}
+                                    disabled={!isEditable}
+                                />
+                                <span className="ml-2 text-gray-700">Receive Email</span>
+                            </label>
+                        </div>
+                    </div>
+                    {corporateData && (
+                        <div className="mb-4 p-4 bg-blue-100 text-blue-700 rounded-lg">
+                            <h3>Corporate saved successfully!</h3>
+                            <p><strong>Name:</strong> {corporateData.company_name}</p>
+                            <p><strong>Email:</strong> {corporateData.email}</p>
+                            <p><strong>Reference:</strong> {corporateData.corporate_ref}</p>
+                            <QRCode value={JSON.stringify({
+                                name: `${corporateData.company_name}`,
+                                reference: corporateData.corporate_ref,
+                                email: corporateData.email
+                            })} />
                         </div>
                     )}
-                    <div className="mb-4">
-                        <label className="flex items-center">
-                            <input
-                                type="checkbox"
-                                name="receive_sms"
-                                checked={formData.receive_sms}
-                                onChange={handleChange}
-                                className="form-checkbox"
-                                disabled={!isEditing}
-                            />
-                            <span className="ml-2 text-gray-700">Receive SMS</span>
-                        </label>
-                        {errors.receive_sms && <div className="text-red-500">{errors.receive_sms[0]}</div>}
-                    </div>
-                    <div className="mb-4">
-                        <label className="flex items-center">
-                            <input
-                                type="checkbox"
-                                name="receive_email"
-                                checked={formData.receive_email}
-                                onChange={handleChange}
-                                className="form-checkbox"
-                                disabled={!isEditing}
-                            />
-                            <span className="ml-2 text-gray-700">Receive Email</span>
-                        </label>
-                        {errors.receive_email && <div className="text-red-500">{errors.receive_email[0]}</div>}
-                    </div>
-                    {isEditing && (
-                        <div className="flex justify-end">
+                    <div className="flex justify-end space-x-4">
+                        <button
+                            className="px-5 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-700 transition-all duration-200"
+                            onClick={closeModal}
+                        >
+                            Close
+                        </button>
+                        {isEditable && (
                             <button
-                                type="submit"
-                                className={`px-5 py-3 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-all duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={loading}
+                                className={`px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-800 transition-all duration-200 ${!isFormValid || loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={handleSubmit}
+                                disabled={!isFormValid || loading}
                             >
-                                {loading ? 'Saving...' : 'Save'}
+                                {loading ? 'Submitting...' : 'Save Corporate'}
                             </button>
-                        </div>
-                    )}
-                </form>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -902,11 +902,16 @@ export const getIndividuals = async (token, setIndividuals, setError, setLoading
 export const createIndividual = async (token, payload) => {
     try {
         const response = await axios.post('/individuals', payload, {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
+        console.log("Server response:", response.data);
         return response.data.data;
     } catch (err) {
-        throw err.response ? err.response.data : new Error('No response from server');
+        console.error('Axios error:', err.response?.data); // Log error for better debuggingthrow err.response ? err.response.data : newError('No response from server');
     }
 };
 
@@ -1023,5 +1028,35 @@ export const getIdentifiers = async (token) => {
     } catch (err) {
         console.error('Error fetching identifiers:', err);
         throw new Error(err.response?.data?.message || 'Failed to fetch identifiers');
+    }
+};
+
+export const checkEmailExists = async (email) => {
+    try {
+        const response = await axios.get('/check-email', { params: { email } });
+        return response.data.exists; // Assume the backend returns a boolean `exists` field
+    } catch (error) {
+        console.error('Error checking email:', error);
+        throw error;
+    }
+};
+
+export const checkMobileExists = async (mobile_number) => {
+    try {
+        const response = await axios.get('/check-mobile', { params: { mobile_number } });
+        return response.data.exists; // Assume the backend returns a boolean `exists` field
+    } catch (error) {
+        console.error('Error checking mobile number:', error);
+        throw error;
+    }
+};
+
+export const checkRegistrationNumberExists = async (registration_number) => {
+    try {
+        const response = await axios.get('/check-registration-number', { params: { registration_number } });
+        return response.data.exists; // Assume the backend returns a boolean `exists` field
+    } catch (error) {
+        console.error('Error checking registration number:', error);
+        throw error;
     }
 };

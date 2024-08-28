@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
-import axios from '../../../apis/baseUrl'; // Correct path to baseUrl
+import axios from '../../../apis/baseUrl'; 
 import { AuthContext } from '../../../context/AuthContext';
-import { getEserviceItems, generateInvoice } from '../../../apis/authActions'; // Import getEserviceItems
+import { getEserviceItems, generateInvoice } from '../../../apis/authActions'; 
 import { AiOutlineClose } from 'react-icons/ai';
-import Confetti from 'react-confetti'; // Import Confetti for celebration effect
-import Select from 'react-select'; // Import react-select
+import Confetti from 'react-confetti'; 
+import Select from 'react-select'; 
 
-const GenerateInvoiceModal = ({ closeModal }) => {
+const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNumber }) => {
     const { token } = useContext(AuthContext);
-    const [category, setCategory] = useState({ value: 'individual', label: 'Individual' });
-    const [referenceNumber, setReferenceNumber] = useState('');
+    const [category, setCategory] = useState(defaultCategory || { value: 'individual', label: 'Individual' });
+    const [referenceNumber, setReferenceNumber] = useState(defaultReferenceNumber || '');
     const [eserviceItemId, setEserviceItemId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -79,13 +79,13 @@ const GenerateInvoiceModal = ({ closeModal }) => {
     const customStyles = {
         control: (provided) => ({
             ...provided,
-            borderColor: '#10B981', // Green border color
-            '&:hover': { borderColor: '#10B981' }, // Green border color on hover
+            borderColor: '#10B981',
+            '&:hover': { borderColor: '#10B981' },
             boxShadow: 'none'
         }),
         option: (provided, state) => ({
             ...provided,
-            backgroundColor: state.isSelected ? '#10B981' : state.isFocused ? '#D1FAE5' : 'white', // Green background for selected item and light green for focused item
+            backgroundColor: state.isSelected ? '#10B981' : state.isFocused ? '#D1FAE5' : 'white',
             color: state.isSelected ? 'white' : 'black',
             '&:hover': {
                 backgroundColor: '#D1FAE5',
@@ -94,7 +94,7 @@ const GenerateInvoiceModal = ({ closeModal }) => {
         }),
         singleValue: (provided) => ({
             ...provided,
-            color: '#10B981', // Green color for selected value
+            color: '#10B981',
         })
     };
 

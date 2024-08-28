@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AiOutlineClose, AiOutlineCopy, AiOutlineEdit } from 'react-icons/ai';
+import { AuthContext } from '../../../context/AuthContext';
 
 const IndividualModal = ({ individual, onClose, onSave }) => {
+    const { user } = useContext(AuthContext); // Get the logged-in user from the AuthContext
     const [formData, setFormData] = useState({
         first_name: '',
         middle_name: '',
@@ -9,7 +11,8 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
         gender: '',
         date_of_birth: '',
         address: '',
-        email: ''
+        email: '',
+        mobile_number: '', // Include mobile number field
     });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -24,7 +27,8 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                 gender: individual.gender || '',
                 date_of_birth: individual.date_of_birth || '',
                 address: individual.address || '',
-                email: individual.email || ''
+                email: individual.email || '',
+                mobile_number: individual.mobile_number || '',
             });
         } else {
             setIsEditing(true); // Enable editing for new individual
@@ -39,21 +43,30 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
         e.preventDefault();
         setLoading(true);
         setErrors({});
+    
+        const payload = {
+            ...formData,
+            created_by_id: user.id, // Ensure the ID of the logged-in user is included
+        };
+    
+        console.log("Submitting payload:", payload); // Log the payload to verify its content
+    
         try {
-            await onSave(individual ? individual.id : null, formData);
+            await onSave(individual ? individual.id : null, payload);
             onClose();  // Close modal on successful save
         } catch (err) {
-            setErrors(err.response.data.errors || {});
+            console.error('Error response:', err.response?.data); // Log error response for debugging
+            setErrors(err.response?.data?.errors || {});
         } finally {
             setLoading(false);
         }
-    };
-
+    };    
+    
     const handleCopy = (text) => {
         navigator.clipboard.writeText(text).then(() => {
             alert('Reference copied to clipboard');
         }).catch(err => {
-            console.error('Failed to copy: ', err);
+            console.error('Failed to copy:', err);
         });
     };
 
@@ -93,7 +106,6 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                                 value={formData.first_name}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
                             />
                             {errors.first_name && <div className="text-red-500">{errors.first_name[0]}</div>}
@@ -106,7 +118,6 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                                 value={formData.middle_name}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                             />
                         </div>
                     </div>
@@ -119,7 +130,6 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                                 value={formData.last_name}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
                             />
                             {errors.last_name && <div className="text-red-500">{errors.last_name[0]}</div>}
@@ -131,7 +141,6 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                                 value={formData.gender}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
                             >
                                 <option value="">Select Gender</option>
@@ -150,7 +159,6 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                                 value={formData.date_of_birth}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
                             />
                             {errors.date_of_birth && <div className="text-red-500">{errors.date_of_birth[0]}</div>}
@@ -163,24 +171,35 @@ const IndividualModal = ({ individual, onClose, onSave }) => {
                                 value={formData.address}
                                 onChange={handleChange}
                                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                                readOnly={!isEditing}
                                 required
                             />
                             {errors.address && <div className="text-red-500">{errors.address[0]}</div>}
                         </div>
                     </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 font-bold mb-2">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
-                            readOnly={!isEditing}
-                            required
-                        />
-                        {errors.email && <div className="text-red-500">{errors.email[0]}</div>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block text-gray-700 font-bold mb-2">Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
+                                required
+                            />
+                            {errors.email && <div className="text-red-500">{errors.email[0]}</div>}
+                        </div>
+                        <div>
+                            <label className="block text-gray-700 font-bold mb-2">Mobile Number</label>
+                            <input
+                                type="text"
+                                name="mobile_number"
+                                value={formData.mobile_number}
+                                onChange={handleChange}
+                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
+                            />
+                            {errors.mobile_number && <div className="text-red-500">{errors.mobile_number[0]}</div>}
+                        </div>
                     </div>
                     {individual && (
                         <div className="mb-4">
