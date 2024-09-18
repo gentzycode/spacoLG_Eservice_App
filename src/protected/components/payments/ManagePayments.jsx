@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
-import { getEnabledPaymentGateways, getPaymentGatewayByID, initiatePayment, paymentConfirm } from '../../../apis/authActions';
+import { getEnabledPaymentGateways, initiatePayment, paymentConfirm } from '../../../apis/authActions';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import InitializePayment from './InitializePayment';
 
@@ -8,19 +8,13 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
     const { token, refreshRecord } = useContext(AuthContext);
 
     const [gateways, setGateways] = useState([]);
-    const [pgateway, setPgateway] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [initpay, setInitpay] = useState(null);
     const [initializing, setInitializing] = useState(false);
     const [confirm, setConfirm] = useState(null);
     const [confirming, setConfirming] = useState(false);
     const [selected, setSelected] = useState(null);
-
-    const selectPaymentGateway = (e) => {
-        getPaymentGatewayByID(token, e, setPgateway, setError, setLoading);
-    }
 
     const initializePayment = (payment_gateway_id) => {
         setSelected(payment_gateway_id);
@@ -45,19 +39,15 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
         setTimeout(() => afterPaymentConfirmation(), 2000);
     }
 
-    if (error !== null) {
-        alert(error?.message);
-        setError(null);
-    }
-
-    // Fetch payment gateways on component mount
     useEffect(() => {
         getEnabledPaymentGateways(token, setGateways, setError, setFetching);
     }, [token]);
 
     return (
         <div>
+            {/* Overlay */}
             <div className='fixed inset-0 z-50 bg-black bg-opacity-50 transition-opacity'></div>
+            {/* Modal */}
             <div className="fixed inset-0 z-50 overflow-y-auto">
                 <div className="flex mt-16 md:mt-0 md:min-h-full items-end justify-center p-4 sm:items-center sm:p-0">
                     <div className='w-full md:w-[500px] bg-white border border-gray-400 dark:text-gray-700 rounded-md px-6 py-1'>
@@ -73,19 +63,25 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
                             </span>
                         </div>
                         <div className='py-4'>
-                            <div className='w-full flex justify-between flex-wrap'>
+                            <div className='w-full flex justify-between flex-wrap gap-2'>
                                 {fetching ? (
                                     <i className='text-gray-500'>Loading payment gateways...</i>
                                 ) : (
-                                    gateways.length > 0 ? gateways.map(gtway => (
-                                        <div
-                                            key={gtway?.id}
-                                            className={`w-[48%] flex justify-center items-center rounded-md bg-gray-100 p-4 cursor-pointer ${(selected !== null && selected === gtway?.id) && 'border border-[#0d544c]'}`}
-                                            onClick={() => initializePayment(gtway?.id)}
-                                        >
-                                            <img src={gtway.logo_url} alt={gtway.gateway_name} />
-                                        </div>
-                                    )) : (
+                                    gateways.length > 0 ? (
+                                        gateways.map(gtway => (
+                                            <div
+                                                key={gtway?.id}
+                                                className={`w-[48%] h-24 flex justify-center items-center rounded-md p-2 cursor-pointer transition-transform transform hover:scale-105 hover:shadow-lg ${(selected !== null && selected === gtway?.id) && 'border border-[#0d544c] shadow-lg'}`}
+                                                onClick={() => initializePayment(gtway?.id)}
+                                            >
+                                                <img
+                                                    src={gtway.logo_url}
+                                                    alt={gtway.gateway_name}
+                                                    className="max-w-full max-h-full object-contain"
+                                                />
+                                            </div>
+                                        ))
+                                    ) : (
                                         <i className='text-gray-500'>No payment gateways available.</i>
                                     )
                                 )}
