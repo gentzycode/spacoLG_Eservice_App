@@ -6,7 +6,7 @@ import CorporateModal from '../components/payerManagement/CorporateModal';
 import { AiOutlineSearch, AiOutlineCopy, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import ReactPaginate from 'react-paginate';
 import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
+//import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
