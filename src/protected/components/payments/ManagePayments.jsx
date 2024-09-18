@@ -28,7 +28,7 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
             payment_gateway_id,
             purpose: "CERT_APP",
             purpose_id
-        }
+        };
         initiatePayment(token, data, setInitpay, setError, setInitializing);
     }
 
@@ -50,21 +50,10 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
         setError(null);
     }
 
+    // Fetch payment gateways on component mount
     useEffect(() => {
-        getEnabledPaymentGateways(token, (response) => {
-            console.log('API Response:', response); // Log the response
-            if (response.status === 'success' && response.data) {
-                setGateways(response.data);
-                console.log('Gateways Set:', response.data); // Log the gateways set
-            } else {
-                setError('Failed to fetch payment gateways');
-            }
-        }, setError, setFetching);
+        getEnabledPaymentGateways(token, setGateways, setError, setFetching);
     }, [token]);
-
-    useEffect(() => {
-        console.log('Gateways State:', gateways); // Log the gateways state
-    }, [gateways]);
 
     return (
         <div>
@@ -85,35 +74,47 @@ const ManagePayments = ({ purpose, purpose_id, order_no, setPaymodal }) => {
                         </div>
                         <div className='py-4'>
                             <div className='w-full flex justify-between flex-wrap'>
-                                {gateways.length > 0 ? gateways.map(gtway => (
-                                    <div
-                                        key={gtway?.id}
-                                        className={`w-[48%] flex justify-center items-center rounded-md bg-gray-100 p-4 cursor-pointer ${(selected !== null && selected === gtway?.id) && 'border border-[#0d544c]'}`}
-                                        onClick={() => initializePayment(gtway?.id)}
-                                    >
-                                        <img src={gtway.logo_url} alt={gtway.gateway_name} />
-                                    </div>
-                                )) : <i className='text-gray-500'>Loading payment gateways...</i>}
+                                {fetching ? (
+                                    <i className='text-gray-500'>Loading payment gateways...</i>
+                                ) : (
+                                    gateways.length > 0 ? gateways.map(gtway => (
+                                        <div
+                                            key={gtway?.id}
+                                            className={`w-[48%] flex justify-center items-center rounded-md bg-gray-100 p-4 cursor-pointer ${(selected !== null && selected === gtway?.id) && 'border border-[#0d544c]'}`}
+                                            onClick={() => initializePayment(gtway?.id)}
+                                        >
+                                            <img src={gtway.logo_url} alt={gtway.gateway_name} />
+                                        </div>
+                                    )) : (
+                                        <i className='text-gray-500'>No payment gateways available.</i>
+                                    )
+                                )}
                             </div>
                             <div className='my-6'>
-                                {initializing ? <i className='text-gray-500'>Initializing...</i>
-                                    : initpay !== null && (
-                                        confirm !== null ? <div className='p-3 bg-green-200 text-[#0d544c] font-bold'>{confirm?.message}</div>
-                                            : <InitializePayment
+                                {initializing ? (
+                                    <i className='text-gray-500'>Initializing...</i>
+                                ) : (
+                                    initpay !== null && (
+                                        confirm !== null ? (
+                                            <div className='p-3 bg-green-200 text-[#0d544c] font-bold'>{confirm?.message}</div>
+                                        ) : (
+                                            <InitializePayment
                                                 initpay={initpay}
                                                 confirming={confirming}
                                                 confirmPayment={confirmPayment}
                                                 order_no={order_no}
                                                 appID={purpose_id}
                                             />
-                                    )}
+                                        )
+                                    )
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
 export default ManagePayments;

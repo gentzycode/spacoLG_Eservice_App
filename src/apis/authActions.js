@@ -472,28 +472,34 @@ export const getUserWallet = async (token, userId, setWallet, setError, setLoadi
     setLoading(false);
 };
 
-export const getEnabledPaymentGateways = async (token, setGateways, setError, setLoading) => {
-    setLoading(true);
+// Refactored getEnabledPaymentGateways function
+export const getEnabledPaymentGateways = async (token, setGateways, setError, setFetching) => {
+    setFetching(true);
+
     try {
-        const response = await axios.get('/paymentgateway/enabled', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
+        const response = await axios.get('paymentgateway/enabled', {
+            headers: { 
+                'Accept': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            }
         });
-        console.log("Payment gateways response:", response.data);
-        setGateways(response.data.data);
-        setLoading(false);
+
+        console.log('API Response:', response.data);
+        setGateways(response.data?.data || []);
+        setError(null);  // Clear any previous errors
     } catch (err) {
-        if (!err?.response) {
+        if (!err.response) {
             setError('No Response from Server');
         } else {
             console.log(err.response.data);
-            setError(err.response.data.message);
+            const errorMessage = err.response.data?.message || 'Error fetching payment gateways';
+            setError(errorMessage);
         }
-        setLoading(false);
+    } finally {
+        setFetching(false);
     }
 };
+
 
 
 // tokens start here
