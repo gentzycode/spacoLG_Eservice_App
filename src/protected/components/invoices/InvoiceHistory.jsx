@@ -4,7 +4,7 @@ import { formatDate } from '../../../apis/functions';
 import { getUnpaidInvoices, getPaidInvoicesByAgent, getInvoiceById } from '../../../apis/authActions';
 import { AiOutlineEye, AiOutlinePrinter } from 'react-icons/ai';
 import InvoiceDetailModal from './InvoiceDetailModal';
-import logo from '../../../assets/abia512_512logo.png';  // Import the logo
+import logo from '../../../assets/ansg_logo.png';  // Import the logo
 
 const InvoiceHistory = ({ token, agentId }) => {
     const [unpaidInvoices, setUnpaidInvoices] = useState([]);

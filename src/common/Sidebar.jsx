@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import Logo from '../assets/abia512_512logo.png';
+import Logo from '../assets/ansg_logo.png';
 import { AiOutlineClose } from 'react-icons/ai';
 import NavDB from './NavDB';
 
