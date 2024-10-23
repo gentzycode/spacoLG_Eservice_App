@@ -36,28 +36,50 @@ const PayInvoiceModal = ({ closeModal }) => {
     const handlePayInvoice = async () => {
         setIsLoading(true);
         setError(null);
+        
         try {
+            // Construct the base payload with the reference number
             const payload = {
                 reference_number: referenceNumber,
-                token: tokenValue,
             };
+    
+            // If 'Token' gateway is selected, add token to the payload
+            if (selectedGateway === 'Token') {
+                if (!tokenValue) {
+                    setError('Please enter a valid token.');
+                    setIsLoading(false);
+                    return;
+                }
+                payload.token = tokenValue; // Add the token for token-based payments
+            } else if (selectedGateway) {
+                // Add the selected gateway to the payload if it's not 'Token'
+                payload.payment_gateway = selectedGateway;
+            } else {
+                setError('Please select a payment method.');
+                setIsLoading(false);
+                return;
+            }
+    
+            // Send the payload to the backend
             const response = await payInvoiceByReference(token, payload);
-            if (response.status === 'error' && response.message === 'Insufficient token balance') {
-                setError('Insufficient token balance');
+            if (response.status === 'error') {
+                setError(response.message);
+            } else if (response.payment_url) {
+                // If there's a payment URL, redirect to the gateway (for example, Paystack)
+                window.location.href = response.payment_url;
             } else {
                 setSuccessMessage('Invoice paid successfully');
                 setTimeout(() => {
-                    window.location.reload(); // Refresh the page after payment
+                    window.location.reload();
                 }, 2000);
             }
         } catch (err) {
             setError('Failed to pay invoice');
-            console.error('Error paying invoice:', err);
         } finally {
             setIsLoading(false);
         }
     };
-
+    
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
             <div className="modal-container bg-white p-8 rounded-lg shadow-2xl w-full max-w-3xl transform transition-all duration-300 scale-100 hover:scale-105">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDate } from '../../../apis/functions';
-import { getEnabledPaymentGateways2, payInvoiceById, getUserWallet } from '../../../apis/authActions';
+import { getEnabledPaymentGateways2, payInvoiceById, getUserWallet, payWithPaystack } from '../../../apis/authActions'; // Add Paystack API here
 import logo from '../../../assets/abia512_512logo.png';
 import { AiOutlineLoading } from 'react-icons/ai';
 
@@ -30,6 +30,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
             setError('Failed to fetch payment gateways');
             console.error('Error fetching payment gateways:', err);
         }
+        setIsLoading(false);
     };
 
     const fetchWalletBalance = async () => {
@@ -41,6 +42,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
             setError('Failed to fetch wallet balance');
             console.error('Error fetching wallet balance:', err);
         }
+        setIsLoading(false);
     };
 
     const handlePayWithToken = async () => {
@@ -86,6 +88,33 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
         }
     };
 
+    const handlePayWithPaystack = async () => {
+        setIsLoading(true);
+        try {
+            await payWithPaystack(token, invoice.reference_number, invoice.amount, agentId); // Call Paystack action
+            onPaymentSuccess();
+            alert('Redirecting to Paystack...');
+            onClose();
+        } catch (err) {
+            setError('Failed to initiate Paystack payment');
+            console.error('Error initiating Paystack payment:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handlePayment = () => {
+        if (selectedGateway === 'Token') {
+            handlePayWithToken();
+        } else if (selectedGateway === 'E-Wallet') {
+            handlePayWithWallet();
+        } else if (selectedGateway === 'Paystack') {
+            handlePayWithPaystack(); // Handle Paystack payment here
+        } else {
+            setError('Invalid payment method selected.');
+        }
+    };
+
     const handlePrint = () => {
         const printContent = printRef.current.innerHTML;
         const printWindow = window.open('', '', 'height=500,width=300');
@@ -100,7 +129,8 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-auto relative">
+            {/* Increased modal width */}
+            <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-auto relative">
                 <div ref={printRef} className="mb-6">
                     <div className="flex justify-center mb-6">
                         <img src={logo} alt="Logo" className="h-10" />
@@ -108,6 +138,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                     <h2 className="text-2xl font-bold mb-4 text-gray-700 text-center">Invoice Details</h2>
                     <table className="w-full mb-6 border-collapse">
                         <tbody>
+                            {/* Table rows */}
                             <tr className="border-b">
                                 <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Reference Number:</td>
                                 <td className="py-2 px-4">{invoice.reference_number}</td>
@@ -174,7 +205,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                     <>
                         <div className="mb-6">
                             <label className="block mb-2 text-lg font-medium text-gray-700">Payment Method</label>
-                            <div className="flex justify-center space-x-8 mb-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {gateways.length === 0 ? (
                                     <div>No payment gateways available</div>
                                 ) : (
@@ -185,9 +216,9 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                                                 setSelectedGateway(gateway.gateway_name);
                                                 if (gateway.gateway_name === 'E-Wallet') fetchWalletBalance();
                                             }}
-                                            className={`cursor-pointer p-4 rounded-lg ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow' : ''}`}
+                                            className={`cursor-pointer flex flex-col items-center p-4 rounded-lg border border-gray-300 hover:shadow-lg transition-all duration-200 ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow border-green-500' : ''}`}
                                         >
-                                            <img src={gateway.logo_url} alt={gateway.gateway_name} style={{ height: '50px', width: 'auto' }} />
+                                            <img src={gateway.logo_url} alt={gateway.gateway_name} className="h-20 w-20 object-contain mb-2" />
                                         </div>
                                     ))
                                 )}
@@ -222,7 +253,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                         )}
                         <div className="flex justify-end">
                             <button
-                                onClick={selectedGateway === 'Token' ? handlePayWithToken : handlePayWithWallet}
+                                onClick={handlePayment}
                                 className={`bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700 transition-all duration-300 ${isLoading || (!tokenValue && selectedGateway === 'Token') || (selectedGateway === 'E-Wallet' && !walletChecked) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 disabled={isLoading || (!tokenValue && selectedGateway === 'Token') || (selectedGateway === 'E-Wallet' && !walletChecked)}
                             >
