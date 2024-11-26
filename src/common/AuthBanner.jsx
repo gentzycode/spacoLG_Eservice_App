@@ -1,4 +1,4 @@
-import Logo from '../assets/abia512_512logo.png'
+import Logo from '../assets/ansg_logo.png'
 import AuthImg from '../assets/illustrator.png'
 import { AiFillHome } from 'react-icons/ai'
 import { useNavigate } from 'react-router-dom'

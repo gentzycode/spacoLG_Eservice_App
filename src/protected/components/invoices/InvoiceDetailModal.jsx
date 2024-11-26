@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDate } from '../../../apis/functions';
 import { getEnabledPaymentGateways2, payInvoiceById, getUserWallet } from '../../../apis/authActions';
-import logo from '../../../assets/abia512_512logo.png';
+import logo from '../../../assets/ansg_logo.png';
 import { AiOutlineLoading } from 'react-icons/ai';
 
 const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess }) => {
