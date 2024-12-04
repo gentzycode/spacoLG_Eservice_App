@@ -77,7 +77,7 @@ const Service = () => {
                 <div className="w-full col-span-1 mt-12 my-0 md:my-8 flex justify-center px-4 md:px-0">
                     <div className='w-full md:w-2/3 px-2 md:px-0'>
                         <div className='mt-6 md:mt-0'>
-                            <Link to='/services' className='mt-4'>
+                        <Link to='/' className='mt-4'>
                                 <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
                             </Link>
                         </div>

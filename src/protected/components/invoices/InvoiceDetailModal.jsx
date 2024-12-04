@@ -1,125 +1,60 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { formatDate } from '../../../apis/functions';
-import { getEnabledPaymentGateways2, payInvoiceById, getUserWallet, payWithPaystack } from '../../../apis/authActions'; // Add Paystack API here
+import { PaystackButton } from 'react-paystack';
+import axios from 'axios';
 import logo from '../../../assets/abia512_512logo.png';
-import { AiOutlineLoading } from 'react-icons/ai';
 
 const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [gateways, setGateways] = useState([]);
-    const [selectedGateway, setSelectedGateway] = useState(null);
-    const [walletBalance, setWalletBalance] = useState(0);
-    const [tokenValue, setTokenValue] = useState('');
     const [error, setError] = useState(null);
-    const [walletChecked, setWalletChecked] = useState(false);
     const printRef = useRef();
 
-    useEffect(() => {
-        if (invoice.status === 'unpaid') {
-            fetchPaymentGateways();
-        }
-    }, [invoice.status]);
-
-    const fetchPaymentGateways = async () => {
+    const handlePaystackSuccess = async (reference) => {
         setIsLoading(true);
         try {
-            await getEnabledPaymentGateways2(token, (data) => {
-                setGateways(data);
-            }, setError, setIsLoading);
-        } catch (err) {
-            setError('Failed to fetch payment gateways');
-            console.error('Error fetching payment gateways:', err);
-        }
-        setIsLoading(false);
-    };
-
-    const fetchWalletBalance = async () => {
-        setIsLoading(true);
-        try {
-            const walletData = await getUserWallet(token, agentId, setError, setIsLoading);
-            setWalletBalance(walletData.wallet.balance);
-        } catch (err) {
-            setError('Failed to fetch wallet balance');
-            console.error('Error fetching wallet balance:', err);
-        }
-        setIsLoading(false);
-    };
-
-    const handlePayWithToken = async () => {
-        setIsLoading(true);
-        try {
-            const payload = { token: tokenValue };
-            await payInvoiceById(token, invoice.id, payload, () => {}, (err) => {
-                if (err.status === 'error' && err.message.errors) {
-                    const errors = err.message.errors;
-                    if (errors.includes('The token field is required.')) {
-                        setError('Please enter a token to proceed with this payment method.');
-                    } else {
-                        setError('Validation error: ' + errors.join(', '));
-                    }
-                } else {
-                    setError('Failed to pay invoice with token');
+            const response = await axios.post(
+                '/auth/verify-inline-paystack',
+                { reference },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
                 }
-            }, setIsLoading);
-            onPaymentSuccess();
-            alert('Invoice paid successfully');
-            onClose();
+            );
+            if (response.data.success) {
+                alert('Payment verified successfully!');
+                onPaymentSuccess();
+                onClose();
+            } else {
+                setError('Payment verification failed.');
+            }
         } catch (err) {
-            setError('Failed to pay invoice with token');
-            console.error('Error paying invoice with token:', err);
+            console.error('Verification error:', err);
+            setError('Error verifying payment. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handlePayWithWallet = async () => {
-        setIsLoading(true);
-        try {
-            const payload = { value: invoice.amount };
-            await payInvoiceById(token, invoice.id, payload, () => {}, setError, setIsLoading);
-            onPaymentSuccess();
-            alert('Invoice paid successfully');
-            onClose();
-        } catch (err) {
-            setError('Failed to pay invoice with wallet');
-            console.error('Error paying invoice with wallet:', err);
-        } finally {
-            setIsLoading(false);
-        }
+    const handlePaystackClose = () => {
+        console.log('Payment dialog closed.');
     };
 
-    const handlePayWithPaystack = async () => {
-        setIsLoading(true);
-        try {
-            await payWithPaystack(token, invoice.reference_number, invoice.amount, agentId); // Call Paystack action
-            onPaymentSuccess();
-            alert('Redirecting to Paystack...');
-            onClose();
-        } catch (err) {
-            setError('Failed to initiate Paystack payment');
-            console.error('Error initiating Paystack payment:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handlePayment = () => {
-        if (selectedGateway === 'Token') {
-            handlePayWithToken();
-        } else if (selectedGateway === 'E-Wallet') {
-            handlePayWithWallet();
-        } else if (selectedGateway === 'Paystack') {
-            handlePayWithPaystack(); // Handle Paystack payment here
-        } else {
-            setError('Invalid payment method selected.');
-        }
+    const publicKey = process.env.REACT_APP_PAYSTACK_PUBLIC_KEY;
+    const paystackProps = {
+        email: invoice.payer_email || 'example@example.com',
+        amount: invoice.amount * 100, // Convert to kobo
+        publicKey,
+        reference: invoice.reference_number,
+        onSuccess: (response) => handlePaystackSuccess(response.reference),
+        onClose: handlePaystackClose,
     };
 
     const handlePrint = () => {
         const printContent = printRef.current.innerHTML;
         const printWindow = window.open('', '', 'height=500,width=300');
         printWindow.document.write('<html><head><title>Invoice</title>');
-        printWindow.document.write('<style>@media print { body { margin: 0; font-size: 12px; } table { width: 100%; } th, td { text-align: left; padding: 5px; } img { width: 100px; height: auto; } }</style>');
+        printWindow.document.write('<style>@media print { body { margin: 0; font-size: 12px; } table { width: 100%; } }</style>');
         printWindow.document.write('</head><body>');
         printWindow.document.write(printContent);
         printWindow.document.write('</body></html>');
@@ -129,7 +64,6 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-            {/* Increased modal width */}
             <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-auto relative">
                 <div ref={printRef} className="mb-6">
                     <div className="flex justify-center mb-6">
@@ -138,139 +72,33 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                     <h2 className="text-2xl font-bold mb-4 text-gray-700 text-center">Invoice Details</h2>
                     <table className="w-full mb-6 border-collapse">
                         <tbody>
-                            {/* Table rows */}
                             <tr className="border-b">
                                 <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Reference Number:</td>
                                 <td className="py-2 px-4">{invoice.reference_number}</td>
-                            </tr>
-                            <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Payer ID:</td>
-                                <td className="py-2 px-4">{invoice.payer_id}</td>
-                            </tr>
-                            <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Payer Type:</td>
-                                <td className="py-2 px-4">{invoice.payer_type}</td>
-                            </tr>
-                            <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Purpose:</td>
-                                <td className="py-2 px-4">{invoice.purpose}</td>
-                            </tr>
-                            <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Description:</td>
-                                <td className="py-2 px-4">{invoice.description}</td>
                             </tr>
                             <tr className="border-b">
                                 <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Amount:</td>
                                 <td className="py-2 px-4">₦{Number(invoice.amount).toLocaleString()}</td>
                             </tr>
                             <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Payment Option Used:</td>
-                                <td className="py-2 px-4">{invoice.payment_option_used}</td>
-                            </tr>
-                            <tr className="border-b">
                                 <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Status:</td>
                                 <td className="py-2 px-4">{invoice.status}</td>
-                            </tr>
-                            <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Paid At:</td>
-                                <td className="py-2 px-4">{invoice.paid_at ? formatDate(invoice.paid_at) : 'N/A'}</td>
-                            </tr>
-                            <tr className="border-b">
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Created At:</td>
-                                <td className="py-2 px-4">{formatDate(invoice.created_at)}</td>
-                            </tr>
-                            <tr>
-                                <td className="font-bold text-gray-600 py-2 px-4 bg-gray-100">Updated At:</td>
-                                <td className="py-2 px-4">{formatDate(invoice.updated_at)}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                {invoice.status === 'paid' ? (
-                    <div className="flex justify-end space-x-4">
-                        <button
-                            onClick={handlePrint}
-                            className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition-all duration-300"
-                        >
-                            Print
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="bg-red-600 text-white py-2 px-6 rounded hover:bg-red-700 transition-all duration-300"
-                        >
-                            Close
-                        </button>
+                {invoice.status === 'unpaid' ? (
+                    <div>
+                        <PaystackButton {...paystackProps} className="bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700 transition-all duration-300" />
                     </div>
                 ) : (
-                    <>
-                        <div className="mb-6">
-                            <label className="block mb-2 text-lg font-medium text-gray-700">Payment Method</label>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {gateways.length === 0 ? (
-                                    <div>No payment gateways available</div>
-                                ) : (
-                                    gateways.map((gateway) => (
-                                        <div
-                                            key={gateway.id}
-                                            onClick={() => {
-                                                setSelectedGateway(gateway.gateway_name);
-                                                if (gateway.gateway_name === 'E-Wallet') fetchWalletBalance();
-                                            }}
-                                            className={`cursor-pointer flex flex-col items-center p-4 rounded-lg border border-gray-300 hover:shadow-lg transition-all duration-200 ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow border-green-500' : ''}`}
-                                        >
-                                            <img src={gateway.logo_url} alt={gateway.gateway_name} className="h-20 w-20 object-contain mb-2" />
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                        {selectedGateway === 'Token' && (
-                            <div className="mb-6">
-                                <label htmlFor="token" className="block text-gray-700 font-bold mb-2">Token</label>
-                                <input
-                                    type="text"
-                                    id="token"
-                                    value={tokenValue}
-                                    onChange={(e) => setTokenValue(e.target.value)}
-                                    className="form-control w-full"
-                                    placeholder="Enter Token"
-                                />
-                            </div>
-                        )}
-                        {selectedGateway === 'E-Wallet' && (
-                            <div className="mb-6">
-                                <p className="mb-2">Wallet Balance: ₦{Number(walletBalance).toLocaleString()}</p>
-                                <label className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={walletChecked}
-                                        onChange={(e) => setWalletChecked(e.target.checked)}
-                                        className="form-checkbox"
-                                    />
-                                    <span className="ml-2">Are you sure you wish to pay for this invoice with reference {invoice.reference_number} with funds from your wallet? This cannot be undone.</span>
-                                </label>
-                            </div>
-                        )}
-                        <div className="flex justify-end">
-                            <button
-                                onClick={handlePayment}
-                                className={`bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700 transition-all duration-300 ${isLoading || (!tokenValue && selectedGateway === 'Token') || (selectedGateway === 'E-Wallet' && !walletChecked) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={isLoading || (!tokenValue && selectedGateway === 'Token') || (selectedGateway === 'E-Wallet' && !walletChecked)}
-                            >
-                                {isLoading ? 'Processing...' : 'Pay'}
-                            </button>
-                        </div>
-                        {error && (
-                            <div className="text-red-500 mt-4 text-center">{error}</div>
-                        )}
-                    </>
+                    <div className="flex justify-end space-x-4">
+                        <button onClick={handlePrint} className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition-all duration-300">Print</button>
+                        <button onClick={onClose} className="bg-red-600 text-white py-2 px-6 rounded hover:bg-red-700 transition-all duration-300">Close</button>
+                    </div>
                 )}
-                <button
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-red-600 font-bold text-lg"
-                >
-                    &times;
-                </button>
+                {error && <div className="text-red-500 mt-4 text-center">{error}</div>}
+                <button onClick={onClose} className="absolute top-2 right-2 text-red-600 font-bold text-lg">&times;</button>
             </div>
         </div>
     );

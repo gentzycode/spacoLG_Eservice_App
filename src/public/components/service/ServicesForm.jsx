@@ -42,9 +42,9 @@ const ServicesForm = ({ toggleShowform }) => {
         <div className={`${location.pathname === '/application' ? 'w-full' : 'w-4/5'}`}>
             {location.pathname === '/services' ?
                 <div className='mt-12'>
-                    <Link to='/' className='mt-4'>
-                        <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
-                    </Link>
+<Link to='/' className='mt-4'>
+                                <div className='bg-gray-100 rounded-full p-1 w-max'><GrFormPreviousLink size={30} /></div>
+                            </Link>
                 </div> : 
                 <div className='mt-2'>
                     <div className='bg-[#cce2d6] mt-4 rounded-full p-1 w-max cursor-pointer' onClick={() => toggleShowform()}><GrFormPreviousLink size={30} /></div>
