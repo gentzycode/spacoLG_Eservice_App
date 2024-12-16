@@ -27,6 +27,7 @@ import TransactionStatus from './protected/pages/TransactionStatus';
 import ManageTokens from './protected/pages/ManageTokens';
 import ManageInvoices from './protected/pages/ManageInvoices';
 import PayerManagement from './protected/pages/PayerManagement'; // New import
+import Reports from './protected/pages/Reports'; // New import
 
 function App() {
     const [loading, setLoading] = useState(true);
@@ -62,6 +63,7 @@ function App() {
                         <Route path="/manage-tokens" element={<ManageTokens />} />
                         <Route path="/manage-invoices" element={<ManageInvoices />} />
                         <Route path="/manage-payers" element={<PayerManagement />} /> {/* New route */}
+                        <Route path="/reports" element={<Reports />} />
                         {routes.map(({ path, component: Component }) => (
                             <Route
                                 key={path}

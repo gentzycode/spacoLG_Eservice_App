@@ -45,7 +45,7 @@ const NavDB = () => {
         { id: 4, title: "Applications", url: "/applications", icon: <HiDocumentText size={17} /> },
         { id: 5, title: "General Invoices", url: "/manage-invoices", icon: <MdOutlineAccountBalanceWallet size={17} /> },
         { id: 6, title: "Manage Payers", url: "/manage-payers", icon: <FaRegUser size={17} /> },
-        { id: 7, title: "Reports", url: "#", icon: <FaRegListAlt size={17} /> },
+        { id: 7, title: "Reports", url: "/reports", icon: <FaRegListAlt size={17} /> },
     ];
 
     useEffect(() => {

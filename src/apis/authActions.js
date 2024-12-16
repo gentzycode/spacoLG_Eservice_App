@@ -552,6 +552,34 @@ export const getTokenUsageHistory = async (token, agentId, setUsageHistory, setE
     setLoading(false);
 };
 
+export const getUsedTokens = async (token, agentId, setUsedTokens, setError, setLoading) => {
+    setLoading(true);
+
+    try {
+        const response = await axios.get(`/auth/agents/${agentId}/tokens/used`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.status === 'success') {
+            setUsedTokens(response.data.token_usages); // Fetch `token_usages` from the response
+        } else {
+            throw new Error(response.data.message || 'Failed to fetch used tokens');
+        }
+    } catch (err) {
+        if (!err?.response) {
+            setError('No Response from Server');
+        } else {
+            console.error(err.response.data);
+            setError(err.response.data.message || 'Error fetching used tokens');
+        }
+    }
+
+    setLoading(false);
+};
+
 
 export const generateToken = async (token, agentId, payload) => {
     try {
