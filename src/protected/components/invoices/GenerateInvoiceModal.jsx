@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import axios from '../../../apis/baseUrl';
 import { AuthContext } from '../../../context/AuthContext';
 import { getEserviceItems, generateInvoice } from '../../../apis/authActions';
 import { AiOutlineClose } from 'react-icons/ai';
@@ -38,7 +39,9 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
     const fetchPayerInfo = async () => {
         setLoading(true);
         try {
-            const endpoint = category.value === 'individual' ? '/individuals/reference/${referenceNumber}' : '/corporates/reference/${referenceNumber}';
+            const endpoint = category.value === 'individual'
+                ? `/individuals/reference/${referenceNumber}`
+                : `/corporates/reference/${referenceNumber}`;
             const response = await axios.get(endpoint, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
