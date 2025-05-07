@@ -1,35 +1,40 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Login from '../components/auth/Login';
 import Register from '../components/auth/Register';
 import ForgotPassword from '../components/auth/ForgotPassword';
 import ResetPassword from '../components/auth/ResetPassword';
 import AuthLoader from '../../common/AuthLoader';
-import AuthBanner from '../../common/AuthBanner';
 import VerifyEmail from '../components/auth/VerifyEmail';
 import { Link, useNavigate } from 'react-router-dom';
 import { GrFormPreviousLink } from 'react-icons/gr';
 import PublicLinks from '../../common/PublicLinks';
 import { FaSun, FaMoon } from 'react-icons/fa';
+import Logo from '../../assets/logo-bayelsa.png';
+import BannerImage from '../../assets/landingBanner.png';
 
 const Auth = () => {
     const navigate = useNavigate();
-    const [curraction, setCurraction] = useState('login');
+    const [currentAction, setCurrentAction] = useState('login');
     const [loading, setLoading] = useState(false);
+    const [darkMode, setDarkMode] = useState(() => {
+        const savedMode = localStorage.getItem('darkMode');
+        return savedMode ? JSON.parse(savedMode) : false;
+    });
 
     const handleChildUpdate = (val) => {
         setLoading(true);
-        setCurraction(val);
+        setCurrentAction(val);
         setTimeout(() => setLoading(false), 1000);
     };
 
     let child;
-    if (curraction === 'register') {
+    if (currentAction === 'register') {
         child = <Register handleChildUpdate={handleChildUpdate} />;
-    } else if (curraction === 'forgot-password') {
+    } else if (currentAction === 'forgot-password') {
         child = <ForgotPassword handleChildUpdate={handleChildUpdate} />;
-    } else if (curraction === 'reset-password') {
+    } else if (currentAction === 'reset-password') {
         child = <ResetPassword handleChildUpdate={handleChildUpdate} />;
-    } else if (curraction === 'verify-email') {
+    } else if (currentAction === 'verify-email') {
         child = <VerifyEmail handleChildUpdate={handleChildUpdate} />;
     } else {
         child = <Login handleChildUpdate={handleChildUpdate} />;
@@ -39,17 +44,8 @@ const Auth = () => {
         localStorage.getItem('isLoggedIn') && navigate('/dashboard');
     }, []);
 
-    const [darkMode, setDarkMode] = useState(() => {
-        const savedMode = localStorage.getItem('darkMode');
-        return savedMode ? JSON.parse(savedMode) : false;
-    });
-
     useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+        document.documentElement.classList.toggle('dark', darkMode);
     }, [darkMode]);
 
     const toggleDarkMode = () => {
@@ -61,31 +57,145 @@ const Auth = () => {
     };
 
     return (
-        <div className="dark:bg-gray-800">
+        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 font-poppins transition-colors duration-500">
             <PublicLinks />
-            <div className="w-full md:h-screen grid md:grid-cols-2 px-0 m-0">
-                <AuthBanner />
-                <div className="w-full col-span-1 mt-12 md:mt-0 md:my-8 flex justify-center items-center px-4 md:px-0">
-                    <div className='w-full md:w-2/3'>
-                        <div className='mt-6 md:mt-0'>
-                            <Link to='/' className='mt-4'>
-                                <div className='bg-gray-100 dark:bg-gray-700 rounded-full p-1 w-max'>
-                                    <GrFormPreviousLink size={30} />
+            <div className="flex-grow grid grid-cols-1 lg:grid-cols-2 w-full">
+                {/* Left Section with Banner Background */}
+                <div className="hidden lg:flex relative bg-cover bg-center" style={{ backgroundImage: `url(${BannerImage})` }}>
+                    <div className="absolute inset-0 bg-black/40"></div>
+                    <div className="relative z-10 flex flex-col justify-center items-center p-12 w-full h-full">
+                        <img 
+                            src={Logo} 
+                            alt="Yenagoa LG Logo" 
+                            className="w-32 h-32 rounded-full border-4 border-white shadow-xl mb-8 animate-fadeIn" 
+                        />
+                        <h1 className="text-4xl font-bold text-white mb-4 text-center animate-fadeIn">
+                            Yenagoa <span className="text-[#F0B652]">E-Services</span>
+                        </h1>
+                        <p className="text-xl text-gray-100 max-w-md text-center animate-fadeIn">
+                            Modern digital solutions for all local government services
+                        </p>
+                    </div>
+                </div>
+
+                {/* Right Section with Auth Form */}
+                <div className="flex justify-center items-center p-6 sm:p-12">
+                    <div className="w-full max-w-md space-y-6 animate-slideIn">
+                        {/* Header with Back Button and Dark Mode Toggle */}
+                        <div className="flex items-center justify-between">
+                            <Link to="/" className="group">
+                                <div className="flex items-center space-x-2">
+                                    <div className="bg-white dark:bg-gray-700 rounded-full p-2 shadow-md group-hover:shadow-lg transition-all">
+                                        <GrFormPreviousLink size={24} className="text-[#3B78BD] dark:text-[#F0B652]" />
+                                    </div>
+                                    <span className="text-[#3B78BD] dark:text-[#F0B652] font-medium group-hover:underline">
+                                        Back to Home
+                                    </span>
                                 </div>
                             </Link>
+                            <button
+                                onClick={toggleDarkMode}
+                                className="w-10 h-10 flex items-center justify-center bg-[#3B78BD] dark:bg-[#F0B652] text-white rounded-full shadow-md hover:shadow-lg transition-all"
+                                aria-label="Toggle dark mode"
+                            >
+                                {darkMode ? <FaSun size={16} /> : <FaMoon size={16} />}
+                            </button>
                         </div>
-                        {loading ? <AuthLoader /> : child}
+
+                        {/* Auth Form Card */}
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 sm:p-10 transition-all duration-300 hover:shadow-2xl">
+                            <div className="text-center mb-8">
+                                <h2 className="text-3xl font-bold text-[#3B78BD] dark:text-[#F0B652] mb-2 capitalize">
+                                    {currentAction.replace('-', ' ')}
+                                </h2>
+                                <div className="w-16 h-1 bg-[#F0B652] mx-auto mb-4"></div>
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    {currentAction === 'login' && 'Welcome back! Please enter your credentials'}
+                                    {currentAction === 'register' && 'Create an account to access all services'}
+                                    {currentAction === 'forgot-password' && 'Reset your password with your email'}
+                                    {currentAction === 'reset-password' && 'Set your new password'}
+                                    {currentAction === 'verify-email' && 'Verify your email address'}
+                                </p>
+                            </div>
+
+                            {loading ? (
+                                <div className="flex justify-center py-12">
+                                    <AuthLoader />
+                                </div>
+                            ) : (
+                                React.cloneElement(child, {
+                                    buttonColor: '#F0B652' // Passing the gold color to all auth components
+                                })
+                            )}
+                        </div>
+
+                        {/* Action Links */}
+                        <div className="text-center text-sm text-gray-600 dark:text-gray-300">
+                            {currentAction === 'login' && (
+                                <>
+                                    Don't have an account?{' '}
+                                    <button 
+                                        onClick={() => handleChildUpdate('register')}
+                                        className="text-[#3B78BD] dark:text-[#F0B652] font-medium hover:underline"
+                                    >
+                                        Sign up
+                                    </button>
+                                    <br />
+                                    <button 
+                                        onClick={() => handleChildUpdate('forgot-password')}
+                                        className="text-[#3B78BD] dark:text-[#F0B652] font-medium hover:underline mt-2"
+                                    >
+                                        Forgot password?
+                                    </button>
+                                </>
+                            )}
+                            {currentAction === 'register' && (
+                                <>
+                                    Already have an account?{' '}
+                                    <button 
+                                        onClick={() => handleChildUpdate('login')}
+                                        className="text-[#3B78BD] dark:text-[#F0B652] font-medium hover:underline"
+                                    >
+                                        Sign in
+                                    </button>
+                                </>
+                            )}
+                            {(currentAction === 'forgot-password' || currentAction === 'reset-password' || currentAction === 'verify-email') && (
+                                <button 
+                                    onClick={() => handleChildUpdate('login')}
+                                    className="text-[#3B78BD] dark:text-[#F0B652] font-medium hover:underline"
+                                >
+                                    Back to login
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="fixed bottom-4 right-4">
-                <button
-                    className="w-[50px] h-[50px] flex items-center justify-center bg-[#0d544c] rounded-full text-white font-medium shadow-xl transition duration-300 ease-in-out hover:bg-[#0a3a34]"
-                    onClick={toggleDarkMode}
-                >
-                    {darkMode ? <FaSun /> : <FaMoon />}
-                </button>
-            </div>
+
+            {/* Custom Animations */}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { 
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to { 
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.8s ease-out forwards;
+                }
+                .animate-slideIn {
+                    animation: slideIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

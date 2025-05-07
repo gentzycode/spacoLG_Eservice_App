@@ -7,7 +7,7 @@ import Envelope from "../../../assets/refresh_data.png";
 import CountdownTimer from "../../../common/CountdownTimer";
 
 const VerifyEmail = ({ handleChildUpdate }) => {
-    const { authObject, userid, userType } = useContext(AuthContext); // Ensure userType is available in the context
+    const { authObject, userid, userType } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [verification_code, setVerification_code] = useState();
@@ -23,7 +23,7 @@ const VerifyEmail = ({ handleChildUpdate }) => {
         const data = {
             user_id: userid,
             verification_code,
-            type: userType // Include type in the verification data
+            type: userType
         };
 
         verifyEmailCode(data, setVerified, setError, setVerifying);
@@ -67,28 +67,20 @@ const VerifyEmail = ({ handleChildUpdate }) => {
                     onChange={(e) => setVerification_code(e.target.value)}
                     required
                 />
-                <CountdownTimer user_id={userid} userType={userType} /> {/* Pass userType to CountdownTimer */}
+                <CountdownTimer user_id={userid} userType={userType} />
                 <div className=''>
                     {verifying ? 
-                        <button className='w-full flex justify-center p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-6 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-0 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             Proceed
                         </button>
                     }
-                    <div className='flex justify-end py-1 mt-1'>
-                        <span 
-                            className='cursor-pointer text-orange-500'
-                            onClick={() => handleChildUpdate('login')}
-                        >
-                            Go to Login
-                        </span>
-                    </div>
                 </div>
             </form>
         </div>
     );
-}
+};
 
 export default VerifyEmail;

@@ -33,31 +33,45 @@ const MyWallet = () => {
 
     const handleSuccess = () => {
         setShowRefillModal(false);
-        // Reload wallet data after successful transaction
         getUserWallet(token, user?.id, setWallet, setError, setLoading);
     };
 
     return (
-        <div className="w-full">
-            {error && <span className='text-red-600'>{error}</span>}
-            {loading ? <ProgressBarComponent /> : <div className="mt-8"><Wallet wallet={wallet} /></div>}
+        <div className="w-full p-4 sm:p-6 lg:p-8 font-poppins bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-500 animate-fadeIn">
+            {error && <div className="text-red-600 mb-4 text-center">{error}</div>}
+            {loading ? (
+                <ProgressBarComponent />
+            ) : (
+                <div className="mt-8">
+                    <Wallet wallet={wallet} />
+                </div>
+            )}
             <div className="w-full flex justify-end my-4">
-                <div
-                    className='w-[160px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
+                <button
+                    className="w-[160px] flex justify-center items-center space-x-2 rounded-lg py-2 px-4 bg-[#F0B652] hover:bg-[#3B78BD] text-white font-medium shadow-md hover:shadow-lg transition-all duration-300"
                     onClick={handleRefillClick}
                 >
                     <span>Refill Wallet</span>
-                </div>
+                </button>
             </div>
             {showRefillModal && (
                 <RefillModal
                     paymentGateways={paymentGateways}
                     closeModal={() => setShowRefillModal(false)}
-                    agentId={user?.id} // Add optional chaining
-                    onSuccess={handleSuccess} // Pass the handleSuccess callback
+                    agentId={user?.id}
+                    onSuccess={handleSuccess}
                 />
             )}
-            <WalletHistory token={token} agentId={user?.id} /> {/* Add optional chaining */}
+            <WalletHistory token={token} agentId={user?.id} />
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

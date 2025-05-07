@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
-import { getEnabledPaymentGateways2, payInvoiceByReference } from '../../../apis/authActions';
+import { getEnabledPaymentGateways, payInvoiceByReference } from '../../../apis/authActions';
 import { AiOutlineClose } from 'react-icons/ai';
 
 const PayInvoiceModal = ({ closeModal }) => {
@@ -8,7 +8,6 @@ const PayInvoiceModal = ({ closeModal }) => {
     const [referenceNumber, setReferenceNumber] = useState('');
     const [tokenValue, setTokenValue] = useState('');
     const [selectedGateway, setSelectedGateway] = useState(null);
-    const [walletBalance, setWalletBalance] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [gateways, setGateways] = useState([]);
@@ -22,12 +21,9 @@ const PayInvoiceModal = ({ closeModal }) => {
     const fetchPaymentGateways = async () => {
         setIsLoading(true);
         try {
-            await getEnabledPaymentGateways2(token, (data) => {
-                setGateways(data);
-            }, setError, setIsLoading);
+            await getEnabledPaymentGateways(token, setGateways, setError, setIsLoading);
         } catch (err) {
             setError('Failed to fetch payment gateways');
-            console.error('Error fetching payment gateways:', err);
         } finally {
             setIsLoading(false);
         }
@@ -36,36 +32,27 @@ const PayInvoiceModal = ({ closeModal }) => {
     const handlePayInvoice = async () => {
         setIsLoading(true);
         setError(null);
-        
         try {
-            // Construct the base payload with the reference number
-            const payload = {
-                reference_number: referenceNumber,
-            };
-    
-            // If 'Token' gateway is selected, add token to the payload
+            const payload = { reference_number: referenceNumber };
             if (selectedGateway === 'Token') {
                 if (!tokenValue) {
                     setError('Please enter a valid token.');
                     setIsLoading(false);
                     return;
                 }
-                payload.token = tokenValue; // Add the token for token-based payments
+                payload.token = tokenValue;
             } else if (selectedGateway) {
-                // Add the selected gateway to the payload if it's not 'Token'
                 payload.payment_gateway = selectedGateway;
             } else {
                 setError('Please select a payment method.');
                 setIsLoading(false);
                 return;
             }
-    
-            // Send the payload to the backend
+
             const response = await payInvoiceByReference(token, payload);
             if (response.status === 'error') {
                 setError(response.message);
             } else if (response.payment_url) {
-                // If there's a payment URL, redirect to the gateway (for example, Paystack)
                 window.location.href = response.payment_url;
             } else {
                 setSuccessMessage('Invoice paid successfully');
@@ -79,21 +66,21 @@ const PayInvoiceModal = ({ closeModal }) => {
             setIsLoading(false);
         }
     };
-    
+
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-            <div className="modal-container bg-white p-8 rounded-lg shadow-2xl w-full max-w-3xl transform transition-all duration-300 scale-100 hover:scale-105">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold text-gray-800">Pay Invoice</h2>
-                    <button className="text-gray-500 hover:text-gray-700 transition-colors duration-200" onClick={closeModal}>
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 animate-fadeIn">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-3xl transform transition-all duration-300 scale-100 hover:scale-105">
+                <div className="flex justify-between items-center mb-6 bg-gradient-to-r from-[#3B78BD] to-[#F0B652] p-4 rounded-t-lg">
+                    <h2 className="text-2xl font-bold text-white">Pay Invoice</h2>
+                    <button className="text-white hover:text-gray-200 transition-colors duration-200" onClick={closeModal}>
                         <AiOutlineClose size={24} />
                     </button>
                 </div>
                 <div className="mb-6">
-                    <label className="block mb-2 text-lg font-medium text-gray-700">Invoice Reference Number</label>
+                    <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Invoice Reference Number</label>
                     <input
                         type="text"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
+                        className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
                         value={referenceNumber}
                         onChange={(e) => setReferenceNumber(e.target.value)}
                         placeholder="Enter Invoice Reference Number"
@@ -101,10 +88,10 @@ const PayInvoiceModal = ({ closeModal }) => {
                 </div>
                 {selectedGateway === 'Token' && (
                     <div className="mb-6">
-                        <label className="block mb-2 text-lg font-medium text-gray-700">Token</label>
+                        <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Token</label>
                         <input
                             type="text"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-all duration-200"
+                            className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
                             value={tokenValue}
                             onChange={(e) => setTokenValue(e.target.value)}
                             placeholder="Enter Token"
@@ -112,16 +99,16 @@ const PayInvoiceModal = ({ closeModal }) => {
                     </div>
                 )}
                 <div className="mb-6">
-                    <label className="block mb-2 text-lg font-medium text-gray-700">Payment Method</label>
+                    <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Payment Method</label>
                     <div className="flex justify-center space-x-8 mb-6">
                         {gateways.length === 0 ? (
-                            <div>No payment gateways available</div>
+                            <div className="text-gray-600 dark:text-gray-300">No payment gateways available</div>
                         ) : (
                             gateways.map((gateway) => (
                                 <div
                                     key={gateway.id}
                                     onClick={() => setSelectedGateway(gateway.gateway_name)}
-                                    className={`cursor-pointer p-4 rounded-lg ${selectedGateway === gateway.gateway_name ? 'shadow-green-glow' : ''}`}
+                                    className={`cursor-pointer p-4 rounded-lg transition-all duration-300 ${selectedGateway === gateway.gateway_name ? 'border-2 border-[#3B78BD] dark:border-[#F0B652] shadow-lg' : 'border-2 border-transparent'}`}
                                 >
                                     <img src={gateway.logo_url} alt={gateway.gateway_name} style={{ height: '50px', width: 'auto' }} />
                                 </div>
@@ -130,19 +117,23 @@ const PayInvoiceModal = ({ closeModal }) => {
                     </div>
                 </div>
                 <div className="mb-6">
-                    <label className="flex items-center">
+                    <label className="flex items-center text-gray-700 dark:text-gray-300">
                         <input
                             type="checkbox"
                             checked={walletChecked}
                             onChange={(e) => setWalletChecked(e.target.checked)}
-                            className="form-checkbox"
+                            className="h-5 w-5 text-[#3B78BD] dark:text-[#F0B652] focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] border-gray-300 dark:border-gray-600 rounded"
                         />
                         <span className="ml-2">Confirm to pay the invoice with the provided details</span>
                     </label>
                 </div>
-                {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
+                {error && (
+                    <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
+                        {error}
+                    </div>
+                )}
                 {successMessage && (
-                    <div className="text-green-500 mb-4 text-center">
+                    <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg text-center">
                         {successMessage}
                     </div>
                 )}
@@ -154,7 +145,7 @@ const PayInvoiceModal = ({ closeModal }) => {
                         Close
                     </button>
                     <button
-                        className={`px-5 py-3 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-all duration-200 ${isLoading || !referenceNumber || !walletChecked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`px-5 py-3 bg-[#3B78BD] text-white rounded-lg transition-all duration-200 hover:bg-[#F0B652] ${isLoading || !referenceNumber || !walletChecked ? 'opacity-50 cursor-not-allowed' : ''}`}
                         onClick={handlePayInvoice}
                         disabled={isLoading || !referenceNumber || !walletChecked}
                     >
@@ -162,6 +153,15 @@ const PayInvoiceModal = ({ closeModal }) => {
                     </button>
                 </div>
             </div>
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

@@ -5,7 +5,6 @@ import { signIn } from '../../../apis/noAuthActions';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaSun, FaMoon } from 'react-icons/fa';
 
 const Login = ({ handleChildUpdate }) => {
     const locatn = useLocation();
@@ -17,27 +16,6 @@ const Login = ({ handleChildUpdate }) => {
     const [loggingin, setLoggingin] = useState(false);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
-
-    const [darkMode, setDarkMode] = useState(() => {
-        const savedMode = localStorage.getItem('darkMode');
-        return savedMode ? JSON.parse(savedMode) : false;
-    });
-
-    useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    }, [darkMode]);
-
-    const toggleDarkMode = () => {
-        setDarkMode(prevMode => {
-            const newMode = !prevMode;
-            localStorage.setItem('darkMode', JSON.stringify(newMode));
-            return newMode;
-        });
-    };
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -103,41 +81,17 @@ const Login = ({ handleChildUpdate }) => {
                 </div>
                 <div className=''>
                     {loggingin ? 
-                        <button className='w-full flex justify-center p-3 mt-6 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-6 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             Login
                         </button>
                     }
-                    <div className='flex justify-between items-center py-2'>
-                        <div 
-                            className='cursor-pointer text-gray-700 dark:text-gray-300'
-                            onClick={() => handleChildUpdate('register')}
-                        >
-                            Don't have an account? <span className='text-orange-500'>Create one</span>
-                        </div>
-                        <div className='flex justify-end py-1'>
-                            <span 
-                                className='cursor-pointer text-gray-500 dark:text-gray-300'
-                                onClick={() => handleChildUpdate('forgot-password')}
-                            >
-                                Forgot Password?
-                            </span>
-                        </div>
-                    </div>
                 </div>
             </form>
-            <div className="fixed bottom-4 right-4">
-                <button
-                    className="w-[50px] h-[50px] flex items-center justify-center bg-[#0d544c] rounded-full text-white font-medium shadow-xl transition duration-300 ease-in-out hover:bg-[#0a3a34]"
-                    onClick={toggleDarkMode}
-                >
-                    {darkMode ? <FaSun /> : <FaMoon />}
-                </button>
-            </div>
         </div>
     );
-}
+};
 
 export default Login;

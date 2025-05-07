@@ -7,10 +7,10 @@ import GenerateInvoiceModal from '../components/invoices/GenerateInvoiceModal';
 import PayInvoiceModal from '../components/invoices/PayInvoiceModal';
 import QuickUseTokenModal from '../components/invoices/QuickUseTokenModal';
 import AddIndividualModal from '../components/payerManagement/AddIndividualModal';
-import { AiOutlineSearch, AiOutlineCopy, AiOutlineEye, AiOutlineEyeInvisible, AiOutlineDollar, AiOutlineClose } from 'react-icons/ai';
+import PayerInsightsModal from '../components/payerManagement/PayerInsightsModal';
+import { AiOutlineSearch, AiOutlineCopy, AiOutlineEye, AiOutlineEyeInvisible, AiOutlineDollar, AiOutlineClose, AiOutlineInfoCircle } from 'react-icons/ai';
 import ReactPaginate from 'react-paginate';
 import { saveAs } from 'file-saver';
-//import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -28,8 +28,8 @@ const PayerManagement = () => {
     const [showCorporateModal, setShowCorporateModal] = useState(false);
     const [showAddIndividualModal, setShowAddIndividualModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [selectedIndividual, setSelectedIndividual] = useState(null);
-    const [selectedCorporate, setSelectedCorporate] = useState(null);
+    const [showInsightsModal, setShowInsightsModal] = useState(false);
+    const [selectedPayer, setSelectedPayer] = useState(null);
     const [paymentTarget, setPaymentTarget] = useState(null);
     const [showGenerateInvoiceModal, setShowGenerateInvoiceModal] = useState(false);
     const [showPayInvoiceModal, setShowPayInvoiceModal] = useState(false);
@@ -38,6 +38,8 @@ const PayerManagement = () => {
     const [currentPageIndividuals, setCurrentPageIndividuals] = useState(0);
     const [currentPageCorporates, setCurrentPageCorporates] = useState(0);
     const [maskedMobileNumbers, setMaskedMobileNumbers] = useState({});
+    const [selectedIndividuals, setSelectedIndividuals] = useState([]);
+    const [selectedCorporates, setSelectedCorporates] = useState([]);
     const itemsPerPage = 10;
 
     useEffect(() => {
@@ -45,34 +47,43 @@ const PayerManagement = () => {
         fetchCorporates();
     }, []);
 
-    const fetchIndividuals = async () => {
-        await getIndividuals(token, (data) => {
+    const fetchIndividuals = () => {
+        setLoading(true);
+        getIndividuals(token, (data) => {
             setIndividuals(data);
             setMaskedMobileNumbers(data.reduce((acc, individual) => {
                 acc[individual.id] = true;
                 return acc;
             }, {}));
-        }, setError, setLoading);
+        }, (err) => {
+            setError(err.message || 'Failed to fetch individuals');
+            console.error('Error fetching individuals:', err);
+        }, () => setLoading(false));
     };
 
-    const fetchCorporates = async () => {
-        await getCorporates(token, (data) => {
+    const fetchCorporates = () => {
+        setLoading(true);
+        getCorporates(token, (data) => {
             setCorporates(data);
             setMaskedMobileNumbers(data.reduce((acc, corporate) => {
                 acc[corporate.id] = true;
                 return acc;
             }, {}));
-        }, setError, setLoading);
+        }, (err) => {
+            setError(err.message || 'Failed to fetch corporates');
+            console.error('Error fetching corporates:', err);
+        }, () => setLoading(false));
     };
 
     const handleCreateIndividual = async (payload) => {
         try {
             const newIndividual = await createIndividual(token, payload);
             setIndividuals([...individuals, newIndividual]);
-            setMaskedMobileNumbers(prevState => ({ ...prevState, [newIndividual.id]: true }));
-            setShowAddIndividualModal(false); // Close AddIndividualModal after creation
+            setMaskedMobileNumbers(prev => ({ ...prev, [newIndividual.id]: true }));
+            setShowAddIndividualModal(false);
         } catch (err) {
             setError(err.message);
+            console.error('Error creating individual:', err);
         }
     };
 
@@ -83,6 +94,7 @@ const PayerManagement = () => {
             setShowIndividualModal(false);
         } catch (err) {
             setError(err.message);
+            console.error('Error updating individual:', err);
         }
     };
 
@@ -90,10 +102,11 @@ const PayerManagement = () => {
         try {
             const newCorporate = await createCorporate(token, payload);
             setCorporates([...corporates, newCorporate]);
-            setMaskedMobileNumbers(prevState => ({ ...prevState, [newCorporate.id]: true }));
+            setMaskedMobileNumbers(prev => ({ ...prev, [newCorporate.id]: true }));
             setShowCorporateModal(false);
         } catch (err) {
             setError(err.message);
+            console.error('Error creating corporate:', err);
         }
     };
 
@@ -104,24 +117,27 @@ const PayerManagement = () => {
             setShowCorporateModal(false);
         } catch (err) {
             setError(err.message);
+            console.error('Error updating corporate:', err);
         }
     };
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
+        setCurrentPageIndividuals(0);
+        setCurrentPageCorporates(0);
     };
 
     const filteredIndividuals = individuals.filter(individual =>
-        individual.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        individual.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        individual.individual_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        individual.mobile_number?.toLowerCase().includes(searchTerm.toLowerCase())
+        (individual.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         individual.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         individual.individual_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         individual.mobile_number?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const filteredCorporates = corporates.filter(corporate =>
-        corporate.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        corporate.corporate_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        corporate.phone_number?.toLowerCase().includes(searchTerm.toLowerCase())
+        (corporate.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         corporate.corporate_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         corporate.phone_number?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const handlePageClickIndividuals = ({ selected }) => {
@@ -138,92 +154,180 @@ const PayerManagement = () => {
     };
 
     const toggleMask = (id) => {
-        setMaskedMobileNumbers(prevState => ({
-            ...prevState,
-            [id]: !prevState[id]
+        setMaskedMobileNumbers(prev => ({
+            ...prev,
+            [id]: !prev[id]
         }));
     };
 
-    const openPaymentModal = (target) => {
-        setPaymentTarget(target);
+    const openPaymentModal = (payer) => {
+        setPaymentTarget(payer);
         setShowPaymentModal(true);
     };
 
+    const openInsightsModal = (payer) => {
+        setSelectedPayer(payer);
+        setShowInsightsModal(true);
+    };
+
     const openGenerateInvoiceModal = () => {
-        setPaymentTarget(null); // Reset the paymentTarget
+        setPaymentTarget(null);
         setShowGenerateInvoiceModal(true);
     };
 
+    const handleSelectIndividual = (id) => {
+        setSelectedIndividuals(prev =>
+            prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectCorporate = (id) => {
+        setSelectedCorporates(prev =>
+            prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+        );
+    };
+
+    const handleBulkGenerateInvoice = () => {
+        if (selectedIndividuals.length + selectedCorporates.length === 0) {
+            alert('Please select at least one payer');
+            return;
+        }
+        const firstSelected = individuals.find(p => selectedIndividuals.includes(p.id)) ||
+                             corporates.find(p => selectedCorporates.includes(p.id));
+        setPaymentTarget({
+            category: firstSelected.individual_ref
+                ? { value: 'individual', label: 'Individual' }
+                : { value: 'corporate', label: 'Corporate' },
+            referenceNumber: firstSelected.individual_ref || firstSelected.corporate_ref
+        });
+        setShowGenerateInvoiceModal(true);
+    };
+
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        doc.autoTable({
+            head: [['Name', 'Type', 'Reference', 'Mobile Number']],
+            body: [
+                ...individuals.map(individual => [
+                    `${individual.first_name} ${individual.last_name}`,
+                    'Individual',
+                    individual.individual_ref,
+                    individual.mobile_number
+                ]),
+                ...corporates.map(corporate => [
+                    corporate.company_name,
+                    'Corporate',
+                    corporate.corporate_ref,
+                    corporate.phone_number
+                ])
+            ]
+        });
+        doc.save('payers.pdf');
+    };
+
     return (
-        <div className="w-full p-4">
-            {error && <div className="text-red-500">{error}</div>}
+        <div className="w-full p-4 animate-fadeIn">
+            {error && <div className="text-red-500 text-center mb-4">{error}</div>}
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold text-gray-700">PAYER MANAGEMENT</h1>
+                <h1 className="text-2xl font-bold text-[#3B78BD] dark:text-[#F0B652]">Payer Management</h1>
                 <div className="flex space-x-2">
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all duration-300"
+                        className="px-4 py-2 bg-[#3B78BD] text-white rounded hover:bg-[#F0B652] transition-all duration-300 shadow-lg transform hover:scale-105"
                         onClick={() => setShowAddIndividualModal(true)}
                     >
-                        ADD INDIVIDUAL
+                        Add Individual
                     </button>
                     <button
-                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-all duration-300"
+                        className="px-4 py-2 bg-[#F0B652] text-white rounded hover:bg-[#6B7280] transition-all duration-300 shadow-lg transform hover:scale-105"
                         onClick={() => {
-                            setSelectedCorporate(null); // Set to null for new entry
+                            setSelectedPayer(null);
                             setShowCorporateModal(true);
                         }}
                     >
-                        ADD CORPORATE
+                        Add Corporate
                     </button>
                     <button
-                        className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-all duration-300"
+                        className="px-4 py-2 bg-[#6B7280] text-white rounded hover:bg-[#3B78BD] transition-all duration-300 shadow-lg transform hover:scale-105"
                         onClick={openGenerateInvoiceModal}
                     >
-                        GENERATE INVOICE
+                        Generate Invoice
                     </button>
                     <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all duration-300"
+                        className="px-4 py-2 bg-[#3B78BD] text-white rounded hover:bg-[#F0B652] transition-all duration-300 shadow-lg transform hover:scale-105"
                         onClick={() => setShowPayInvoiceModal(true)}
                     >
-                        PAY INVOICE
+                        Pay Invoice
                     </button>
                     <button
-                        className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-all duration-300"
+                        className="px-4 py-2 bg-[#F0B652] text-white rounded hover:bg-[#6B7280] transition-all duration-300 shadow-lg transform hover:scale-105"
                         onClick={() => setShowQuickUseTokenModal(true)}
                     >
-                        QUICK USE TOKEN
+                        Quick Use Token
                     </button>
                 </div>
             </div>
 
-            <div className="flex mb-4">
-                <input
-                    type="text"
-                    placeholder="SEARCH..."
-                    className="w-full p-2 border rounded-l-lg"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
-                <button className="px-4 py-2 bg-gray-300 rounded-r-lg">
-                    <AiOutlineSearch size={24} />
-                </button>
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-4 space-y-2 sm:space-y-0 sm:space-x-4">
+                <div className="flex w-full sm:w-auto">
+                    <input
+                        type="text"
+                        placeholder="Search by name, reference, or mobile..."
+                        className="w-full sm:w-64 p-2 border rounded-l-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] transition-all duration-200"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                    />
+                    <button className="px-4 py-2 bg-[#3B78BD] text-white rounded-r-lg hover:bg-[#F0B652] transition-all duration-300">
+                        <AiOutlineSearch size={24} />
+                    </button>
+                </div>
+                <div className="flex space-x-2">
+                    <button
+                        className="px-4 py-2 bg-[#6B7280] text-white rounded hover:bg-[#3B78BD] transition-all duration-300"
+                        onClick={handleBulkGenerateInvoice}
+                        disabled={selectedIndividuals.length + selectedCorporates.length === 0}
+                    >
+                        Bulk Generate Invoice
+                    </button>
+                    <button
+                        className="px-4 py-2 bg-[#3B78BD] text-white rounded hover:bg-[#F0B652] transition-all duration-300"
+                        onClick={exportToPDF}
+                    >
+                        Export to PDF
+                    </button>
+                </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded shadow">
+                <div className="bg-white p-4 rounded-lg shadow-lg">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold text-gray-700">INDIVIDUALS</h2>
+                        <h2 className="text-xl font-bold text-[#3B78BD] dark:text-[#F0B652]">Individuals</h2>
                     </div>
                     {loading ? (
-                        <div className="text-center">LOADING...</div>
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">Loading...</div>
+                    ) : individuals.length === 0 && !error ? (
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">No individuals available.</div>
                     ) : (
                         <div>
                             <table className="w-full text-left border-collapse text-sm">
                                 <thead>
-                                    <tr>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">NAME</th>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">REFERENCE</th>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">MOBILE NUMBER</th>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">ACTION</th>
+                                    <tr className="bg-gradient-to-r from-[#3B78BD] to-[#F0B652] text-white">
+                                        <th className="p-2 border border-gray-200">
+                                            <input
+                                                type="checkbox"
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedIndividuals(filteredIndividuals.map(i => i.id));
+                                                    } else {
+                                                        setSelectedIndividuals([]);
+                                                    }
+                                                }}
+                                                checked={selectedIndividuals.length === filteredIndividuals.length && filteredIndividuals.length > 0}
+                                            />
+                                        </th>
+                                        <th className="p-2 border border-gray-200">Name</th>
+                                        <th className="p-2 border border-gray-200">Reference</th>
+                                        <th className="p-2 border border-gray-200">Mobile Number</th>
+                                        <th className="p-2 border border-gray-200">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -232,28 +336,36 @@ const PayerManagement = () => {
                                             key={individual.id}
                                             className={`cursor-pointer ${index % 2 === 0 ? 'bg-gray-50' : 'bg-[#ecf6ec]'} hover:bg-gray-100`}
                                             onClick={() => {
-                                                setSelectedIndividual(individual);
+                                                setSelectedPayer(individual);
                                                 setShowIndividualModal(true);
                                             }}
                                         >
-                                            <td className="p-2 border border-gray-200">{`${individual.first_name?.toUpperCase()} ${individual.last_name?.toUpperCase()}`}</td>
-                                            <td className="p-2 border border-gray-200 font-bold">{individual.individual_ref?.toUpperCase()}</td>
+                                            <td className="p-2 border border-gray-200">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIndividuals.includes(individual.id)}
+                                                    onChange={() => handleSelectIndividual(individual.id)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                            </td>
+                                            <td className="p-2 border border-gray-200">{`${individual.first_name} ${individual.last_name}`}</td>
+                                            <td className="p-2 border border-gray-200 font-bold">{individual.individual_ref}</td>
                                             <td className="p-2 border border-gray-200">
                                                 {maskedMobileNumbers[individual.id] ? maskNumber(individual.mobile_number) : individual.mobile_number}
                                             </td>
                                             <td className="p-2 border border-gray-200 text-center flex justify-center items-center space-x-2">
                                                 <AiOutlineCopy
                                                     size={20}
-                                                    className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Prevent row click event
+                                                        e.stopPropagation();
                                                         handleCopyReference(individual.individual_ref);
                                                     }}
                                                 />
                                                 {maskedMobileNumbers[individual.id] ? (
                                                     <AiOutlineEyeInvisible
                                                         size={20}
-                                                        className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                        className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             toggleMask(individual.id);
@@ -262,7 +374,7 @@ const PayerManagement = () => {
                                                 ) : (
                                                     <AiOutlineEye
                                                         size={20}
-                                                        className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                        className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             toggleMask(individual.id);
@@ -271,10 +383,18 @@ const PayerManagement = () => {
                                                 )}
                                                 <AiOutlineDollar
                                                     size={20}
-                                                    className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Prevent row click event
+                                                        e.stopPropagation();
                                                         openPaymentModal(individual);
+                                                    }}
+                                                />
+                                                <AiOutlineInfoCircle
+                                                    size={20}
+                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openInsightsModal(individual);
                                                     }}
                                                 />
                                             </td>
@@ -293,31 +413,47 @@ const PayerManagement = () => {
                                 onPageChange={handlePageClickIndividuals}
                                 containerClassName={'pagination flex justify-center mt-4'}
                                 pageClassName={'mx-2'}
-                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
+                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-[#3B78BD] text-gray-700 hover:text-white transition-all duration-300'}
                                 previousClassName={'mx-2'}
-                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
+                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-[#3B78BD] text-gray-700 hover:text-white transition-all duration-300'}
                                 nextClassName={'mx-2'}
-                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
-                                activeClassName={'bg-blue-500 text-white'}
+                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-[#3B78BD] text-gray-700 hover:text-white transition-all duration-300'}
+                                activeClassName={'bg-[#3B78BD] text-white'}
                             />
                         </div>
                     )}
                 </div>
-                <div className="bg-white p-4 rounded shadow">
+
+                <div className="bg-white p-4 rounded-lg shadow-lg">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold text-gray-700">CORPORATES</h2>
+                        <h2 className="text-xl font-bold text-[#3B78BD] dark:text-[#F0B652]">Corporates</h2>
                     </div>
                     {loading ? (
-                        <div className="text-center">LOADING...</div>
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">Loading...</div>
+                    ) : corporates.length === 0 && !error ? (
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">No corporates available.</div>
                     ) : (
                         <div>
                             <table className="w-full text-left border-collapse text-sm">
                                 <thead>
-                                    <tr>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">COMPANY NAME</th>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">REFERENCE</th>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">MOBILE NUMBER</th>
-                                        <th className="p-2 bg-gray-100 border border-gray-200">ACTION</th>
+                                    <tr className="bg-gradient-to-r from-[#3B78BD] to-[#F0B652] text-white">
+                                        <th className="p-2 border border-gray-200">
+                                            <input
+                                                type="checkbox"
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setSelectedCorporates(filteredCorporates.map(c => c.id));
+                                                    } else {
+                                                        setSelectedCorporates([]);
+                                                    }
+                                                }}
+                                                checked={selectedCorporates.length === filteredCorporates.length && filteredCorporates.length > 0}
+                                            />
+                                        </th>
+                                        <th className="p-2 border border-gray-200">Company Name</th>
+                                        <th className="p-2 border border-gray-200">Reference</th>
+                                        <th className="p-2 border border-gray-200">Mobile Number</th>
+                                        <th className="p-2 border border-gray-200">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -326,28 +462,36 @@ const PayerManagement = () => {
                                             key={corporate.id}
                                             className={`cursor-pointer ${index % 2 === 0 ? 'bg-gray-50' : 'bg-[#ecf6ec]'} hover:bg-gray-100`}
                                             onClick={() => {
-                                                setSelectedCorporate(corporate);
+                                                setSelectedPayer(corporate);
                                                 setShowCorporateModal(true);
                                             }}
                                         >
-                                            <td className="p-2 border border-gray-200">{corporate.company_name?.toUpperCase()}</td>
-                                            <td className="p-2 border border-gray-200 font-bold">{corporate.corporate_ref?.toUpperCase()}</td>
+                                            <td className="p-2 border border-gray-200">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedCorporates.includes(corporate.id)}
+                                                    onChange={() => handleSelectCorporate(corporate.id)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                            </td>
+                                            <td className="p-2 border border-gray-200">{corporate.company_name}</td>
+                                            <td className="p-2 border border-gray-200 font-bold">{corporate.corporate_ref}</td>
                                             <td className="p-2 border border-gray-200">
                                                 {maskedMobileNumbers[corporate.id] ? maskNumber(corporate.phone_number) : corporate.phone_number}
                                             </td>
                                             <td className="p-2 border border-gray-200 text-center flex justify-center items-center space-x-2">
                                                 <AiOutlineCopy
                                                     size={20}
-                                                    className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Prevent row click event
+                                                        e.stopPropagation();
                                                         handleCopyReference(corporate.corporate_ref);
                                                     }}
                                                 />
                                                 {maskedMobileNumbers[corporate.id] ? (
                                                     <AiOutlineEyeInvisible
                                                         size={20}
-                                                        className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                        className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             toggleMask(corporate.id);
@@ -356,7 +500,7 @@ const PayerManagement = () => {
                                                 ) : (
                                                     <AiOutlineEye
                                                         size={20}
-                                                        className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                        className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             toggleMask(corporate.id);
@@ -365,10 +509,18 @@ const PayerManagement = () => {
                                                 )}
                                                 <AiOutlineDollar
                                                     size={20}
-                                                    className="cursor-pointer text-gray-600 hover:text-gray-800"
+                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Prevent row click event
+                                                        e.stopPropagation();
                                                         openPaymentModal(corporate);
+                                                    }}
+                                                />
+                                                <AiOutlineInfoCircle
+                                                    size={20}
+                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openInsightsModal(corporate);
                                                     }}
                                                 />
                                             </td>
@@ -387,12 +539,12 @@ const PayerManagement = () => {
                                 onPageChange={handlePageClickCorporates}
                                 containerClassName={'pagination flex justify-center mt-4'}
                                 pageClassName={'mx-2'}
-                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
+                                pageLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-[#3B78BD] text-gray-700 hover:text-white transition-all duration-300'}
                                 previousClassName={'mx-2'}
-                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
+                                previousLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-[#3B78BD] text-gray-700 hover:text-white transition-all duration-300'}
                                 nextClassName={'mx-2'}
-                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-blue-300'}
-                                activeClassName={'bg-blue-500 text-white'}
+                                nextLinkClassName={'px-3 py-2 bg-gray-200 rounded hover:bg-[#3B78BD] text-gray-700 hover:text-white transition-all duration-300'}
+                                activeClassName={'bg-[#3B78BD] text-white'}
                             />
                         </div>
                     )}
@@ -402,46 +554,46 @@ const PayerManagement = () => {
             {showAddIndividualModal && (
                 <AddIndividualModal
                     closeModal={() => setShowAddIndividualModal(false)}
-                    onSave={fetchIndividuals}  // Assuming you want to refresh the list after saving
+                    onSave={handleCreateIndividual}
                 />
             )}
 
-            {showIndividualModal && selectedIndividual && (
-                <AddIndividualModal
+            {showIndividualModal && selectedPayer && (
+                <IndividualModal
                     closeModal={() => {
                         setShowIndividualModal(false);
-                        setSelectedIndividual(null);
+                        setSelectedPayer(null);
                     }}
-                    individual={selectedIndividual}
-                    viewMode={true}  // Set to true to open in view-only mode initially
-                    onSave={fetchIndividuals}  // Refresh the list after saving changes
+                    individual={selectedPayer}
+                    viewMode={true}
+                    onSave={handleUpdateIndividual}
                 />
             )}
 
-            {showCorporateModal && (
+            {showCorporateModal && selectedPayer && (
                 <CorporateModal
                     closeModal={() => {
                         setShowCorporateModal(false);
-                        setSelectedCorporate(null);
+                        setSelectedPayer(null);
                     }}
-                    corporate={selectedCorporate}  // Can be null for new entry
-                    viewMode={!!selectedCorporate}  // Opens in view mode if editing an existing corporate
-                    onSave={fetchCorporates}  // Assuming you want to refresh the list after saving
+                    corporate={selectedPayer}
+                    viewMode={true}
+                    onSave={handleUpdateCorporate}
                 />
             )}
 
             {showPaymentModal && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-auto">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-bold text-gray-800">Make Payment</h2>
-                            <button className="text-gray-500 hover:text-gray-700 transition-colors duration-200" onClick={() => setShowPaymentModal(false)}>
+                    <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl transform transition-all duration-300 scale-100 hover:scale-105">
+                        <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-[#3B78BD] to-[#F0B652] p-4 rounded-t-lg">
+                            <h2 className="text-2xl font-bold text-white">Make Payment</h2>
+                            <button className="text-white hover:text-gray-200 transition-colors duration-200" onClick={() => setShowPaymentModal(false)}>
                                 <AiOutlineClose size={24} />
                             </button>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <button
-                                className="w-full p-4 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-all duration-300"
+                                className="w-full p-4 bg-[#3B78BD] text-white rounded-lg hover:bg-[#F0B652] transition-all duration-300 shadow-lg transform hover:scale-105"
                                 onClick={() => {
                                     setShowPaymentModal(false);
                                     setShowGenerateInvoiceModal(true);
@@ -449,16 +601,14 @@ const PayerManagement = () => {
                                         category: paymentTarget.individual_ref
                                             ? { value: 'individual', label: 'Individual' }
                                             : { value: 'corporate', label: 'Corporate' },
-                                        referenceNumber: paymentTarget.individual_ref
-                                            ? paymentTarget.individual_ref
-                                            : paymentTarget.corporate_ref
+                                        referenceNumber: paymentTarget.individual_ref || paymentTarget.corporate_ref
                                     });
                                 }}
                             >
                                 Generate Invoice
                             </button>
                             <button
-                                className="w-full p-4 bg-blue-600 text-white rounded-lg hover:bg-blue-800 transition-all duration-300"
+                                className="w-full p-4 bg-[#F0B652] text-white rounded-lg hover:bg-[#6B7280] transition-all duration-300 shadow-lg transform hover:scale-105"
                                 onClick={() => {
                                     setShowPaymentModal(false);
                                     setShowPayInvoiceModal(true);
@@ -467,7 +617,7 @@ const PayerManagement = () => {
                                 Pay Invoice
                             </button>
                             <button
-                                className="w-full p-4 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition-all duration-300"
+                                className="w-full p-4 bg-[#6B7280] text-white rounded-lg hover:bg-[#3B78BD] transition-all duration-300 shadow-lg transform hover:scale-105"
                                 onClick={() => {
                                     setShowPaymentModal(false);
                                     setShowQuickUseTokenModal(true);
@@ -493,11 +643,29 @@ const PayerManagement = () => {
                     closeModal={() => setShowPayInvoiceModal(false)}
                 />
             )}
+
             {showQuickUseTokenModal && (
                 <QuickUseTokenModal
                     closeModal={() => setShowQuickUseTokenModal(false)}
                 />
             )}
+
+            {showInsightsModal && selectedPayer && (
+                <PayerInsightsModal
+                    payer={selectedPayer}
+                    closeModal={() => setShowInsightsModal(false)}
+                />
+            )}
+
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

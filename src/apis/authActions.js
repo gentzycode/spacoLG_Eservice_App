@@ -1,1096 +1,634 @@
-import axios from './baseUrl'
+import axios from './baseUrl';
 
-export const getServiceFormdata = async ( token, action_id, setFormdata , setError, setLoading) => {
-    
-    setLoading(true);
+// Common error messages
+const ERROR_MESSAGES = {
+    NO_RESPONSE: 'No Response from Server',
+    FETCH_ERROR: 'Error fetching data',
+};
 
-    try{
-        const response  = await axios.get(`formmetadata/${action_id}`,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
+// Utility to create headers
+const createHeaders = (token) => ({
+    'Accept': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+});
 
-        console.log(JSON.parse(JSON.parse(response.data?.data?.json_schema))?.fields);
-        setFormdata(JSON.parse(JSON.parse(response.data?.data?.json_schema))?.fields);
+// Centralized error handling
+const handleError = (err, setError) => {
+    if (!err?.response) {
+        setError?.(ERROR_MESSAGES.NO_RESPONSE);
+        return;
     }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        } 
+    const errorData = err.response.data;
+    setError?.(errorData.message || errorData || ERROR_MESSAGES.FETCH_ERROR);
+};
+
+// Centralized API request wrapper
+const apiRequest = async ({ method, url, token, data, setError, setLoading, setFetching, setSubmitting }) => {
+    const setState = setLoading || setFetching || setSubmitting;
+    try {
+        setState?.(true);
+        const response = await axios({
+            method,
+            url,
+            data,
+            headers: createHeaders(token),
+        });
+        return response.data;
+    } catch (err) {
+        handleError(err, setError);
+        throw err.response ? err.response.data : new Error(ERROR_MESSAGES.NO_RESPONSE);
+    } finally {
+        setState?.(false);
     }
-    setLoading(false);
-}
+};
 
+export const getServiceFormdata = async (token, action_id, setFormdata, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `formmetadata/${action_id}`,
+        token,
+        setError,
+        setLoading,
+    });
 
+    // Parse JSON schema only once
+    const parsedSchema = JSON.parse(data?.data?.json_schema || '{}');
+    setFormdata(parsedSchema?.fields || []);
+};
 
-export const getInitServiceData = async ( token, eservice_id, setInitSteps , setError, setLoading) => {
-    
-    setLoading(true);
+export const getInitServiceData = async (token, eservice_id, setInitSteps, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `applicationsteps/${eservice_id}`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try{
-        const response  = await axios.get(`applicationsteps/${eservice_id}`,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
+    setInitSteps(data?.steps || []);
+};
 
-        console.log(response.data?.steps)
-        setInitSteps(response.data?.steps);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-    setLoading(false);
-}
-
-
-export const fetchDropdownOptions = async ( api, setOptions ) => {
-
+export const fetchDropdownOptions = async (api, setOptions, setError) => {
     const endpoint = api.split('/')[2];
+    const data = await apiRequest({
+        method: 'get',
+        url: endpoint,
+        setError,
+    });
 
-    try{
-        const response  = await axios.get(endpoint,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
+    setOptions(data?.data || []);
+};
 
-        console.log(response.data?.data)
-        setOptions(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            console.log('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            //setError(err.response.data);
-        }
-    }
-}
-
-
-export const submitApplication = async ( token, data, setSuccess, setError, setSubmitting ) => {
-
-    setSubmitting(true);
-
-    try{
-        const response  = await axios.post('applicationdata',
-            data,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setSuccess(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
+export const submitApplication = async (token, data, setSuccess, setError, setSubmitting) => {
+    if (!data || typeof data !== 'object') {
+        setError('Invalid application data');
+        return;
     }
 
-    setSubmitting(false);
-}
+    const response = await apiRequest({
+        method: 'post',
+        url: 'applicationdata',
+        token,
+        data,
+        setError,
+        setSubmitting,
+    });
 
+    setSuccess(response);
+};
 
-export const updateApplication = async ( token, appid, data, setResubmitted, setError, setSubmitting ) => {
-
-    setSubmitting(true);
-
-    try{
-        const response  = await axios.put(`applicationdata/${appid}`,
-            data,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setResubmitted(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
+export const updateApplication = async (token, appid, data, setResubmitted, setError, setSubmitting) => {
+    if (!data || typeof data !== 'object') {
+        setError('Invalid application data');
+        return;
     }
 
-    setSubmitting(false);
-}
+    const response = await apiRequest({
+        method: 'put',
+        url: `applicationdata/${appid}`,
+        token,
+        data,
+        setError,
+        setSubmitting,
+    });
 
+    setResubmitted(response);
+};
 
-export const getApplicationByID = async ( token, id, setAppdetail, setSteps, setError, setFetching ) => {
+export const getApplicationByID = async (token, id, setAppdetail, setSteps, setError, setFetching) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `applicationdata/${id}`,
+        token,
+        setError,
+        setFetching,
+    });
 
-    setFetching(true);
+    setAppdetail(data);
+    setSteps(data?.data?.eservice?.eservices_steps || []);
+};
 
-    try{
-        const response  = await axios.get(`applicationdata/${id}`,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
+export const userApplications = async (token, setSuccess, setError, setFetching) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: 'applicationdata',
+        token,
+        setError,
+        setFetching,
+    });
 
-        console.log(response.data)
-        setAppdetail(response.data);
-        setSteps(response.data?.data?.eservice?.eservices_steps);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
+    setSuccess(data?.data || []);
+};
 
-    setFetching(false);
-}
+export const getPaymentGatewayByID = async (token, id, setPgateway, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `paymentgateways/${id}`,
+        token,
+        setError,
+        setLoading,
+    });
 
+    setPgateway(data?.data || {});
+};
 
-export const userApplications = async ( token, setSuccess, setError, setFetching ) => {
+export const initiatePayment = async (token, data, setInitpay, setError, setInitializing) => {
+    const response = await apiRequest({
+        method: 'post',
+        url: 'payments/initialize',
+        token,
+        data,
+        setError,
+        setSubmitting: setInitializing,
+    });
 
-    setFetching(true);
+    setInitpay(response);
+};
 
-    try{
-        const response  = await axios.get('applicationdata',
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
+export const paymentConfirm = async (token, id, setConfirm, setError, setLoading) => {
+    const response = await apiRequest({
+        method: 'post',
+        url: `payments/confirm/${id}`,
+        token,
+        data: {},
+        setError,
+        setLoading,
+    });
 
-        console.log(response.data)
-        setSuccess(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
-
-    setFetching(false);
-}
-
-export const getPaymentGatewayByID = async ( token, id, setPgateway, setError, setLoading ) => {
-
-    setLoading(true);
-
-    try{
-        const response  = await axios.get(`paymentgateways/${id}`,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setPgateway(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
-
-    setLoading(false);
-}
-
-
-export const initiatePayment = async ( token, data, setInitpay, setError, setInitializing ) => {
-
-    setInitializing(true);
-
-    try{
-        const response  = await axios.post('payments/initialize',
-            data,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setInitpay(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setInitializing(false);
-}
-
-
-export const paymentConfirm = async ( token, id, setConfirm, setError ) => {
-
-
-    try{
-        const response  = await axios.post(`payments/confirm/${id}`,
-            {},
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data);
-        setConfirm(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-}
-
+    setConfirm(response);
+};
 
 export const hasPersonalInfo = async (token, setHasInfo, setError, setChecking) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: 'personal-information-query',
+        token,
+        setError,
+        setLoading: setChecking,
+    });
 
-    setChecking(true);
+    setHasInfo(data);
+};
 
-    try{
-        const response  = await axios.get('personal-information-query',
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
+export const getUserPayments = async (token, setPayments, setError, setFetching) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: 'payments',
+        token,
+        setError,
+        setFetching,
+    });
 
-        console.log(response.data)
-        setHasInfo(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
+    setPayments(data?.data || []);
+};
 
-    setChecking(false);
-}
+export const updateEserviceStep = async (token, appID, data, setSuccess, setError, setUpdating) => {
+    const response = await apiRequest({
+        method: 'put',
+        url: `applicationdata/${appID}`,
+        token,
+        data,
+        setError,
+        setLoading: setUpdating,
+    });
 
+    setSuccess(response?.data || {});
+};
 
-export const getUserPayments = async ( token, setPayments, setError, setFetching ) => {
+export const getLagById = async (token, lga_id, setLga, setError) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `localgovernments/${lga_id}`,
+        token,
+        setError,
+    });
 
-    setFetching(true);
-
-    try{
-        const response  = await axios.get('payments',
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setPayments(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
-
-    setFetching(false);
-}
-
-
-export const updateEserviceStep = async ( token, appID, data, setSuccess, setError, setUpdating ) => {
-
-    setUpdating(true);
-
-    try{
-        const response  = await axios.put(`applicationdata/${appID}`,
-            data,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setSuccess(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
-
-    setUpdating(false);
-}
-
-
-export const getLagById = async (token, lga_id, setLga) => {
-    try{
-        const response  = await axios.get(`localgovernments/${lga_id}`,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setLga(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            //setError(err.response.data);
-        }
-    }
-}
-
+    setLga(data?.data || {});
+};
 
 export const deleteApplication = async (token, appid, setSuccess, setError, setDeleting) => {
+    const response = await apiRequest({
+        method: 'delete',
+        url: `applicationdata/${appid}`,
+        token,
+        setError,
+        setLoading: setDeleting,
+    });
 
-    setDeleting(true);
-    try{
-        const response  = await axios.delete(`applicationdata/${appid}`,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
+    setSuccess(response);
+};
 
-        console.log(response.data)
-        setSuccess(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data);
-        }
-    }
-    setDeleting(false);
-}
-
-// new ones startb here
-
+// Wallet-related functions
 export const getWalletHistory = async (token, agentId, setHistory, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/wallet/history`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/agents/${agentId}/wallet/history`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setHistory(response.data.history);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setLoading(false);
+    setHistory(data?.history || []);
 };
 
 export const initiateWalletRefill = async (token, agentId, payload) => {
-    try {
-        const response = await axios.post(`/agents/${agentId}/wallet/initiate-refill`, payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        return response.data;
-    } catch (err) {
-        if (!err?.response) {
-            throw new Error('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            throw new Error(err.response.data);
-        }
-    }
+    return await apiRequest({
+        method: 'post',
+        url: `/agents/${agentId}/wallet/initiate-refill`,
+        token,
+        data: payload,
+    });
 };
 
 export const getUserWallet = async (token, userId, setWallet, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${userId}/wallet`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/agents/${userId}/wallet`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
+    const walletData = {
+        ...data?.wallet,
+        agent_name: data?.agent_name,
+        local_government: data?.local_government,
+    };
 
-        const walletData = {
-            ...response.data.wallet,
-            agent_name: response.data.agent_name,
-            local_government: response.data.local_government
-        };
-
-        setWallet(walletData);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setLoading(false);
+    setWallet(walletData);
 };
 
-// Refactored getEnabledPaymentGateways function
+// Consolidated getEnabledPaymentGateways
 export const getEnabledPaymentGateways = async (token, setGateways, setError, setFetching) => {
-    setFetching(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: 'paymentgateway/enabled',
+        token,
+        setError,
+        setFetching,
+    });
 
-    try {
-        const response = await axios.get('paymentgateway/enabled', {
-            headers: { 
-                'Accept': 'application/json', 
-                'Authorization': `Bearer ${token}` 
-            }
-        });
-
-        console.log('API Response:', response.data);
-        setGateways(response.data?.data || []);
-        setError(null);  // Clear any previous errors
-    } catch (err) {
-        if (!err.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            const errorMessage = err.response.data?.message || 'Error fetching payment gateways';
-            setError(errorMessage);
-        }
-    } finally {
-        setFetching(false);
-    }
+    setGateways(data?.data || []);
+    setError(null);
 };
 
-
-
-// tokens start here
+// Token-related functions
 export const getUserTokens = async (token, agentId, setTokens, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/tokens`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/agents/${agentId}/tokens`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setTokens(response.data.tokens);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setLoading(false);
+    setTokens(data?.tokens || []);
 };
 
-// src/apis/authActions.js
 export const getTokenUsageHistory = async (token, agentId, setUsageHistory, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/tokens/usage-history`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/agents/${agentId}/tokens/usage-history`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setUsageHistory(response.data.usage_history);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data.message);
-        }
-    }
-
-    setLoading(false);
+    setUsageHistory(data?.usage_history || []);
 };
 
 export const getUsedTokens = async (token, agentId, setUsedTokens, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/auth/agents/${agentId}/tokens/used`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/auth/agents/${agentId}/tokens/used`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        if (response.data.status === 'success') {
-            setUsedTokens(response.data.token_usages); // Fetch `token_usages` from the response
-        } else {
-            throw new Error(response.data.message || 'Failed to fetch used tokens');
-        }
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.error(err.response.data);
-            setError(err.response.data.message || 'Error fetching used tokens');
-        }
+    if (data.status === 'success') {
+        setUsedTokens(data?.token_usages || []);
+    } else {
+        throw new Error(data.message || 'Failed to fetch used tokens');
     }
-
-    setLoading(false);
 };
-
 
 export const generateToken = async (token, agentId, payload) => {
-    try {
-        const response = await axios.post(`/agents/${agentId}/tokens/generate`, payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        return response.data;
-    } catch (err) {
-        if (!err?.response) {
-            throw new Error('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            throw new Error(err.response.data);
-        }
-    }
+    return await apiRequest({
+        method: 'post',
+        url: `/agents/${agentId}/tokens/generate`,
+        token,
+        data: payload,
+    });
 };
 
-// summaries
-
+// Summary functions
 export const getTotalTokens = async (token, agentId, setTotalTokens, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await axios.get(`/agents/${agentId}/tokens/total`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        setTotalTokens(response.data.total_tokens);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Failed to fetch total tokens');
-        }
-    } finally {
-        setLoading(false);
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/tokens/total`,
+        token,
+        setError,
+        setLoading,
+    });
+
+    setTotalTokens(data?.total_tokens || 0);
 };
 
 export const getTotalTokenValue = async (token, agentId, setTotalValue, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await axios.get(`/agents/${agentId}/tokens/total-value`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        setTotalValue(response.data.total_value);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Failed to fetch total token value');
-        }
-    } finally {
-        setLoading(false);
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/tokens/total-value`,
+        token,
+        setError,
+        setLoading,
+    });
+
+    setTotalValue(data?.total_value || 0);
 };
 
 export const getTotalTokensUsed = async (token, agentId, setUsedTokens, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await axios.get(`/agents/${agentId}/tokens/used/total`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        setUsedTokens(response.data.total_tokens_used);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Failed to fetch used tokens');
-        }
-    } finally {
-        setLoading(false);
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/tokens/used/total`,
+        token,
+        setError,
+        setLoading,
+    });
+
+    setUsedTokens(data?.total_tokens_used || 0);
 };
 
 export const getTotalTokenValueUsed = async (token, agentId, setUsedValue, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await axios.get(`/agents/${agentId}/tokens/used/total-value`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        setUsedValue(response.data.total_value_used);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Failed to fetch used token value');
-        }
-    } finally {
-        setLoading(false);
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/tokens/used/total-value`,
+        token,
+        setError,
+        setLoading,
+    });
+
+    setUsedValue(data?.total_value_used || 0);
 };
 
-
-// invoices
-
+// Invoice-related functions
 export const getInvoiceStatistics = async (token, agentId, setStatistics, setError, setLoading) => {
-    setLoading(true);
-    setError(null);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/invoices/statistics`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/agents/${agentId}/invoices/statistics`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setStatistics(response.data.statistics); // Ensure the correct key is used
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Error fetching statistics');
-        }
-    }
-
-    setLoading(false);
+    setStatistics(data?.statistics || {});
 };
 
 export const getUnpaidInvoices = async (token, setUnpaidInvoices, setError, setLoading) => {
-    setLoading(true);
-    setError(null);
+    const data = await apiRequest({
+        method: 'get',
+        url: '/all-unpaid-invoices',
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get('/all-unpaid-invoices', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setUnpaidInvoices(response.data.invoices); // Ensure the correct key is used
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Error fetching unpaid invoices');
-        }
-    }
-
-    setLoading(false);
+    setUnpaidInvoices(data?.invoices || []);
 };
 
 export const getPaidInvoicesByAgent = async (token, agentId, setPaidInvoices, setError, setLoading) => {
-    setLoading(true);
-    setError(null);
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/invoices/paid`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`/agents/${agentId}/invoices/paid`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setPaidInvoices(response.data.invoices); // Ensure the correct key is used
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Error fetching paid invoices');
-        }
-    }
-
-    setLoading(false);
+    setPaidInvoices(data?.invoices || []);
 };
 
-// Get Invoice by ID
 export const getInvoiceById = async (token, invoiceId) => {
-    try {
-        const response = await axios.get(`/invoices/${invoiceId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return response.data.invoice;
-    } catch (err) {
-        throw new Error(err.response.data.message);
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: `/invoices/${invoiceId}`,
+        token,
+    });
+
+    return data?.invoice || {};
 };
 
 export const fetchEserviceItems = async (token, setEserviceItems, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: '/eservice-items',
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get('/eservice-items', {
-            headers: { 
-                'Accept': 'application/json', 
-                'Authorization': `Bearer ${token}` 
-            }
-        });
-        setEserviceItems(response.data.data);
-    } catch (err) {
-        if (!err.response) {
-            setError('No Response from Server');
-        } else {
-            setError(err.response.data.message || 'Failed to fetch e-service items');
-        }
-    } finally {
-        setLoading(false);
-    }
+    setEserviceItems(data?.data || []);
 };
 
 export const generateInvoice = async (token, payload, setInvoiceData, setError, setLoading) => {
-    setLoading(true);
+    const response = await apiRequest({
+        method: 'post',
+        url: '/invoices',
+        token,
+        data: payload,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.post('/invoices', payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        setInvoiceData(response.data);
-    } catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data.message || 'Failed to generate invoice');
-        }
-    } finally {
-        setLoading(false);
-    }
+    setInvoiceData(response);
 };
 
-// Pay Invoice by ID
 export const payInvoiceById = async (token, id, payload, onSuccess, onError, setIsLoading) => {
     try {
-        const response = await axios.post(`/invoices/${id}/pay`, payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
+        const response = await apiRequest({
+            method: 'post',
+            url: `/invoices/${id}/pay`,
+            token,
+            data: payload,
+            setLoading: setIsLoading,
         });
 
-        // Call onSuccess callback if provided
-        if (onSuccess) {
-            onSuccess(response.data);
-        }
-        
-        return response.data;
+        onSuccess?.(response);
+        return response;
     } catch (err) {
-        // Set error and log detailed information
-        const errorResponse = err.response ? err.response.data : new Error('No response from server');
-        console.error('Error paying invoice by ID:', errorResponse);
-
-        // Call onError callback if provided
-        if (onError) {
-            onError(errorResponse);
-        }
-
-        throw errorResponse;
-    } finally {
-        setIsLoading(false);
+        onError?.(err);
+        throw err;
     }
 };
 
-
-// Pay Invoice by Reference Number
 export const payInvoiceByReference = async (token, payload) => {
-    try {
-        const response = await axios.post('/invoices/pay', payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        return response.data;
-    } catch (err) {
-        console.error('Error paying invoice by reference:', err);
-        throw err.response ? err.response.data : new Error('No response from server');
-    }
+    return await apiRequest({
+        method: 'post',
+        url: '/invoices/pay',
+        token,
+        data: payload,
+    });
 };
 
-
-export const getEnabledPaymentGateways2 = async (token, setGateways, setError, setFetching) => {
-    setFetching(true);
-
-    try {
-        const response = await axios.get('paymentgateway/enabled', {
-            headers: { 
-                'Accept': 'application/json', 
-                'Authorization': `Bearer ${token}` 
-            }
-        });
-
-        console.log(response.data);
-        setGateways(response.data?.data);
-        setError(null);  // Clear any previous errors
-    } catch (err) {
-        if (!err.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data?.message);
-            setError(err.response.data?.message || 'Error fetching payment gateways');
-        }
-    } finally {
-        setFetching(false);
-    }
-};
+// Removed duplicate getEnabledPaymentGateways2
 
 export const getUserWallets = async (token, agentId, setWallet, setError, setLoading) => {
-    setLoading(true);
+    const data = await apiRequest({
+        method: 'get',
+        url: `agents/${agentId}/wallet`,
+        token,
+        setError,
+        setLoading,
+    });
 
-    try {
-        const response = await axios.get(`agents/${agentId}/wallet`, {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-
-        setWallet(response.data.wallet);
-    } catch (err) {
-        if (!err.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setLoading(false);
+    setWallet(data?.wallet || {});
 };
 
-// INDIVIDUAL AND CORPORATE MANAGEMENT
-
+// Individual and Corporate Management
 export const getIndividuals = async (token, setIndividuals, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await axios.get('/individuals', {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-        setIndividuals(response.data.data);
-    } catch (err) {
-        setError(err.response ? err.response.data.message : 'No Response from Server');
-    }
-    setLoading(false);
+    const data = await apiRequest({
+        method: 'get',
+        url: '/individuals',
+        token,
+        setError,
+        setLoading,
+    });
+
+    setIndividuals(data?.data || []);
 };
 
 export const createIndividual = async (token, payload) => {
-    try {
-        const response = await axios.post('/individuals', payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log("Server response:", response.data);
-        return response.data.data;
-    } catch (err) {
-        console.error('Axios error:', err.response?.data); // Log error for better debuggingthrow err.response ? err.response.data : newError('No response from server');
-    }
+    return await apiRequest({
+        method: 'post',
+        url: '/individuals',
+        token,
+        data: payload,
+    });
 };
 
 export const updateIndividual = async (token, id, payload) => {
-    try {
-        const response = await axios.put(`/individuals/${id}`, payload, {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-        return response.data.data;
-    } catch (err) {
-        throw err.response ? err.response.data : new Error('No response from server');
-    }
+    return await apiRequest({
+        method: 'put',
+        url: `/individuals/${id}`,
+        token,
+        data: payload,
+    });
 };
 
 export const getCorporates = async (token, setCorporates, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await axios.get('/corporates', {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-        setCorporates(response.data.data);
-    } catch (err) {
-        setError(err.response ? err.response.data.message : 'No Response from Server');
-    }
-    setLoading(false);
+    const data = await apiRequest({
+        method: 'get',
+        url: '/corporates',
+        token,
+        setError,
+        setLoading,
+    });
+
+    setCorporates(data?.data || []);
 };
 
 export const createCorporate = async (token, payload) => {
-    try {
-        const response = await axios.post('/corporates', payload, {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-        return response.data.data;
-    } catch (err) {
-        throw err.response ? err.response.data : new Error('No response from server');
-    }
+    return await apiRequest({
+        method: 'post',
+        url: '/corporates',
+        token,
+        data: payload,
+    });
 };
 
 export const updateCorporate = async (token, id, payload) => {
-    try {
-        const response = await axios.put(`/corporates/${id}`, payload, {
-            headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
-        });
-        return response.data.data;
-    } catch (err) {
-        throw err.response ? err.response.data : new Error('No response from server');
-    }
+    return await apiRequest({
+        method: 'put',
+        url: `/corporates/${id}`,
+        token,
+        data: payload,
+    });
 };
 
 export const generateBulkTokens = async (token, agentId, payload) => {
-    try {
-        const response = await axios.post(`/agents/${agentId}/tokens/generate-bulk`, payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-
-        return response.data;
-    } catch (err) {
-        if (!err?.response) {
-            throw new Error('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            throw new Error(err.response.data);
-        }
-    }
+    return await apiRequest({
+        method: 'post',
+        url: `/agents/${agentId}/tokens/generate-bulk`,
+        token,
+        data: payload,
+    });
 };
 
 export const quickUseToken = async (token, agentId, payload) => {
-    try {
-        const response = await axios.post(`/agents/${agentId}/tokens/quick-use`, payload, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        return response.data;
-    } catch (err) {
-        if (!err.response) {
-            throw new Error('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            throw new Error(err.response.data.message || 'Failed to use token');
-        }
-    }
+    return await apiRequest({
+        method: 'post',
+        url: `/agents/${agentId}/tokens/quick-use`,
+        token,
+        data: payload,
+    });
 };
 
 export const getEserviceItems = async (token) => {
-    try {
-        const response = await axios.get('/eservice-items', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        console.log('Fetched eService Items:', response.data.data); // Debugging line
-        return response.data.data; // Access the data field correctly
-    } catch (err) {
-        console.error('Error fetching eService Items:', err); // Debugging line
-        throw new Error(err.response?.data?.message || 'Failed to fetch eService items');
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: '/eservice-items',
+        token,
+    });
+
+    return data?.data || [];
 };
 
 export const getIdentifiers = async (token) => {
-    try {
-        const response = await axios.get('/identifiers', {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-        });
-        return response.data.data;
-    } catch (err) {
-        console.error('Error fetching identifiers:', err);
-        throw new Error(err.response?.data?.message || 'Failed to fetch identifiers');
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: '/identifiers',
+        token,
+    });
+
+    return data?.data || [];
 };
 
 export const checkEmailExists = async (email) => {
-    try {
-        const response = await axios.get('/check-email', { params: { email } });
-        return response.data.exists; // Assume the backend returns a boolean `exists` field
-    } catch (error) {
-        console.error('Error checking email:', error);
-        throw error;
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: '/check-email',
+        params: { email },
+    });
+
+    return data?.exists || false;
 };
 
 export const checkMobileExists = async (mobile_number) => {
-    try {
-        const response = await axios.get('/check-mobile', { params: { mobile_number } });
-        return response.data.exists; // Assume the backend returns a boolean `exists` field
-    } catch (error) {
-        console.error('Error checking mobile number:', error);
-        throw error;
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: '/check-mobile',
+        params: { mobile_number },
+    });
+
+    return data?.exists || false;
 };
 
 export const checkRegistrationNumberExists = async (registration_number) => {
-    try {
-        const response = await axios.get('/check-registration-number', { params: { registration_number } });
-        return response.data.exists; // Assume the backend returns a boolean `exists` field
-    } catch (error) {
-        console.error('Error checking registration number:', error);
-        throw error;
-    }
+    const data = await apiRequest({
+        method: 'get',
+        url: '/check-registration-number',
+        params: { registration_number },
+    });
+
+    return data?.exists || false;
 };

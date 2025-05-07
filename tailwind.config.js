@@ -1,13 +1,19 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 export default {
-  darkMode: 'class', // Enable dark mode support using the class strategy
-  content: [
-    './src/**/*.{js,ts,jsx,tsx}',
-    './index.html'
-  ],
+  darkMode: 'class',
+  content: ['./src/**/*.{js,ts,jsx,tsx}', './index.html'],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        subtleBounce: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+      },
+      animation: {
+        subtleBounce: 'subtleBounce 3s ease-in-out infinite',
+      },
+    },
   },
   plugins: [],
 }
-

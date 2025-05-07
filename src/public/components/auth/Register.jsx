@@ -129,23 +129,14 @@ const Register = ({ handleChildUpdate }) => {
 
                 <div className=''>
                     {registering ? 
-                        <button className='w-full flex justify-center p-3 mt-5 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-6 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-2 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             Register
                         </button>
                     }
-                    <div className='flex justify-start py-1 mt-2'>
-                        <span 
-                            className='cursor-pointer text-gray-700'
-                            onClick={() => handleChildUpdate('login')}
-                        >
-                                Already have an account? <span className='text-orange-500'>Sign in</span>
-                        </span>
-                    </div>
                 </div>
-                
             </form>
         </div>
     );

@@ -37,32 +37,52 @@ const ManageTokens = () => {
 
     const handleCloseModal = () => {
         setShowGenerateModal(false);
-        setRefresh(prev => !prev); // Trigger refresh
+        setRefresh(prev => !prev);
     };
 
     return (
-        <div className="w-full">
-            {error && <span className='text-red-600'>{error}</span>}
-            {loading ? <ProgressBarComponent /> : (
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 font-poppins bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-500 max-w-full animate-fadeIn">
+            {error && (
+                <div className="text-center py-4 text-[#f06752] dark:text-red-400 text-lg font-medium">
+                    {error}
+                </div>
+            )}
+            {loading ? (
+                <div className="flex justify-center my-5">
+                    <svg className="animate-spin h-8 w-8 text-[#3B78BD] dark:text-[#F0B652]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h-8z"></path>
+                    </svg>
+                </div>
+            ) : (
                 <div className="mt-8">
                     <Tokens totalTokens={totalTokens} totalValue={totalValue} usedTokens={usedTokens} usedValue={usedValue} />
                 </div>
             )}
             <div className="w-full flex justify-end my-4">
-                <div
-                    className='w-[185px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#0d544c] hover:bg-green-700 text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105'
+                <button
+                    className="w-[185px] flex justify-center items-center space-x-2 rounded-md py-2 px-4 bg-[#3B78BD] hover:bg-[#F0B652] text-white cursor-pointer transition-all duration-300 shadow-lg transform hover:scale-105"
                     onClick={handleGenerateClick}
                 >
                     <span>Generate Token</span>
-                </div>
+                </button>
             </div>
             {showGenerateModal && (
                 <GenerateTokenModal
                     closeModal={handleCloseModal}
-                    agentId={user?.id} // Add optional chaining
+                    agentId={user?.id}
                 />
             )}
-            <TokensHistory token={token} agentId={user?.id} /> {/* Add optional chaining */}
+            <TokensHistory token={token} agentId={user?.id} />
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

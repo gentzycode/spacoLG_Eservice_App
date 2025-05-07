@@ -1,12 +1,10 @@
-import { useState } from 'react'
-import { MdOutlineLockReset } from 'react-icons/md'
+import { useState } from 'react';
+import { MdOutlineLockReset } from 'react-icons/md';
 import ButtonLoader from '../../../common/ButtonLoader';
 import { resetPassword } from '../../../apis/noAuthActions';
 import { ToastContainer, toast } from 'react-toastify';
 
-
 const ResetPassword = ({ handleChildUpdate }) => {
-    
     const [otp, setOtp] = useState();
     const [mobile, setMobile] = useState();
     const [new_password, setNew_password] = useState();
@@ -20,23 +18,20 @@ const ResetPassword = ({ handleChildUpdate }) => {
 
         const data = {
             otp, mobile, new_password, new_password_confirmation
-        }
+        };
 
         resetPassword(data, setSuccess, setError, setResetting);
-    }
+    };
 
-    if(success !== null){
+    if (success !== null) {
         toast.success(success?.message);
         setTimeout(() => handleChildUpdate('login'), 3000);
-        //handleChildUpdate('login');
     }
 
-    if(error !== null){
+    if (error !== null) {
         toast.error(error?.message?.errors ? error?.message?.errors : error?.message);
         setError(null);
     }
-
-
 
     return (
         <div className="w-full">
@@ -55,7 +50,6 @@ const ResetPassword = ({ handleChildUpdate }) => {
                         required
                     />
                 </div>
-                
                 <div>
                     <div className='text-gray-500 mb-1'>Mobile</div>
                     <input 
@@ -65,7 +59,6 @@ const ResetPassword = ({ handleChildUpdate }) => {
                         required
                     />
                 </div>
-                
                 <div>
                     <div className='text-gray-500 mb-1'>Password</div>
                     <input 
@@ -75,7 +68,6 @@ const ResetPassword = ({ handleChildUpdate }) => {
                         required
                     />
                 </div>
-                
                 <div>
                     <div className='text-gray-500 mb-1'>Confirm Password</div>
                     <input 
@@ -85,29 +77,19 @@ const ResetPassword = ({ handleChildUpdate }) => {
                         required
                     />
                 </div>
-
                 <div className=''>
                     {resetting ? 
-                        <button className='w-full flex justify-center p-3 mt-8 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full flex justify-center p-3 mt-6 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             <ButtonLoader />
                         </button> : 
-                        <button className='w-full p-3 mt-4 rounded-md bg-[#0d544c] hover:bg-green-700 text-white'>
+                        <button className='w-full p-3 mt-2 rounded-md bg-[#F0B652] hover:bg-[#3B78BD] text-white'>
                             Reset
                         </button>
                     }
-                    <div className='flex justify-end py-1'>
-                        <span 
-                            className='cursor-pointer text-gray-500'
-                            onClick={() => handleChildUpdate('login')}
-                        >
-                                Go to Login
-                        </span>
-                    </div>
                 </div>
-                
             </form>
         </div>
-    )
-}
+    );
+};
 
-export default ResetPassword
+export default ResetPassword;
