@@ -26,8 +26,9 @@ import MyWallet from './protected/pages/MyWallet';
 import TransactionStatus from './protected/pages/TransactionStatus';
 import ManageTokens from './protected/pages/ManageTokens';
 import ManageInvoices from './protected/pages/ManageInvoices';
-import PayerManagement from './protected/pages/PayerManagement'; // New import
-import Reports from './protected/pages/Reports'; // New import
+import PayerManagement from './protected/pages/PayerManagement';
+import Reports from './protected/pages/Reports';
+import ReceiptVerificationComponent from './public/pages/ReceiptVerificationComponent'; // New import
 
 function App() {
     const [loading, setLoading] = useState(true);
@@ -46,6 +47,7 @@ function App() {
                     <Route path='/service' element={<Service />} />
                     <Route path='/check-json' element={<CheckJSON />} />
                     <Route path='/status-check' element={<Statuscheck />} />
+                    <Route path='/verify' element={<ReceiptVerificationComponent />} /> {/* New route */}
                     <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
                         <Route path='/dashboard' element={<Dashboard />} />
                         <Route path='/application' element={<Application />} />
@@ -62,7 +64,7 @@ function App() {
                         <Route path='/wallet/status' element={<TransactionStatus />} />
                         <Route path="/manage-tokens" element={<ManageTokens />} />
                         <Route path="/manage-invoices" element={<ManageInvoices />} />
-                        <Route path="/manage-payers" element={<PayerManagement />} /> {/* New route */}
+                        <Route path="/manage-payers" element={<PayerManagement />} />
                         <Route path="/reports" element={<Reports />} />
                         {routes.map(({ path, component: Component }) => (
                             <Route

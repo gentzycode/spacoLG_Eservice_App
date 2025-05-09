@@ -1,331 +1,157 @@
-import axios from './baseUrl'
+import axios from './baseUrl';
 
+// Common headers for all requests
+const defaultHeaders = { 'Accept': 'application/json' };
 
+// Common error handling logic
+const handleError = (err, setError) => {
+  if (!err?.response) {
+    setError('No Response from Server');
+  } else {
+    console.log(err.response.data);
+    setError(err.response.data?.message || err.response.data);
+  }
+};
 
-export const getLGAs = async ( setLgas , setError) => {
+// Common async request wrapper
+const makeRequest = async (config, setSuccess, setError, setLoading = null, additionalLogic = null) => {
+  if (setLoading) setLoading(true);
 
-    try{
-        const response  = await axios.get(`localgovernments`,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data?.data)
-        setLgas(response.data?.data);
+  try {
+    const response = await axios(config);
+    console.log(response.data?.data || response.data);
+    
+    if (additionalLogic) {
+      additionalLogic(response);
+    } else {
+      setSuccess(response.data?.data || response.data);
     }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
+  } catch (err) {
+    if (additionalLogic && err.response?.status === 404) {
+      additionalLogic(err.response);
+    } else {
+      handleError(err, setError);
     }
-}
+  }
 
+  if (setLoading) setLoading(false);
+};
 
-export const getCities = async ( setCities , setError) => {
+export const getLGAs = async (setLgas, setError) => {
+  makeRequest({
+    method: 'get',
+    url: 'localgovernments',
+    headers: defaultHeaders
+  }, setLgas, setError);
+};
 
-    try{
-        const response  = await axios.get(`cities`,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data?.data)
-        setCities(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-}
+export const getCities = async (setCities, setError) => {
+  makeRequest({
+    method: 'get',
+    url: 'cities',
+    headers: defaultHeaders
+  }, setCities, setError);
+};
 
 export const getActiveservices = async (lga_id, setActiveservices, setLoading, setNoServicesMessage) => {
-    setLoading(true);
-
-    try {
-        const response = await axios.get(`activeeservices?local_government_id=${lga_id}`, {
-            headers: { 'Accept': 'application/json' }
-        });
-
-        console.log(response.data?.data);
-
-        if (response.status === 404 || (response.data?.status === 'error' && response.data?.code === 0)) {
-            setNoServicesMessage('No Services Found for this Local Government Area. Please, select another LGA to proceed.');
-            setActiveservices(null);
-        } else {
-            setActiveservices(response.data?.data);
-            setNoServicesMessage('');
-        }
-    } catch (err) {
-        if (err.response && err.response.status === 404) {
-            setNoServicesMessage('No Services Found for this Local Government Area. Please, select another LGA to proceed.');
-            setActiveservices(null);
-        } else if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            // setError(err.response.data);
-        }
+  makeRequest({
+    method: 'get',
+    url: `activeeservices?local_government_id=${lga_id}`,
+    headers: defaultHeaders
+  }, setActiveservices, setError => setNoServicesMessage('No Services Found for this Local Government Area. Please, select another LGA to proceed.'), setLoading, (response) => {
+    if (response.status === 404 || (response.data?.status === 'error' && response.data?.code === 0)) {
+      setNoServicesMessage('No Services Found for this Local Government Area. Please, select another LGA to proceed.');
+      setActiveservices(null);
+    } else {
+      setActiveservices(response.data?.data);
+      setNoServicesMessage('');
     }
+  });
+};
 
-    setLoading(false);
-}
+export const signUp = async (data, setSuccess, setError, setRegistering) => {
+  makeRequest({
+    method: 'post',
+    url: 'register',
+    data,
+    headers: defaultHeaders
+  }, setSuccess, setError, setRegistering);
+};
 
+export const signIn = async (data, setSuccess, setError, setLoggingin) => {
+  makeRequest({
+    method: 'post',
+    url: 'login',
+    data,
+    headers: defaultHeaders
+  }, setSuccess, setError, setLoggingin);
+};
 
-export const signUp = async ( data, setSuccess, setError, setRegistering ) => {
+export const verifyEmailCode = async (data, setVerified, setError, setVerifying) => {
+  makeRequest({
+    method: 'post',
+    url: 'verify-email-code',
+    data,
+    headers: defaultHeaders
+  }, setVerified, setError, setVerifying);
+};
 
-    setRegistering(true);
+export const forgotPassword = async (data, setSuccess, setError, setSending) => {
+  makeRequest({
+    method: 'post',
+    url: 'forgot-password',
+    data,
+    headers: defaultHeaders
+  }, setSuccess, setError, setSending);
+};
 
-    try{
-        const response  = await axios.post('register',
-            data,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
+export const resetPassword = async (data, setSuccess, setError, setResetting) => {
+  makeRequest({
+    method: 'post',
+    url: 'reset-password',
+    data,
+    headers: defaultHeaders
+  }, setSuccess, setError, setResetting);
+};
 
-        console.log(response.data)
-        setSuccess(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data.message);
-            setError(err.response.data.message);
-        }
-    }
+export const updateProfile = async (token, data, setSuccess, setError, setUpdating) => {
+  makeRequest({
+    method: 'post',
+    url: 'personalinformation',
+    data,
+    headers: { ...defaultHeaders, 'Authorization': `Bearer ${token}` }
+  }, setSuccess, setError, setUpdating);
+};
 
-    setRegistering(false);
-}
+export const getEservices = async (lga_id, setServices, setLoading) => {
+  makeRequest({
+    method: 'get',
+    url: `activeeservices?local_government_id=${lga_id}`,
+    headers: defaultHeaders
+  }, setServices, setError => setError('No Response from Server'), setLoading);
+};
 
+export const getPublicApplicationStatus = async (ref_no, setSuccess, setError, setLoading) => {
+  makeRequest({
+    method: 'get',
+    url: `applicationdata/${ref_no}/public-status`,
+    headers: defaultHeaders
+  }, setSuccess, setError, setLoading);
+};
 
+export const verifyReceipt = async (ref_no, setSuccess, setError, setLoading) => {
+  makeRequest({
+    method: 'get',
+    url: `verify-receipt?ref=${ref_no}`,
+    headers: defaultHeaders
+  }, setSuccess, setError, setLoading);
+};
 
-export const signIn = async ( data, setSuccess, setError, setLoggingin ) => {
-
-    setLoggingin(true);
-
-    try{
-        const response  = await axios.post('login',
-            data,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        //console.log(response.data?.data)
-        setSuccess(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setLoggingin(false);
-}
-
-
-export const verifyEmailCode = async ( data, setVerified, setError, setVerifying ) => {
-
-    setVerifying(true);
-
-    try{
-        const response  = await axios.post('verify-email-code',
-            data,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data?.message)
-        setVerified(response.data?.message);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data.message);
-            setError(err.response.data.message);
-        }
-    }
-
-    setVerifying(false);
-}
-
-
-export const forgotPassword = async ( data, setSuccess, setError, setSending ) => {
-
-    setSending(true);
-
-    try{
-        const response  = await axios.post('forgot-password',
-            data,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data)
-        setSuccess(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setSending(false);
-}
-
-
-export const resetPassword = async ( data, setSuccess, setError, setResetting ) => {
-
-    setResetting(true);
-
-    try{
-        const response  = await axios.post('reset-password',
-            data,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data)
-        setSuccess(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setResetting(false);
-}
-
-
-export const updateProfile = async ( token, data, setSuccess, setError, setUpdating ) => {
-
-    setUpdating(true);
-
-    try{
-        const response  = await axios.post('personalinformation',
-            data,
-            {
-                headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
-            }
-        );    
-
-        console.log(response.data)
-        setSuccess(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data);
-        }
-    }
-
-    setUpdating(false);
-}
-
-
-export const getEservices = async ( lga_id, setServices, setLoading ) => {
-
-    setLoading(true);
-
-    try{
-        const response  = await axios.get(`activeeservices?local_government_id=${lga_id}`,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data?.data)
-        setServices(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            //setError(err.response.data);
-        }
-    }
-
-    setLoading(false);
-}
-
-
-export const getPublicApplicationStatus = async ( ref_no, setSuccess, setError, setLoading ) => {
-
-    setLoading(true);
-
-    try{
-        const response  = await axios.get(`applicationdata/${ref_no}/public-status`,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data?.data)
-        setSuccess(response.data?.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data?.message);
-        }
-    }
-
-    setLoading(false);
-}
-
-
-export const OtpResend = async ( data, setSuccess, setError, setResending ) => {
-
-    setResending(true);
-
-    try{
-        const response  = await axios.post(`resend-otp`,
-            data,
-            {
-                headers: { 'Accept' : 'application/json' }
-            }
-        );    
-
-        console.log(response.data)
-        setSuccess(response.data);
-    }
-    catch (err) {
-        if (!err?.response) {
-            setError('No Response from Server');
-        } else {
-            console.log(err.response.data);
-            setError(err.response.data?.message);
-        }
-    }
-
-    setResending(false);
-}
+export const OtpResend = async (data, setSuccess, setError, setResending) => {
+  makeRequest({
+    method: 'post',
+    url: 'resend-otp',
+    data,
+    headers: defaultHeaders
+  }, setSuccess, setError, setResending);
+};

@@ -23,7 +23,7 @@ const handleError = (err, setError) => {
 };
 
 // Centralized API request wrapper
-const apiRequest = async ({ method, url, token, data, setError, setLoading, setFetching, setSubmitting }) => {
+export const apiRequest = async ({ method, url, token, data, setError, setLoading, setFetching, setSubmitting }) => {
     const setState = setLoading || setFetching || setSubmitting;
     try {
         setState?.(true);
@@ -490,6 +490,19 @@ export const payInvoiceByReference = async (token, payload) => {
     });
 };
 
+export const getPayerInvoices = async (token, referenceNumber, params, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `payers/${referenceNumber}/invoices`,
+        token,
+        params,
+        setError,
+        setLoading,
+    });
+
+    return data;
+};
+
 // Removed duplicate getEnabledPaymentGateways2
 
 export const getUserWallets = async (token, agentId, setWallet, setError, setLoading) => {
@@ -631,4 +644,29 @@ export const checkRegistrationNumberExists = async (registration_number) => {
     });
 
     return data?.exists || false;
+};
+
+export const getAgentPaymentHistory = async (token, filters, setPayments, setError, setLoading) => {
+    setLoading(true);
+    try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/agent/payment-history`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            params: filters,
+        });
+
+        const data = await response.json();
+        if (data.status === 'success') {
+            setPayments(data.payments);
+        } else {
+            setError(data.message);
+        }
+    } catch (err) {
+        setError('Failed to fetch payment history');
+    } finally {
+        setLoading(false);
+    }
 };

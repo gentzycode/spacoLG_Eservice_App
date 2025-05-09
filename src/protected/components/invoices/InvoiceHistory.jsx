@@ -4,7 +4,7 @@ import { formatDate } from '../../../apis/functions';
 import { getUnpaidInvoices, getPaidInvoicesByAgent, getInvoiceById } from '../../../apis/authActions';
 import { AiOutlineEye, AiOutlinePrinter } from 'react-icons/ai';
 import InvoiceDetailModal from './InvoiceDetailModal';
-import logo from '../../../assets/abia512_512logo.png';
+import logo from '../../../assets/logo-bayelsa.png';
 
 const InvoiceHistory = ({ token, agentId }) => {
     const [unpaidInvoices, setUnpaidInvoices] = useState([]);
@@ -34,15 +34,21 @@ const InvoiceHistory = ({ token, agentId }) => {
         }
     };
 
-    const filteredUnpaid = useMemo(() =>
-        (unpaidInvoices || []).filter(item =>
-            item.reference_number && item.reference_number.toLowerCase().includes(filterText.toLowerCase())
-        ), [filterText, unpaidInvoices]);
+    const filteredUnpaid = useMemo(() => {
+        const trimmedFilter = filterText.trim().toLowerCase();
+        return (unpaidInvoices || []).filter(item => {
+            const refNumber = item.reference_number ? item.reference_number.trim().toLowerCase() : '';
+            return refNumber.includes(trimmedFilter);
+        });
+    }, [filterText, unpaidInvoices]);
 
-    const filteredPaid = useMemo(() =>
-        (paidInvoices || []).filter(item =>
-            item.reference_number && item.reference_number.toLowerCase().includes(filterText.toLowerCase())
-        ), [filterText, paidInvoices]);
+    const filteredPaid = useMemo(() => {
+        const trimmedFilter = filterText.trim().toLowerCase();
+        return (paidInvoices || []).filter(item => {
+            const refNumber = item.reference_number ? item.reference_number.trim().toLowerCase() : '';
+            return refNumber.includes(trimmedFilter);
+        });
+    }, [filterText, paidInvoices]);
 
     const handleView = async (id) => {
         setIsFetching(true);
@@ -173,7 +179,7 @@ const InvoiceHistory = ({ token, agentId }) => {
                     placeholder="Search by Reference Number..."
                     className="w-1/3 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
                     value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
+                    onChange={(e) => setFilterText(e.target.value.trim())}
                 />
                 {(selectedUnpaid.length > 0 || selectedPaid.length > 0) && (
                     <button

@@ -1,4 +1,4 @@
-import Logo from '../../assets/ansg_logo.png'
+import Logo from '../../assets/logo-bayelsa.png'
 import { useNavigate } from 'react-router-dom'
 import DashboardButton from '../../common/DashboardButton';
 

@@ -5,7 +5,7 @@ import TokenUsageHistoryModal from './TokenUsageHistoryModal';
 import { getUserTokens } from '../../../apis/authActions';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faSearch } from '@fortawesome/free-solid-svg-icons';
-import Logo from '../../../assets/ansg_logo.png';
+import Logo from '../../../assets/logo-bayelsa.png';
 
 // Theme with updated colors to match app's aesthetic
 createTheme('gentzy', {

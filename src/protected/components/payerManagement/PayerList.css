@@ -1,0 +1,65 @@
+.payer-list-container {
+    width: 100%;
+}
+
+.payer-list {
+    list-style: none;
+    padding: 0;
+}
+
+.payer-item {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payer-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.payer-item:focus {
+    outline: 2px solid #3B78BD;
+    outline-offset: 2px;
+}
+
+.payer-info {
+    flex-grow: 1;
+    margin-left: 16px;
+}
+
+.payer-info p {
+    margin: 4px 0;
+    color: #666;
+}
+
+.tooltip {
+    position: relative;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}

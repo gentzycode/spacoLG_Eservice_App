@@ -1,52 +1,86 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { formatDate } from '../../../apis/functions';
-import { PaystackButton } from 'react-paystack';
-import logo from '../../../assets/abia512_512logo.png';
+import { getEnabledPaymentGateways, payInvoiceByReference } from '../../../apis/authActions';
+import logo from '../../../assets/logo-bayelsa.png';
 
 const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [gateways, setGateways] = useState([]);
+    const [selectedGateway, setSelectedGateway] = useState(null);
+    const [tokenValue, setTokenValue] = useState('');
     const printRef = useRef();
 
+    // Fetch payment gateways on mount
     useEffect(() => {
-        const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-        if (!publicKey) {
-            setError('Paystack public key is missing. Please contact support.');
-        }
-    }, []); // Empty dependency array ensures this runs only once on mount
+        const fetchPaymentGateways = async () => {
+            setIsLoading(true);
+            try {
+                await getEnabledPaymentGateways(token, setGateways, setError, setIsLoading);
+            } catch (err) {
+                setError('Failed to fetch payment gateways');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchPaymentGateways();
+    }, [token]);
 
-    const handlePaystackSuccess = async (reference) => {
+    const handlePayInvoice = async () => {
         setIsLoading(true);
+        setError(null);
+        setSuccessMessage(null);
+
         try {
-            const response = await axios.post('/auth/verify-inline-paystack', { reference }, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (response.data.success) {
-                alert('Payment verified successfully!');
-                onPaymentSuccess();
-                onClose();
+            const payload = { reference_number: invoice.reference_number };
+            if (selectedGateway === 'Token') {
+                if (!tokenValue) {
+                    setError('Please enter a valid token.');
+                    setIsLoading(false);
+                    return;
+                }
+                payload.token = tokenValue;
+            } else if (selectedGateway) {
+                payload.payment_gateway = selectedGateway;
             } else {
-                setError('Payment verification failed.');
+                setError('Please select a payment method.');
+                setIsLoading(false);
+                return;
+            }
+
+            const response = await payInvoiceByReference(token, payload);
+            if (response.status === 'error') {
+                if (response.message === 'Insufficient wallet balance') {
+                    setError('Insufficient wallet balance. Please top up your wallet and try again.');
+                } else if (response.message === 'E-Wallet payments are only available for agent invoices') {
+                    setError('E-Wallet payments are only available for agent invoices. Please select another payment method.');
+                } else {
+                    setError(response.message);
+                }
+            } else if (response.payment_url) {
+                window.location.href = response.payment_url;
+            } else {
+                const successMsg = selectedGateway === 'E-Wallet'
+                    ? 'Paid successfully via E-Wallet'
+                    : selectedGateway === 'Token'
+                    ? 'Paid successfully using Token'
+                    : selectedGateway === 'Cash'
+                    ? 'Paid successfully with Cash'
+                    : `Paid successfully via ${selectedGateway}`;
+                setSuccessMessage(successMsg);
+                setTimeout(() => {
+                    onPaymentSuccess();
+                    onClose();
+                }, 2000);
             }
         } catch (err) {
-            setError('Error verifying payment. Please try again.');
+            setError(err.message || 'Failed to pay invoice');
         } finally {
             setIsLoading(false);
         }
     };
-
-    const handlePaystackClose = () => console.log('Payment dialog closed.');
-
-    const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-    const paystackProps = publicKey
-        ? {
-              email: invoice.payer_email || 'example@example.com',
-              amount: invoice.amount * 100, // Convert to kobo
-              publicKey,
-              reference: invoice.reference_number,
-              onSuccess: (response) => handlePaystackSuccess(response.reference),
-              onClose: handlePaystackClose,
-          }
-        : null;
 
     const handlePrint = () => {
         const printWindow = window.open('', '', 'height=600,width=800');
@@ -104,9 +138,81 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                         </tbody>
                     </table>
                 </div>
-                {invoice.status === 'unpaid' && paystackProps ? (
+
+                {invoice.status === 'unpaid' ? (
                     <div>
-                        <PaystackButton {...paystackProps} className="bg-[#3B78BD] hover:bg-[#F0B652] text-white py-2 px-6 rounded transition-all duration-300" />
+                        {/* Payment Method Selection */}
+                        <div className="mb-6">
+                            <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Payment Method</label>
+                            {isLoading ? (
+                                <div className="text-center text-gray-600 dark:text-gray-300">Loading payment methods...</div>
+                            ) : gateways.length === 0 ? (
+                                <div className="text-center text-gray-600 dark:text-gray-300">No payment gateways available</div>
+                            ) : (
+                                <div className="flex flex-wrap justify-center gap-4">
+                                    {gateways.map((gateway) => (
+                                        <button
+                                            key={gateway.id}
+                                            onClick={() => setSelectedGateway(gateway.gateway_name)}
+                                            className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                                                selectedGateway === gateway.gateway_name
+                                                    ? 'bg-[#3B78BD] dark:bg-[#F0B652] text-white shadow-lg'
+                                                    : 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500'
+                                            }`}
+                                        >
+                                            {gateway.gateway_name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Token Input Field (if Token is selected) */}
+                        {selectedGateway === 'Token' && (
+                            <div className="mb-6">
+                                <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Token</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700"
+                                    value={tokenValue}
+                                    onChange={(e) => setTokenValue(e.target.value)}
+                                    placeholder="Enter Token"
+                                />
+                            </div>
+                        )}
+
+                        {/* Error and Success Messages */}
+                        {error && (
+                            <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg text-center">
+                                {error}
+                            </div>
+                        )}
+                        {successMessage && (
+                            <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg text-center">
+                                {successMessage}
+                            </div>
+                        )}
+
+                        {/* Pay Button */}
+                        {selectedGateway && (
+                            <div className="flex justify-end space-x-4">
+                                <button
+                                    onClick={onClose}
+                                    className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-6 rounded transition-all duration-300"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handlePayInvoice}
+                                    disabled={isLoading || (selectedGateway === 'Token' && !tokenValue)}
+                                    className={`bg-[#3B78BD] hover:bg-[#F0B652] text-white py-2 px-6 rounded transition-all duration-300 ${
+                                        isLoading || (selectedGateway === 'Token' && !tokenValue) ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                >
+                                    {isLoading ? 'Processing...' : 'Pay Now'}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex justify-end space-x-4">
@@ -114,7 +220,7 @@ const InvoiceDetailModal = ({ invoice, token, agentId, onClose, onPaymentSuccess
                         <button onClick={onClose} className="bg-gray-500 hover:bg-gray-700 text-white py-2 px-6 rounded transition-all duration-300">Close</button>
                     </div>
                 )}
-                {error && <div className="text-red-500 mt-4 text-center">{error}</div>}
+
                 <button onClick={onClose} className="absolute top-2 right-2 text-red-600 font-bold text-lg">×</button>
                 <style jsx>{`
                     @keyframes fadeIn {
