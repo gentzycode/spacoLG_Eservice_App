@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import DataTable from "react-data-table-component";
-import { formatDate } from "../../../apis/functions";
+// src/protected/components/reports/TokenTransactionsTable.jsx
+import React, { useState, useEffect } from 'react';
+import DataTable from 'react-data-table-component';
+import { formatDate } from '../../../apis/functions';
 
-const TokenTransactionsTable = ({ data, loading, error }) => {
+const TokenTransactionsTable = ({ data = [], loading, error }) => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [filteredData, setFilteredData] = useState(data);
 
     useEffect(() => {
@@ -15,7 +16,6 @@ const TokenTransactionsTable = ({ data, loading, error }) => {
                 const itemDate = new Date(item.updated_at);
                 const start = startDate ? new Date(startDate) : null;
                 const end = endDate ? new Date(endDate) : null;
-
                 return (!start || itemDate >= start) && (!end || itemDate <= end);
             });
             setFilteredData(filtered);
@@ -26,197 +26,175 @@ const TokenTransactionsTable = ({ data, loading, error }) => {
 
     const columns = [
         {
-            name: "Token",
-            selector: (row) => row.token || "N/A",
+            name: 'Token',
+            selector: (row) => row.token || 'N/A',
             sortable: true,
         },
         {
-            name: "Amount Used",
+            name: 'Amount Used',
             selector: (row) => `₦${Number(row.amount_used || 0).toLocaleString()}`,
             sortable: true,
         },
         {
-            name: "Identifier",
-            selector: (row) => row.identifier || "N/A",
+            name: 'Identifier',
+            selector: (row) => row.identifier || 'N/A',
             sortable: true,
         },
         {
-            name: "Identifier Value",
-            selector: (row) => row.identifier_value || "N/A",
+            name: 'Identifier Value',
+            selector: (row) => row.identifier_value || 'N/A',
             sortable: true,
         },
         {
-            name: "E-Service Name",
-            selector: (row) => row.eservice_name || "N/A",
+            name: 'E-Service Name',
+            selector: (row) => row.eservice_name || 'N/A',
             sortable: true,
         },
         {
-            name: "E-Service Value",
+            name: 'E-Service Value',
             selector: (row) => `₦${Number(row.eservice_value || 0).toLocaleString()}`,
             sortable: true,
         },
         {
-            name: "E-Service Category",
-            selector: (row) => row.eservice_category || "N/A",
+            name: 'E-Service Category',
+            selector: (row) => row.eservice_category || 'N/A',
             sortable: true,
         },
         {
-            name: "Updated At",
-            selector: (row) => formatDate(row.updated_at) || "N/A",
+            name: 'Updated At',
+            selector: (row) => (row.updated_at ? formatDate(row.updated_at) : 'N/A'),
             sortable: true,
         },
     ];
 
-    const paginatedData = filteredData.slice(
-        currentPage * rowsPerPage,
-        currentPage * rowsPerPage + rowsPerPage
-    );
-
-    const handleRowsPerPageChange = (e) => {
-        setRowsPerPage(Number(e.target.value));
-        setCurrentPage(0);
-    };
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page - 1);
-    };
-
-    const exportToCSV = () => {
-        const csvContent = `data:text/csv;charset=utf-8,${filteredData
-            .map((item) => [
-                item.token,
-                item.amount_used,
-                item.identifier,
-                item.identifier_value,
-                item.eservice_name,
-                item.eservice_value,
-                item.eservice_category,
-                formatDate(item.updated_at),
-            ].join(","))
-            .join("\n")}`;
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "token_transactions.csv");
-        document.body.appendChild(link);
-        link.click();
+    const customStyles = {
+        table: {
+            style: {
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            },
+        },
+        headRow: {
+            style: {
+                background: 'linear-gradient(to right, #3B78BD, #F0B652)',
+                borderBottom: '2px solid #d1d5db',
+                fontSize: '14px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: '#fff',
+            },
+        },
+        headCells: { style: { padding: '14px 16px' } },
+        rows: {
+            style: {
+                fontSize: '15px',
+                fontWeight: 500,
+                color: '#111827',
+                backgroundColor: '#ffffff',
+                borderBottom: '1px solid #e5e7eb',
+                '&:hover': { backgroundColor: '#f3f4f6', cursor: 'pointer' },
+                transition: 'all 0.3s ease',
+            },
+            stripedStyle: { backgroundColor: '#f9fafb' },
+        },
+        cells: {
+            style: {
+                padding: '12px 16px',
+                borderRight: '1px solid #e5e7eb',
+                '&:last-of-type': { borderRight: 'none' },
+            },
+        },
+        pagination: {
+            style: {
+                padding: '16px',
+                backgroundColor: '#fff',
+                borderTop: '1px solid #e5e7eb',
+                fontSize: '14px',
+                color: '#374151',
+            },
+            pageButtonsStyle: {
+                borderRadius: '6px',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #e5e7eb',
+                color: '#374151',
+                padding: '6px 12px',
+                margin: '0 4px',
+                transition: 'all 0.3s ease',
+                '&:hover': { backgroundColor: '#3B78BD', color: '#fff', borderColor: '#3B78BD' },
+                '&:disabled': { backgroundColor: '#e5e7eb', color: '#9ca3af' },
+            },
+        },
     };
 
     return (
-        <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold mb-3">Token Transactions</h3>
-
-            <div className="flex justify-between mb-4">
-                <div className="flex space-x-4">
-                    <div>
-                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-600">
-                            Start Date
-                        </label>
-                        <input
-                            type="date"
-                            id="startDate"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="w-full p-2 border rounded"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-600">
-                            End Date
-                        </label>
-                        <input
-                            type="date"
-                            id="endDate"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="w-full p-2 border rounded"
-                        />
-                    </div>
+        <div className="bg-white p-6 rounded-lg shadow-md animate-fadeIn">
+            <h3 className="text-lg font-semibold text-[#3B78BD] dark:text-[#F0B652] mb-4">Token Transactions</h3>
+            <div className="flex flex-col sm:flex-row sm:space-x-4 mb-6">
+                <div className="flex-1">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                        Start Date
+                    </label>
+                    <input
+                        type="date"
+                        id="startDate"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
+                    />
                 </div>
-                <button
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                    onClick={exportToCSV}
-                >
-                    Export to CSV
-                </button>
+                <div className="flex-1">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                        End Date
+                    </label>
+                    <input
+                        type="date"
+                        id="endDate"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
+                    />
+                </div>
             </div>
-
             {loading ? (
-                <p className="text-center text-gray-500">Loading...</p>
+                <div className="text-center py-6 text-gray-600 dark:text-gray-300">Loading...</div>
             ) : error ? (
-                <p className="text-center text-red-500">{error}</p>
+                <div className="text-center py-6 text-red-600 dark:text-red-400">{error}</div>
             ) : (
                 <DataTable
                     columns={columns}
-                    data={paginatedData}
+                    data={filteredData}
                     pagination
-                    paginationServer
                     paginationTotalRows={filteredData.length}
-                    paginationDefaultPage={currentPage + 1}
-                    onChangeRowsPerPage={handleRowsPerPageChange}
-                    onChangePage={handlePageChange}
                     paginationPerPage={rowsPerPage}
                     paginationRowsPerPageOptions={[5, 10, 20, 50, 100]}
-                    customStyles={{
-                        header: {
-                            style: {
-                                fontSize: "16px",
-                                fontWeight: "bold",
-                                backgroundColor: "#4a5568",
-                                color: "#fff",
-                            },
-                        },
-                        rows: {
-                            style: {
-                                fontSize: "14px",
-                                backgroundColor: "#f8f9fa",
-                                "&:nth-of-type(odd)": {
-                                    backgroundColor: "#ecf6ec",
-                                },
-                                "&:hover": {
-                                    backgroundColor: "#e2e8f0",
-                                    cursor: "pointer",
-                                },
-                                border: "1px solid #e2e8f0",
-                            },
-                        },
-                        headCells: {
-                            style: {
-                                fontSize: "14px",
-                                fontWeight: "bold",
-                                backgroundColor: "#4a5568",
-                                color: "#fff",
-                                border: "1px solid #e2e8f0",
-                            },
-                        },
-                        cells: {
-                            style: {
-                                padding: "10px",
-                                fontSize: "14px",
-                                border: "1px solid #e2e8f0",
-                            },
-                        },
+                    onChangeRowsPerPage={(newPerPage) => {
+                        setRowsPerPage(newPerPage);
+                        setCurrentPage(1);
                     }}
+                    onChangePage={(page) => setCurrentPage(page)}
+                    customStyles={customStyles}
+                    highlightOnHover
+                    striped
+                    dense
+                    noDataComponent={
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">
+                            No records found.
+                        </div>
+                    }
                 />
             )}
-
-            <div className="flex justify-end mt-4">
-                <label htmlFor="rowsPerPage" className="mr-2">
-                    Rows per page:
-                </label>
-                <select
-                    id="rowsPerPage"
-                    value={rowsPerPage}
-                    onChange={handleRowsPerPageChange}
-                    className="p-2 border rounded"
-                >
-                    {[5, 10, 20, 50, 100].map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

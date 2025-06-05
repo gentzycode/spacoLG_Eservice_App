@@ -5,6 +5,7 @@ import { getPublicApplicationStatus, verifyReceipt } from '@/apis/noAuthActions'
 import ButtonLoader from '@/common/ButtonLoader';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import PaymentReceiptModal from '@/protected/components/invoices/PaymentReceiptModal';
+import Loader from '@/common/Loader';
 
 const StatusCheckComponent = () => {
     const loc = useLocation();
@@ -20,20 +21,23 @@ const StatusCheckComponent = () => {
     const toggleInfo = () => setShowinfo(!showinfo);
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Setting loading to true');
         setLoading(true);
         setError(null);
         setSuccess(null);
 
         try {
             if (checkType === 'application') {
-                await getPublicApplicationStatus(refno, setSuccess, setError, setLoading);
+                await getPublicApplicationStatus(refno, setSuccess, setError);
             } else if (checkType === 'payment') {
-                await verifyReceipt(refno, setSuccess, setError, setLoading);
+                await new Promise(resolve => setTimeout(resolve, 3000)); // Simulate 3-second delay for testing
+                await verifyReceipt(refno, setSuccess, setError);
             }
         } catch (err) {
             setError('No Response from Server');
             console.log(err);
         } finally {
+            console.log('Setting loading to false');
             setLoading(false);
         }
     };
@@ -65,7 +69,7 @@ const StatusCheckComponent = () => {
                         </div>
                     </div>
                 )}
-                <div className="w-full">
+                <div className="w-full relative">
                     {loc.pathname === '/status-check' && (
                         <h1 className="mt-10 text-2xl md:text-3xl font-semibold text-gray-700 dark:text-gray-300">Check Status</h1>
                     )}
@@ -180,6 +184,15 @@ const StatusCheckComponent = () => {
                                     </>
                                 ) : checkType === 'payment' && success?.receipt ? (
                                     <div ref={receiptRef} className="w-full rounded-xl bg-white dark:bg-gray-800 p-6 shadow-md border border-gray-200 dark:border-gray-700">
+                                        {success.receipt.is_expired ? (
+                                            <div className="mb-4 p-2 bg-red-500 text-white text-center rounded-md font-bold">
+                                                EXPIRED
+                                            </div>
+                                        ) : (
+                                            <div className="mb-4 p-2 bg-green-500 text-white text-center rounded-md font-bold">
+                                                VALID
+                                            </div>
+                                        )}
                                         <div className="flex justify-between items-center mb-4">
                                             <h2 className="text-xl font-bold text-[#3B78BD] dark:text-[#F0B652]">{success.message}</h2>
                                             <button
@@ -217,11 +230,15 @@ const StatusCheckComponent = () => {
                                                 <span className="text-gray-600 dark:text-gray-300">{success.receipt.payment_method || 'N/A'}</span>
                                             </div>
                                             <div className="flex space-x-2">
-                                                <span className="font-bold text-gray-600 dark:text-gray-300">Payer:</span>
+                                                <span className="font-bold text-gray-600 dark:text-gray-300">Payer Name:</span>
                                                 <span className="text-gray-600 dark:text-gray-300">{success.receipt.payer_name || 'N/A'}</span>
                                             </div>
                                             <div className="flex space-x-2">
-                                                <span className="font-bold text-gray-600 dark:text-gray-300">Date:</span>
+                                                <span className="font-bold text-gray-600 dark:text-gray-300">Processed By:</span>
+                                                <span className="text-gray-600 dark:text-gray-300">{success.receipt.payee_name || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex space-x-2">
+                                                <span className="font-bold text-gray-600 dark:text-gray-300">Date Paid:</span>
                                                 <span className="text-gray-600 dark:text-gray-300">
                                                     {new Date(success.receipt.paid_at).toLocaleDateString('en-GB') || 'N/A'}
                                                 </span>
@@ -265,6 +282,11 @@ const StatusCheckComponent = () => {
                     </div>
                 </div>
             </div>
+            {loading && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-200 bg-opacity-75 z-[9999]">
+                    <Loader />
+                </div>
+            )}
             {showReceiptModal && success?.receipt && <PaymentReceiptModal paymentData={success.receipt} onClose={closeReceiptModal} />}
             <style jsx>{`
                 @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

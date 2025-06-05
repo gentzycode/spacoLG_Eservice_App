@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import DataTable from "react-data-table-component";
-import { formatDate } from "../../../apis/functions";
+// src/protected/components/reports/PaymentCollectionsTable.jsx
+import React, { useState, useEffect } from 'react';
+import DataTable from 'react-data-table-component';
+import { formatDate } from '../../../apis/functions';
 
-const PaymentCollectionsTable = ({ data, loading, error }) => {
+const PaymentCollectionsTable = ({ data = [], loading, error }) => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [filteredData, setFilteredData] = useState(data);
 
     useEffect(() => {
@@ -25,59 +26,105 @@ const PaymentCollectionsTable = ({ data, loading, error }) => {
 
     const columns = [
         {
-            name: "Reference Number",
-            selector: (row) => row.reference_number || "N/A",
+            name: 'Reference Number',
+            selector: (row) => row.invoice_ref || 'N/A',
             sortable: true,
         },
         {
-            name: "Purpose",
-            selector: (row) => row.purpose || "N/A",
+            name: 'Purpose',
+            selector: (row) => row.purpose || 'N/A',
             sortable: true,
         },
         {
-            name: "Description",
-            selector: (row) => row.description || "N/A",
+            name: 'Description',
+            selector: (row) => row.description || 'N/A',
             sortable: true,
         },
         {
-            name: "Amount",
+            name: 'Amount',
             selector: (row) => `₦${Number(row.amount || 0).toLocaleString()}`,
             sortable: true,
         },
         {
-            name: "Payment Option Used",
-            selector: (row) => row.payment_option_used || "N/A",
+            name: 'Payment Option Used',
+            selector: (row) => row.payment_option_used || 'N/A',
             sortable: true,
         },
         {
-            name: "Paid At",
-            selector: (row) => (row.paid_at ? formatDate(row.paid_at) : "N/A"),
+            name: 'Paid At',
+            selector: (row) => (row.paid_at ? formatDate(row.paid_at) : 'N/A'),
             sortable: true,
         },
     ];
 
-    const paginatedData = filteredData.slice(
-        currentPage * rowsPerPage,
-        currentPage * rowsPerPage + rowsPerPage
-    );
-
-    const handleRowsPerPageChange = (e) => {
-        setRowsPerPage(Number(e.target.value));
-        setCurrentPage(0);
-    };
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page - 1);
+    const customStyles = {
+        table: {
+            style: {
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            },
+        },
+        headRow: {
+            style: {
+                background: 'linear-gradient(to right, #3B78BD, #F0B652)',
+                borderBottom: '2px solid #d1d5db',
+                fontSize: '14px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: '#fff',
+            },
+        },
+        headCells: { style: { padding: '14px 16px' } },
+        rows: {
+            style: {
+                fontSize: '15px',
+                fontWeight: 500,
+                color: '#111827',
+                backgroundColor: '#ffffff',
+                borderBottom: '1px solid #e5e7eb',
+                '&:hover': { backgroundColor: '#f3f4f6', cursor: 'pointer' },
+                transition: 'all 0.3s ease',
+            },
+            stripedStyle: { backgroundColor: '#f9fafb' },
+        },
+        cells: {
+            style: {
+                padding: '12px 16px',
+                borderRight: '1px solid #e5e7eb',
+                '&:last-of-type': { borderRight: 'none' },
+            },
+        },
+        pagination: {
+            style: {
+                padding: '16px',
+                backgroundColor: '#fff',
+                borderTop: '1px solid #e5e7eb',
+                fontSize: '14px',
+                color: '#374151',
+            },
+            pageButtonsStyle: {
+                borderRadius: '6px',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #e5e7eb',
+                color: '#374151',
+                padding: '6px 12px',
+                margin: '0 4px',
+                transition: 'all 0.3s ease',
+                '&:hover': { backgroundColor: '#3B78BD', color: '#fff', borderColor: '#3B78BD' },
+                '&:disabled': { backgroundColor: '#e5e7eb', color: '#9ca3af' },
+            },
+        },
     };
 
     return (
-        <div className="bg-white p-4 rounded shadow mb-6">
-            <h3 className="text-lg font-semibold mb-3">Payment Collections</h3>
-
-            {/* Date Filters */}
-            <div className="flex space-x-4 mb-4">
-                <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-600">
+        <div className="bg-white p-6 rounded-lg shadow-md animate-fadeIn">
+            <h3 className="text-lg font-semibold text-[#3B78BD] dark:text-[#F0B652] mb-4">Payment Collections</h3>
+            <div className="flex flex-col sm:flex-row sm:space-x-4 mb-6">
+                <div className="flex-1">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                         Start Date
                     </label>
                     <input
@@ -85,11 +132,11 @@ const PaymentCollectionsTable = ({ data, loading, error }) => {
                         id="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
                     />
                 </div>
-                <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-600">
+                <div className="flex-1">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                         End Date
                     </label>
                     <input
@@ -97,82 +144,47 @@ const PaymentCollectionsTable = ({ data, loading, error }) => {
                         id="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
                     />
                 </div>
             </div>
-
-            <DataTable
-                columns={columns}
-                data={paginatedData}
-                pagination
-                paginationServer
-                paginationTotalRows={filteredData.length}
-                paginationDefaultPage={currentPage + 1}
-                onChangeRowsPerPage={handleRowsPerPageChange}
-                onChangePage={handlePageChange}
-                paginationPerPage={rowsPerPage}
-                paginationRowsPerPageOptions={[5, 10, 20, 50, 100]}
-                customStyles={{
-                    header: {
-                        style: {
-                            fontSize: "16px",
-                            fontWeight: "bold",
-                            backgroundColor: "#4a5568",
-                            color: "#fff",
-                        },
-                    },
-                    rows: {
-                        style: {
-                            fontSize: "14px",
-                            backgroundColor: "#f8f9fa",
-                            "&:nth-of-type(odd)": {
-                                backgroundColor: "#ecf6ec",
-                            },
-                            "&:hover": {
-                                backgroundColor: "#e2e8f0",
-                                cursor: "pointer",
-                            },
-                            border: "1px solid #e2e8f0",
-                        },
-                    },
-                    headCells: {
-                        style: {
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            backgroundColor: "#4a5568",
-                            color: "#fff",
-                            border: "1px solid #e2e8f0",
-                        },
-                    },
-                    cells: {
-                        style: {
-                            padding: "10px",
-                            fontSize: "14px",
-                            border: "1px solid #e2e8f0",
-                        },
-                    },
-                }}
-            />
-
-            {/* Rows per page selection */}
-            <div className="flex justify-end mt-4">
-                <label htmlFor="rowsPerPage" className="mr-2">
-                    Rows per page:
-                </label>
-                <select
-                    id="rowsPerPage"
-                    value={rowsPerPage}
-                    onChange={handleRowsPerPageChange}
-                    className="p-2 border rounded"
-                >
-                    {[5, 10, 20, 50, 100].map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            {loading ? (
+                <div className="text-center py-6 text-gray-600 dark:text-gray-300">Loading...</div>
+            ) : error ? (
+                <div className="text-center py-6 text-red-600 dark:text-red-400">{error}</div>
+            ) : (
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    pagination
+                    paginationTotalRows={filteredData.length}
+                    paginationPerPage={rowsPerPage}
+                    paginationRowsPerPageOptions={[5, 10, 20, 50, 100]}
+                    onChangeRowsPerPage={(newPerPage) => {
+                        setRowsPerPage(newPerPage);
+                        setCurrentPage(1);
+                    }}
+                    onChangePage={(page) => setCurrentPage(page)}
+                    customStyles={customStyles}
+                    highlightOnHover
+                    striped
+                    dense
+                    noDataComponent={
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">
+                            No records found.
+                        </div>
+                    }
+                />
+            )}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

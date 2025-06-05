@@ -27,6 +27,10 @@ const InvoiceHistory = ({ token, agentId }) => {
         try {
             await getUnpaidInvoices(token, setUnpaidInvoices, setError, setLoading);
             await getPaidInvoicesByAgent(token, agentId, setPaidInvoices, setError, setLoading);
+            setUnpaidInvoices(prev => prev.filter(item => item && typeof item === 'object' && item.id));
+            setPaidInvoices(prev => prev.filter(item => item && typeof item === 'object' && item.id));
+            console.log('Unpaid Invoices:', unpaidInvoices);
+            console.log('Paid Invoices:', paidInvoices);
         } catch (err) {
             setError('Failed to fetch invoices');
         } finally {
@@ -37,7 +41,7 @@ const InvoiceHistory = ({ token, agentId }) => {
     const filteredUnpaid = useMemo(() => {
         const trimmedFilter = filterText.trim().toLowerCase();
         return (unpaidInvoices || []).filter(item => {
-            const refNumber = item.reference_number ? item.reference_number.trim().toLowerCase() : '';
+            const refNumber = item.invoice_ref ? item.invoice_ref.trim().toLowerCase() : '';
             return refNumber.includes(trimmedFilter);
         });
     }, [filterText, unpaidInvoices]);
@@ -45,7 +49,7 @@ const InvoiceHistory = ({ token, agentId }) => {
     const filteredPaid = useMemo(() => {
         const trimmedFilter = filterText.trim().toLowerCase();
         return (paidInvoices || []).filter(item => {
-            const refNumber = item.reference_number ? item.reference_number.trim().toLowerCase() : '';
+            const refNumber = item.invoice_ref ? item.invoice_ref.trim().toLowerCase() : '';
             return refNumber.includes(trimmedFilter);
         });
     }, [filterText, paidInvoices]);
@@ -81,10 +85,10 @@ const InvoiceHistory = ({ token, agentId }) => {
                     ${watermarkText}
                 </div>
                 <div>
-                    <p style="margin: 5px 0;"><strong>Ref Number:</strong> ${invoice.reference_number}</p>
-                    <p style="margin: 5px 0;"><strong>Amount:</strong> ₦${Number(invoice.amount).toLocaleString()}</p>
-                    <p style="margin: 5px 0;"><strong>Status:</strong> ${invoice.status}</p>
-                    <p style="margin: 5px 0;"><strong>Created:</strong> ${formatDate(invoice.created_at)}</p>
+                    <p style="margin: 5px 0;"><strong>Ref Number:</strong> ${invoice.invoice_ref || 'N/A'}</p>
+                    <p style="margin: 5px 0;"><strong>Amount:</strong> ₦${Number(invoice.amount || 0).toLocaleString()}</p>
+                    <p style="margin: 5px 0;"><strong>Status:</strong> ${invoice.status || 'N/A'}</p>
+                    <p style="margin: 5px 0;"><strong>Date:</strong> ${invoice.date ? formatDate(invoice.date) : 'N/A'}</p>
                 </div>
             </div>
         `).join('');
@@ -135,14 +139,25 @@ const InvoiceHistory = ({ token, agentId }) => {
             width: '60px',
             center: true,
         },
-        { name: "No.", selector: (row, index) => index + 1, width: '50px', center: true },
-        { name: "Reference Number", selector: row => row.reference_number.toUpperCase(), sortable: true },
-        { name: "Purpose", selector: row => row.purpose.toUpperCase(), sortable: true },
-        { name: "Description", selector: row => row.description, sortable: true },
-        { name: "Amount", selector: row => `₦${Number(row.amount).toLocaleString()}`, sortable: true },
-        { name: "Payment Option Used", selector: row => row.payment_option_used, sortable: true },
-        { name: "Status", selector: row => row.status.toUpperCase(), sortable: true },
-        { name: "Paid At", selector: row => row.paid_at ? formatDate(row.paid_at) : 'N/A', sortable: true },
+        { 
+            name: "Reference Number", 
+            selector: row => (row.invoice_ref || 'N/A').toUpperCase(), 
+            sortable: true 
+        },
+        { 
+            name: "Purpose", 
+            selector: row => (row.purpose || 'N/A').toUpperCase(), 
+            sortable: true 
+        },
+        { name: "Description", selector: row => row.description || 'N/A', sortable: true },
+        { name: "Amount", selector: row => `₦${Number(row.amount || 0).toLocaleString()}`, sortable: true },
+        { name: "Payment Method", selector: row => row.payment_method || 'N/A', sortable: true },
+        { 
+            name: "Status", 
+            selector: row => (row.status || 'N/A').toUpperCase(), 
+            sortable: true 
+        },
+        { name: "Date", selector: row => row.date ? formatDate(row.date) : 'N/A', sortable: true },
         {
             name: "Actions",
             button: true,

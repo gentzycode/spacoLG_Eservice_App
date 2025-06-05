@@ -1,0 +1,50 @@
+@media print {
+    body, html {
+        height: auto !important;
+        overflow: visible !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .pr-no-print {
+        display: none !important;
+    }
+
+    .pr-receipt-container {
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 500px !important;
+        padding: 20px !important;
+        animation: none !important;
+        transform: none !important;
+        margin: 0 auto !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .pr-watermark {
+        opacity: 0.05 !important;
+        font-size: 100px !important;
+    }
+
+    .pr-qr-code {
+        display: block !important;
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .pr-footer {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    .pr-verification-url {
+        margin-left: 10px !important;
+    }
+
+    .pr-detail-item {
+        page-break-inside: avoid;
+    }
+}

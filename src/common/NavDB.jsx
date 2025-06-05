@@ -44,8 +44,9 @@ const NavDB = () => {
         { id: 3, title: "Manage Tokens", url: "/manage-tokens", icon: <RiWalletFill size={17} /> },
         { id: 4, title: "Applications", url: "/applications", icon: <HiDocumentText size={17} /> },
         { id: 5, title: "General Invoices", url: "/manage-invoices", icon: <MdOutlineAccountBalanceWallet size={17} /> },
-        { id: 6, title: "Manage Payers", url: "/manage-payers", icon: <FaRegUser size={17} /> },
-        { id: 7, title: "Reports", url: "/reports", icon: <FaRegListAlt size={17} /> },
+        { id: 6, title: "Advanced Invoicing", url: "/advanced-invoicing", icon: <MdOutlineAccountBalanceWallet size={17} /> },
+        { id: 7, title: "Manage Payers", url: "/manage-payers", icon: <FaRegUser size={17} /> },
+        { id: 8, title: "Reports", url: "/reports", icon: <FaRegListAlt size={17} /> },
     ];
 
     useEffect(() => {

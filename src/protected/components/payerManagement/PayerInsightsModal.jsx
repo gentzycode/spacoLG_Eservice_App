@@ -78,15 +78,20 @@ const PayerInsightsModal = ({ payer, closeModal }) => {
             reference_number: payment.invoice_ref || 'N/A',
             amount: payment.amount || 0,
             payment_method: payment.payment_method || 'N/A',
-            payer_name: payer.first_name || payer.company_name || 'N/A',
+            payer_name: payment.payer_name || 'N/A',
+            payee_name: payment.payee_name || 'N/A',
             paid_at: payment.date || new Date().toISOString(),
-            status: payment.status || 'Completed',
+            status: payment.status || 'paid',
             purpose: payment.purpose || 'N/A',
             description: payment.description || `Payment for invoice ${payment.invoice_ref}`,
             validity_period_days: payment.validity_period_days || null,
             expires_at: payment.expires_at || null,
             payment_type: payment.payment_type || 'N/A',
             is_expired: payment.is_expired || false,
+            payee_id: payment.payee_id || null,
+            payee_type: payment.payee_type || null,
+            payer_id: payment.payer_id || null,
+            payer_type: payment.payer_type || null
         };
         setSelectedPaymentData(paymentData);
         setShowReceiptModal(true);
@@ -124,6 +129,8 @@ const PayerInsightsModal = ({ payer, closeModal }) => {
                                             <thead className="sticky top-0 bg-gray-100">
                                                 <tr>
                                                     <th className="p-2 border border-gray-200">Invoice Ref</th>
+                                                    <th className="p-2 border border-gray-200">Payer Name</th>
+                                                    <th className="p-2 border border-gray-200">Processed By</th>
                                                     <th className="p-2 border border-gray-200">Amount</th>
                                                     <th className="p-2 border border-gray-200">Date</th>
                                                     <th className="p-2 border border-gray-200">Status</th>
@@ -134,6 +141,8 @@ const PayerInsightsModal = ({ payer, closeModal }) => {
                                                 {paymentHistory.map((payment, index) => (
                                                     <tr key={payment.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-[#ecf6ec]'}>
                                                         <td className="p-2 border border-gray-200">{payment.invoice_ref}</td>
+                                                        <td className="p-2 border border-gray-200">{payment.payer_name || 'N/A'}</td>
+                                                        <td className="p-2 border border-gray-200">{payment.payee_name || 'N/A'}</td>
                                                         <td className="p-2 border border-gray-200">₦{payment.amount.toLocaleString()}</td>
                                                         <td className="p-2 border border-gray-200">{payment.date}</td>
                                                         <td className="p-2 border border-gray-200">{payment.status}</td>

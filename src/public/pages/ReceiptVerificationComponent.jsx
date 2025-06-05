@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GrFormPreviousLink } from 'react-icons/gr';
-import { FaPrint, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa'; // Added icons for expiration and print
+import { FaPrint, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import { verifyReceipt } from '../../apis/noAuthActions';
 import ButtonLoader from '../../common/ButtonLoader';
 import logo from '../../assets/logo-bayelsa.png';
@@ -136,8 +136,12 @@ const ReceiptVerificationComponent = () => {
                                             <td className="py-2 px-4">{success.receipt.payment_method || 'N/A'}</td>
                                         </tr>
                                         <tr className="border-b">
-                                            <td className="font-bold text-[#3B78BD] dark:text-[#F0B652] py-2 px-4 bg-gray-100">Payer:</td>
+                                            <td className="font-bold text-[#3B78BD] dark:text-[#F0B652] py-2 px-4 bg-gray-100">Payer Name:</td>
                                             <td className="py-2 px-4">{success.receipt.payer_name || 'N/A'}</td>
+                                        </tr>
+                                        <tr className="border-b">
+                                            <td className="font-bold text-[#3B78BD] dark:text-[#F0B652] py-2 px-4 bg-gray-100">Processed By:</td>
+                                            <td className="py-2 px-4">{success.receipt.payee_name || 'N/A'}</td>
                                         </tr>
                                         <tr className="border-b">
                                             <td className="font-bold text-[#3B78BD] dark:text-[#F0B652] py-2 px-4 bg-gray-100">Date Paid:</td>

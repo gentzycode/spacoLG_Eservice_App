@@ -23,7 +23,7 @@ const handleError = (err, setError) => {
 };
 
 // Centralized API request wrapper
-export const apiRequest = async ({ method, url, token, data, setError, setLoading, setFetching, setSubmitting }) => {
+export const apiRequest = async ({ method, url, token, data, params, setError, setLoading, setFetching, setSubmitting }) => {
     const setState = setLoading || setFetching || setSubmitting;
     try {
         setState?.(true);
@@ -31,6 +31,7 @@ export const apiRequest = async ({ method, url, token, data, setError, setLoadin
             method,
             url,
             data,
+            params,
             headers: createHeaders(token),
         });
         return response.data;
@@ -42,6 +43,7 @@ export const apiRequest = async ({ method, url, token, data, setError, setLoadin
     }
 };
 
+// Existing functions (unchanged)
 export const getServiceFormdata = async (token, action_id, setFormdata, setError, setLoading) => {
     const data = await apiRequest({
         method: 'get',
@@ -51,7 +53,6 @@ export const getServiceFormdata = async (token, action_id, setFormdata, setError
         setLoading,
     });
 
-    // Parse JSON schema only once
     const parsedSchema = JSON.parse(data?.data?.json_schema || '{}');
     setFormdata(parsedSchema?.fields || []);
 };
@@ -215,12 +216,12 @@ export const updateEserviceStep = async (token, appID, data, setSuccess, setErro
     setSuccess(response?.data || {});
 };
 
-export const getLagById = async (token, lga_id, setLga, setError) => {
+export const getLagById = async (token, lga_id, setLga, setLgaLoading) => {
     const data = await apiRequest({
         method: 'get',
         url: `localgovernments/${lga_id}`,
         token,
-        setError,
+        setLoading: setLgaLoading,
     });
 
     setLga(data?.data || {});
@@ -320,17 +321,13 @@ export const getTokenUsageHistory = async (token, agentId, setUsageHistory, setE
 export const getUsedTokens = async (token, agentId, setUsedTokens, setError, setLoading) => {
     const data = await apiRequest({
         method: 'get',
-        url: `/auth/agents/${agentId}/tokens/used`,
+        url: `/agents/${agentId}/tokens/used`,
         token,
         setError,
         setLoading,
     });
 
-    if (data.status === 'success') {
-        setUsedTokens(data?.token_usages || []);
-    } else {
-        throw new Error(data.message || 'Failed to fetch used tokens');
-    }
+    setUsedTokens(data?.token_usages || []);
 };
 
 export const generateToken = async (token, agentId, payload) => {
@@ -416,6 +413,18 @@ export const getUnpaidInvoices = async (token, setUnpaidInvoices, setError, setL
     setUnpaidInvoices(data?.invoices || []);
 };
 
+export const getAgentUnpaidInvoices = async (token, agentId, setUnpaidInvoices, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/invoices/unpaid`,
+        token,
+        setError,
+        setLoading,
+    });
+
+    setUnpaidInvoices(data?.invoices || []);
+};
+
 export const getPaidInvoicesByAgent = async (token, agentId, setPaidInvoices, setError, setLoading) => {
     const data = await apiRequest({
         method: 'get',
@@ -493,7 +502,7 @@ export const payInvoiceByReference = async (token, payload) => {
 export const getPayerInvoices = async (token, referenceNumber, params, setError, setLoading) => {
     const data = await apiRequest({
         method: 'get',
-        url: `payers/${referenceNumber}/invoices`,
+        url: `/payers/${referenceNumber}/invoices`,
         token,
         params,
         setError,
@@ -503,18 +512,67 @@ export const getPayerInvoices = async (token, referenceNumber, params, setError,
     return data;
 };
 
-// Removed duplicate getEnabledPaymentGateways2
-
-export const getUserWallets = async (token, agentId, setWallet, setError, setLoading) => {
+export const getRecentInvoices = async (token, setRecentInvoices, setError, setLoading) => {
     const data = await apiRequest({
         method: 'get',
-        url: `agents/${agentId}/wallet`,
+        url: '/invoices/recent',
         token,
         setError,
         setLoading,
     });
 
-    setWallet(data?.wallet || {});
+    setRecentInvoices(data?.invoices || []);
+};
+
+export const verifyReceipt = async (token, referenceNumber, setResult, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: '/verify-receipt',
+        token,
+        params: { reference_number: referenceNumber },
+        setError,
+        setLoading,
+    });
+
+    setResult(data);
+};
+
+export const updateInvoice = async (token, invoiceId, payload, setError, setLoading) => {
+    const response = await apiRequest({
+        method: 'put',
+        url: `/invoices/${invoiceId}`,
+        token,
+        data: payload,
+        setError,
+        setLoading,
+    });
+
+    return response;
+};
+
+export const deleteInvoice = async (token, invoiceId, setError, setLoading) => {
+    const response = await apiRequest({
+        method: 'delete',
+        url: `/invoices/${invoiceId}`,
+        token,
+        setError,
+        setLoading,
+    });
+
+    return response;
+};
+
+export const getAgentPaymentHistory = async (token, agentId, params, setPayments, setError, setLoading) => {
+    const data = await apiRequest({
+        method: 'get',
+        url: `/agents/${agentId}/invoices/paid`,
+        token,
+        params,
+        setError,
+        setLoading,
+    });
+
+    setPayments(data?.invoices || []);
 };
 
 // Individual and Corporate Management
@@ -644,29 +702,4 @@ export const checkRegistrationNumberExists = async (registration_number) => {
     });
 
     return data?.exists || false;
-};
-
-export const getAgentPaymentHistory = async (token, filters, setPayments, setError, setLoading) => {
-    setLoading(true);
-    try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/agent/payment-history`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            params: filters,
-        });
-
-        const data = await response.json();
-        if (data.status === 'success') {
-            setPayments(data.payments);
-        } else {
-            setError(data.message);
-        }
-    } catch (err) {
-        setError('Failed to fetch payment history');
-    } finally {
-        setLoading(false);
-    }
 };

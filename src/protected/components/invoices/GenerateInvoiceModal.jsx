@@ -182,7 +182,7 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
                             <p><strong>Amount:</strong> ₦{Number(invoiceData.invoice.amount).toLocaleString()}</p>
                             <p><strong>Purpose:</strong> {invoiceData.invoice.purpose}</p>
                             <p><strong>Description:</strong> {invoiceData.invoice.description}</p>
-                            <p><strong>Reference Number:</strong> {invoiceData.invoice.reference_number}</p>
+                            <p><strong>Reference Number:</strong> {invoiceData.invoice.invoice_ref}</p>
                         </div>
                     )}
 

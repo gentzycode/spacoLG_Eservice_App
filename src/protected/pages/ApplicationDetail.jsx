@@ -1,14 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { MdKeyboardBackspace } from 'react-icons/md';
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+// src/protected/pages/ApplicationDetail.jsx
+import React, { useContext, useEffect, useState } from 'react';
+import { GrFormPreviousLink } from 'react-icons/gr';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { getApplicationByID, getLagById } from '../../apis/authActions';
 import AppStepsTab from '../../common/AppStepsTab';
-import InitLoader from '../../common/InitLoader';
-import { GrFormPreviousLink } from 'react-icons/gr';
 
 const ApplicationDetail = () => {
-
     const { token, logout, record } = useContext(AuthContext);
     const loctn = useLocation();
     const navigate = useNavigate();
@@ -17,72 +15,119 @@ const ApplicationDetail = () => {
     const [steps, setSteps] = useState(null);
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [lga, setLga] = useState(null);
+    const [lgaLoading, setLgaLoading] = useState(false);
     const id = loctn?.state?.appid;
     const currentStep = loctn?.state?.currentStep;
-    const serviceName = appdetail !== null && appdetail?.data?.eservice?.name;
-
-    console.log(steps);
-    console.log(appdetail);
-    console.log(lga);
-
-    if(error !== null && error?.message === 'Token has expired'){
-        logout();
-    }
+    const serviceName = appdetail?.data?.eservice?.name;
 
     useEffect(() => {
-        getApplicationByID( token, id, setAppdetail, setSteps, setError, setFetching )
-    }, [])
+        if (error?.message === 'Token has expired') {
+            logout();
+        }
+    }, [error, logout]);
 
     useEffect(() => {
-        appdetail !== null && getLagById(token, appdetail?.data?.local_government_id, setLga)
-    }, [appdetail])
+        if (id && token) {
+            getApplicationByID(token, id, setAppdetail, setSteps, setError, setFetching);
+        } else {
+            setError({ message: 'Invalid application ID or missing token' });
+        }
+    }, [id, token]);
 
     useEffect(() => {
-        setTimeout(() => setLoading(false), 1000);
-      }, [record])
+        if (appdetail?.data?.local_government_id && token) {
+            getLagById(token, appdetail.data.local_government_id, setLga, setLgaLoading);
+        }
+    }, [appdetail, token]);
+
+    useEffect(() => {
+        setTimeout(() => setFetching(false), 1000);
+    }, [record]);
 
     return (
-        <div className='w-full'>
-            <div className='w-full my-2'>
-                <div 
-                    className='bg-[#cce2d6] mt-4 rounded-full p-1 w-max cursor-pointer'
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 animate-fadeIn">
+            <div className="w-full my-4">
+                <button
+                    className="bg-[#3B78BD] hover:bg-[#F0B652] text-white rounded-full p-2 transition-all duration-300 shadow-lg transform hover:scale-105"
                     onClick={() => navigate('/application')}
                 >
-                    <GrFormPreviousLink size={30} />
-                </div>
+                    <GrFormPreviousLink size={24} />
+                </button>
             </div>
-            {steps !== null && <div className='w-full rounded-md bg-[#d7e88f] px-6 py-4 mt-6 mb-2 md:max-w-max text-gray-700'>
-                <div className='my-1 flex space-x-2'>
-                    <span className='font-bold'>LGA :</span>
-                    <span>{lga !== null && lga?.name}</span>
+            {error && (
+                <div className="text-center py-6 text-red-600 dark:text-red-400">
+                    {error.message || 'Failed to load application details.'}
                 </div>
-                <div className='my-1 flex space-x-2'>
-                    <span className='font-bold'>Application :</span>
-                    <span>{serviceName}</span>
+            )}
+            {(fetching || lgaLoading) && (
+                <div className="flex justify-center my-5">
+                    <svg
+                        className="animate-spin h-8 w-8 text-[#3B78BD] dark:text-[#F0B652]"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                    >
+                        <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                        ></circle>
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8h-8z"
+                        ></path>
+                    </svg>
                 </div>
-            </div>}
-            <div className='w-full py-4'>
-                {
-                    (steps !== null && steps.length > 0) ? 
-                        <AppStepsTab 
-                            steps={steps} 
-                            fetching={fetching} 
-                            current_step={appdetail?.data?.current_step} 
-                            serviceName={serviceName} 
-                            currentStep={currentStep} 
-                            steps_completed={appdetail?.steps_completed} 
-                            purpose_id={id}
-                            admin_notes={appdetail?.data?.admin_notes}
-                            authorizations={appdetail?.data?.authorizations}
-                            app_lga_id={appdetail?.data?.local_government_id}
-                        />
-                        : <InitLoader />
+            )}
+            {steps !== null && !fetching && !lgaLoading && (
+                <div className="w-full rounded-lg bg-gradient-to-r from-[#3B78BD] to-[#F0B652] p-6 my-6 text-white animate-fadeIn">
+                    <div className="my-2 flex space-x-2">
+                        <span className="font-bold">LGA:</span>
+                        <span>{lga?.name || 'N/A'}</span>
+                    </div>
+                    <div className="my-2 flex space-x-2">
+                        <span className="font-bold">Application:</span>
+                        <span>{serviceName || 'N/A'}</span>
+                    </div>
+                </div>
+            )}
+            <div className="w-full py-4">
+                {steps !== null && steps.length > 0 && !fetching ? (
+                    <AppStepsTab
+                        steps={steps}
+                        fetching={fetching}
+                        current_step={appdetail?.data?.current_step}
+                        serviceName={serviceName}
+                        currentStep={currentStep}
+                        steps_completed={appdetail?.steps_completed}
+                        purpose_id={id}
+                        admin_notes={appdetail?.data?.admin_notes}
+                        app_lga_id={appdetail?.data?.local_government_id}
+                    />
+                ) : (
+                    !fetching && (
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">
+                            No application steps available.
+                        </div>
+                    )
+                )}
+            </div>
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-            </div>
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
-    )
-}
+    );
+};
 
-export default ApplicationDetail
+export default ApplicationDetail;

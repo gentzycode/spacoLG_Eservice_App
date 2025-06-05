@@ -1,27 +1,22 @@
+// src/protected/components/reports/DetailedTable.jsx
 import React, { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
 import { formatDate } from '../../../apis/functions';
 
-const DetailedTable = ({ data }) => {
-    const [rowsPerPage, setRowsPerPage] = useState(10); // Default rows per page
-    const [currentPage, setCurrentPage] = useState(0); // Current page index
-    const [startDate, setStartDate] = useState(''); // Start date filter
-    const [endDate, setEndDate] = useState(''); // End date filter
-    const [filteredData, setFilteredData] = useState(data); // Filtered data based on date range
+const DetailedTable = ({ data = [], loading, error }) => {
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [filteredData, setFilteredData] = useState(data);
 
-    // Filter data by date range
     useEffect(() => {
         if (startDate || endDate) {
             const filtered = data.filter((item) => {
                 const itemDate = new Date(item.updated_at);
                 const start = startDate ? new Date(startDate) : null;
                 const end = endDate ? new Date(endDate) : null;
-
-                // Check if itemDate falls within the range
-                return (
-                    (!start || itemDate >= start) &&
-                    (!end || itemDate <= end)
-                );
+                return (!start || itemDate >= start) && (!end || itemDate <= end);
             });
             setFilteredData(filtered);
         } else {
@@ -29,7 +24,6 @@ const DetailedTable = ({ data }) => {
         }
     }, [startDate, endDate, data]);
 
-    // Columns configuration for DataTable
     const columns = [
         {
             name: 'Amount',
@@ -68,29 +62,74 @@ const DetailedTable = ({ data }) => {
         },
     ];
 
-    // Pagination logic
-    const paginatedData = filteredData.slice(
-        currentPage * rowsPerPage,
-        currentPage * rowsPerPage + rowsPerPage
-    );
-
-    const handleRowsPerPageChange = (e) => {
-        setRowsPerPage(Number(e.target.value));
-        setCurrentPage(0); // Reset to first page when rows per page changes
-    };
-
-    const handlePageChange = (page) => {
-        setCurrentPage(page - 1); // DataTable uses 1-based indexing
+    const customStyles = {
+        table: {
+            style: {
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            },
+        },
+        headRow: {
+            style: {
+                background: 'linear-gradient(to right, #3B78BD, #F0B652)',
+                borderBottom: '2px solid #d1d5db',
+                fontSize: '14px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: '#fff',
+            },
+        },
+        headCells: { style: { padding: '14px 16px' } },
+        rows: {
+            style: {
+                fontSize: '15px',
+                fontWeight: 500,
+                color: '#111827',
+                backgroundColor: '#ffffff',
+                borderBottom: '1px solid #e5e7eb',
+                '&:hover': { backgroundColor: '#f3f4f6', cursor: 'pointer' },
+                transition: 'all 0.3s ease',
+            },
+            stripedStyle: { backgroundColor: '#f9fafb' },
+        },
+        cells: {
+            style: {
+                padding: '12px 16px',
+                borderRight: '1px solid #e5e7eb',
+                '&:last-of-type': { borderRight: 'none' },
+            },
+        },
+        pagination: {
+            style: {
+                padding: '16px',
+                backgroundColor: '#fff',
+                borderTop: '1px solid #e5e7eb',
+                fontSize: '14px',
+                color: '#374151',
+            },
+            pageButtonsStyle: {
+                borderRadius: '6px',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #e5e7eb',
+                color: '#374151',
+                padding: '6px 12px',
+                margin: '0 4px',
+                transition: 'all 0.3s ease',
+                '&:hover': { backgroundColor: '#3B78BD', color: '#fff', borderColor: '#3B78BD' },
+                '&:disabled': { backgroundColor: '#e5e7eb', color: '#9ca3af' },
+            },
+        },
     };
 
     return (
-        <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-semibold mb-3">Detailed Wallet Refill Log</h3>
-
-            {/* Date Filters */}
-            <div className="flex space-x-4 mb-4">
-                <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-600">
+        <div className="bg-white p-6 rounded-lg shadow-md animate-fadeIn">
+            <h3 className="text-lg font-semibold text-[#3B78BD] dark:text-[#F0B652] mb-4">Detailed Wallet Refill Log</h3>
+            <div className="flex flex-col sm:flex-row sm:space-x-4 mb-6">
+                <div className="flex-1">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                         Start Date
                     </label>
                     <input
@@ -98,11 +137,11 @@ const DetailedTable = ({ data }) => {
                         id="startDate"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
                     />
                 </div>
-                <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-600">
+                <div className="flex-1">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
                         End Date
                     </label>
                     <input
@@ -110,82 +149,47 @@ const DetailedTable = ({ data }) => {
                         id="endDate"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
                     />
                 </div>
             </div>
-
-            <DataTable
-                columns={columns}
-                data={paginatedData}
-                pagination
-                paginationServer
-                paginationTotalRows={filteredData.length}
-                paginationDefaultPage={currentPage + 1}
-                onChangeRowsPerPage={handleRowsPerPageChange}
-                onChangePage={handlePageChange}
-                paginationPerPage={rowsPerPage}
-                paginationRowsPerPageOptions={[5, 10, 20, 50, 100]} // Rows per page options
-                customStyles={{
-                    header: {
-                        style: {
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            backgroundColor: '#4a5568',
-                            color: '#fff',
-                        },
-                    },
-                    rows: {
-                        style: {
-                            fontSize: '14px',
-                            backgroundColor: '#f8f9fa',
-                            '&:nth-of-type(odd)': {
-                                backgroundColor: '#ecf6ec',
-                            },
-                            '&:hover': {
-                                backgroundColor: '#e2e8f0',
-                                cursor: 'pointer',
-                            },
-                            border: '1px solid #e2e8f0',
-                        },
-                    },
-                    headCells: {
-                        style: {
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            backgroundColor: '#4a5568',
-                            color: '#fff',
-                            border: '1px solid #e2e8f0',
-                        },
-                    },
-                    cells: {
-                        style: {
-                            padding: '10px',
-                            fontSize: '14px',
-                            border: '1px solid #e2e8f0',
-                        },
-                    },
-                }}
-            />
-
-            {/* Rows per page selection */}
-            <div className="flex justify-end mt-4">
-                <label htmlFor="rowsPerPage" className="mr-2">
-                    Rows per page:
-                </label>
-                <select
-                    id="rowsPerPage"
-                    value={rowsPerPage}
-                    onChange={handleRowsPerPageChange}
-                    className="p-2 border rounded"
-                >
-                    {[5, 10, 20, 50, 100].map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            {loading ? (
+                <div className="text-center py-6 text-gray-600 dark:text-gray-300">Loading...</div>
+            ) : error ? (
+                <div className="text-center py-6 text-red-600 dark:text-red-400">{error}</div>
+            ) : (
+                <DataTable
+                    columns={columns}
+                    data={filteredData}
+                    pagination
+                    paginationTotalRows={filteredData.length}
+                    paginationPerPage={rowsPerPage}
+                    paginationRowsPerPageOptions={[5, 10, 20, 50, 100]}
+                    onChangeRowsPerPage={(newPerPage) => {
+                        setRowsPerPage(newPerPage);
+                        setCurrentPage(1);
+                    }}
+                    onChangePage={(page) => setCurrentPage(page)}
+                    customStyles={customStyles}
+                    highlightOnHover
+                    striped
+                    dense
+                    noDataComponent={
+                        <div className="text-center py-6 text-gray-600 dark:text-gray-300">
+                            No records found.
+                        </div>
+                    }
+                />
+            )}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fadeIn {
+                    animation: fadeIn 0.6s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

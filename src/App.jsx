@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+
 import Loader from './common/Loader';
 import AuthContextProvider from './context/AuthContext';
 import PrivateRoute from './protected/PrivateRoute';
@@ -28,7 +29,8 @@ import ManageTokens from './protected/pages/ManageTokens';
 import ManageInvoices from './protected/pages/ManageInvoices';
 import PayerManagement from './protected/pages/PayerManagement';
 import Reports from './protected/pages/Reports';
-import ReceiptVerificationComponent from './public/pages/ReceiptVerificationComponent'; // New import
+import ReceiptVerificationComponent from './public/pages/ReceiptVerificationComponent';
+import InvoicesPage from './protected/pages/InvoicesPage';
 
 function App() {
     const [loading, setLoading] = useState(true);
@@ -39,47 +41,46 @@ function App() {
 
     return (
         <AuthContextProvider>
-            <Router>
-                <Routes>
-                    <Route path='/' element={<Landing2 />} />
-                    <Route path='/auth' element={<Auth />} />
-                    <Route path='/services' element={<Services />} />
-                    <Route path='/service' element={<Service />} />
-                    <Route path='/check-json' element={<CheckJSON />} />
-                    <Route path='/status-check' element={<Statuscheck />} />
-                    <Route path='/verify' element={<ReceiptVerificationComponent />} /> {/* New route */}
-                    <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
-                        <Route path='/dashboard' element={<Dashboard />} />
-                        <Route path='/application' element={<Application />} />
-                        <Route path='/application-detail' element={<ApplicationDetail />} />
-                        <Route path='/applications' element={<AdminApplications />} />
-                        <Route path='/admin-applications-detail' element={<AdminApplicationDetail />} />
-                        <Route path='/users' element={<Users />} />
-                        <Route path='/lgas-staff' element={<LgasStaff />} />
-                        <Route path='/payments' element={<Payments />} />
-                        <Route path='/authorizers' element={<Authorizers />} />
-                        <Route path='/support' element={<Support />} />
-                        <Route path='/check-status' element={<ApplicationStatus />} />
-                        <Route path='/my-wallet' element={<MyWallet />} />
-                        <Route path='/wallet/status' element={<TransactionStatus />} />
-                        <Route path="/manage-tokens" element={<ManageTokens />} />
-                        <Route path="/manage-invoices" element={<ManageInvoices />} />
-                        <Route path="/manage-payers" element={<PayerManagement />} />
-                        <Route path="/reports" element={<Reports />} />
-                        {routes.map(({ path, component: Component }) => (
-                            <Route
-                                key={path}
-                                path={path}
-                                element={
-                                    <Suspense fallback={<Loader />}>
-                                        <Component />
-                                    </Suspense>
-                                }
-                            />
-                        ))}
-                    </Route>
-                </Routes>
-            </Router>
+            <Routes>
+                <Route path='/' element={<Landing2 />} />
+                <Route path='/auth' element={<Auth />} />
+                <Route path='/services' element={<Services />} />
+                <Route path='/service' element={<Service />} />
+                <Route path='/check-json' element={<CheckJSON />} />
+                <Route path='/status-check' element={<Statuscheck />} />
+                <Route path='/verify' element={<ReceiptVerificationComponent />} />
+                <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
+                    <Route path='/dashboard' element={<Dashboard />} />
+                    <Route path='/application' element={<Application />} />
+                    <Route path='/application-detail' element={<ApplicationDetail />} />
+                    <Route path='/applications' element={<AdminApplications />} />
+                    <Route path='/admin-applications-detail' element={<AdminApplicationDetail />} />
+                    <Route path='/users' element={<Users />} />
+                    <Route path='/lgas-staff' element={<LgasStaff />} />
+                    <Route path='/payments' element={<Payments />} />
+                    <Route path='/authorizers' element={<Authorizers />} />
+                    <Route path='/support' element={<Support />} />
+                    <Route path='/check-status' element={<ApplicationStatus />} />
+                    <Route path='/my-wallet' element={<MyWallet />} />
+                    <Route path='/wallet/status' element={<TransactionStatus />} />
+                    <Route path="/manage-tokens" element={<ManageTokens />} />
+                    <Route path="/manage-invoices" element={<ManageInvoices />} />
+                    <Route path="/manage-payers" element={<PayerManagement />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/advanced-invoicing" element={<InvoicesPage />} />
+                    {routes.map(({ path, component: Component }) => (
+                        <Route
+                            key={path}
+                            path={path}
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <Component />
+                                </Suspense>
+                            }
+                        />
+                    ))}
+                </Route>
+            </Routes>
         </AuthContextProvider>
     );
 }
