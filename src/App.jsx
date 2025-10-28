@@ -1,87 +1,279 @@
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ErrorBoundary from './components/ErrorBoundary';
 import Loader from './common/Loader';
 import AuthContextProvider from './context/AuthContext';
-import PrivateRoute from './protected/PrivateRoute';
-import DefaultLayout from './protected/DefaultLayout';
+
+// Eager load critical components (landing page, auth)
 import Landing2 from './public/pages/Landing2';
 import Auth from './public/pages/Auth';
-import Services from './public/pages/Services';
-import Service from './public/pages/Service';
-import Statuscheck from './public/pages/Statuscheck';
-import CheckJSON from './public/pages/CheckJSON';
-import routes from './routes';
-import Dashboard from './protected/pages/Dashboard';
-import Application from './protected/pages/Application';
-import ApplicationDetail from './protected/pages/ApplicationDetail';
-import AdminApplications from './protected/lga_admin/pages/AdminApplications';
-import AdminApplicationDetail from './protected/lga_admin/pages/AdminApplicationDetail';
-import Users from './protected/super_admin/pages/Users';
-import LgasStaff from './protected/super_admin/pages/LgasStaff';
-import Payments from './protected/pages/Payments';
-import Authorizers from './protected/super_admin/pages/Authorizers';
-import Support from './protected/pages/Support';
-import ApplicationStatus from './public/pages/ApplicationStatus';
-import MyWallet from './protected/pages/MyWallet';
-import TransactionStatus from './protected/pages/TransactionStatus';
-import ManageTokens from './protected/pages/ManageTokens';
-import ManageInvoices from './protected/pages/ManageInvoices';
-import PayerManagement from './protected/pages/PayerManagement';
-import Reports from './protected/pages/Reports';
-import ReceiptVerificationComponent from './public/pages/ReceiptVerificationComponent';
-import InvoicesPage from './protected/pages/InvoicesPage';
+
+// Lazy load all other components for code splitting
+const PrivateRoute = lazy(() => import('./protected/PrivateRoute'));
+const DefaultLayout = lazy(() => import('./protected/DefaultLayout'));
+const Services = lazy(() => import('./public/pages/Services'));
+const Service = lazy(() => import('./public/pages/Service'));
+const Statuscheck = lazy(() => import('./public/pages/Statuscheck'));
+const CheckJSON = lazy(() => import('./public/pages/CheckJSON'));
+const ReceiptVerificationComponent = lazy(() => import('./public/pages/ReceiptVerificationComponent'));
+
+// Protected routes - lazy loaded
+const Dashboard = lazy(() => import('./protected/pages/Dashboard'));
+const Application = lazy(() => import('./protected/pages/Application'));
+const ApplicationDetail = lazy(() => import('./protected/pages/ApplicationDetail'));
+const ApplicationStatus = lazy(() => import('./public/pages/ApplicationStatus'));
+
+// Admin routes - lazy loaded
+const AdminApplications = lazy(() => import('./protected/lga_admin/pages/AdminApplications'));
+const AdminApplicationDetail = lazy(() => import('./protected/lga_admin/pages/AdminApplicationDetail'));
+
+// Super admin routes - lazy loaded
+const Users = lazy(() => import('./protected/super_admin/pages/Users'));
+const LgasStaff = lazy(() => import('./protected/super_admin/pages/LgasStaff'));
+const Authorizers = lazy(() => import('./protected/super_admin/pages/Authorizers'));
+
+// Financial routes - lazy loaded
+const Payments = lazy(() => import('./protected/pages/Payments'));
+const MyWallet = lazy(() => import('./protected/pages/MyWallet'));
+const TransactionStatus = lazy(() => import('./protected/pages/TransactionStatus'));
+const ManageTokens = lazy(() => import('./protected/pages/ManageTokens'));
+const ManageInvoices = lazy(() => import('./protected/pages/ManageInvoices'));
+const PayerManagement = lazy(() => import('./protected/pages/PayerManagement'));
+const InvoicesPage = lazy(() => import('./protected/pages/InvoicesPage'));
+
+// Other routes - lazy loaded
+const Support = lazy(() => import('./protected/pages/Support'));
+const Reports = lazy(() => import('./protected/pages/Reports'));
+
+// Import lazy routes
+const routes = lazy(() => import('./routes'));
 
 function App() {
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        setTimeout(() => setLoading(false), 1000);
-    }, []);
-
     return (
-        <AuthContextProvider>
-            <Routes>
-                <Route path='/' element={<Landing2 />} />
-                <Route path='/auth' element={<Auth />} />
-                <Route path='/services' element={<Services />} />
-                <Route path='/service' element={<Service />} />
-                <Route path='/check-json' element={<CheckJSON />} />
-                <Route path='/status-check' element={<Statuscheck />} />
-                <Route path='/verify' element={<ReceiptVerificationComponent />} />
-                <Route element={<PrivateRoute><DefaultLayout /></PrivateRoute>}>
-                    <Route path='/dashboard' element={<Dashboard />} />
-                    <Route path='/application' element={<Application />} />
-                    <Route path='/application-detail' element={<ApplicationDetail />} />
-                    <Route path='/applications' element={<AdminApplications />} />
-                    <Route path='/admin-applications-detail' element={<AdminApplicationDetail />} />
-                    <Route path='/users' element={<Users />} />
-                    <Route path='/lgas-staff' element={<LgasStaff />} />
-                    <Route path='/payments' element={<Payments />} />
-                    <Route path='/authorizers' element={<Authorizers />} />
-                    <Route path='/support' element={<Support />} />
-                    <Route path='/check-status' element={<ApplicationStatus />} />
-                    <Route path='/my-wallet' element={<MyWallet />} />
-                    <Route path='/wallet/status' element={<TransactionStatus />} />
-                    <Route path="/manage-tokens" element={<ManageTokens />} />
-                    <Route path="/manage-invoices" element={<ManageInvoices />} />
-                    <Route path="/manage-payers" element={<PayerManagement />} />
-                    <Route path="/reports" element={<Reports />} />
-                    <Route path="/advanced-invoicing" element={<InvoicesPage />} />
-                    {routes.map(({ path, component: Component }) => (
+        <ErrorBoundary>
+            <AuthContextProvider>
+                {/* Global Toast Container */}
+                <ToastContainer
+                    position="top-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="colored"
+                />
+                <Suspense fallback={<Loader />}>
+                    <Routes>
+                        {/* Public routes - no suspense needed, already loaded */}
+                        <Route path='/' element={<Landing2 />} />
+                        <Route path='/auth' element={<Auth />} />
+
+                        {/* Public routes - lazy loaded */}
                         <Route
-                            key={path}
-                            path={path}
+                            path='/services'
                             element={
                                 <Suspense fallback={<Loader />}>
-                                    <Component />
+                                    <Services />
                                 </Suspense>
                             }
                         />
-                    ))}
-                </Route>
-            </Routes>
-        </AuthContextProvider>
+                        <Route
+                            path='/service'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <Service />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path='/check-json'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <CheckJSON />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path='/status-check'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <Statuscheck />
+                                </Suspense>
+                            }
+                        />
+                        <Route
+                            path='/verify'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <ReceiptVerificationComponent />
+                                </Suspense>
+                            }
+                        />
+
+                        {/* Protected routes - all lazy loaded */}
+                        <Route
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <PrivateRoute>
+                                        <DefaultLayout />
+                                    </PrivateRoute>
+                                </Suspense>
+                            }
+                        >
+                            <Route
+                                path='/dashboard'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Dashboard />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/application'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Application />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/application-detail'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <ApplicationDetail />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/applications'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <AdminApplications />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/admin-applications-detail'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <AdminApplicationDetail />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/users'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Users />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/lgas-staff'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <LgasStaff />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/payments'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Payments />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/authorizers'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Authorizers />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/support'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Support />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/check-status'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <ApplicationStatus />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/my-wallet'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <MyWallet />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/wallet/status'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <TransactionStatus />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/manage-tokens"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <ManageTokens />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/manage-invoices"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <ManageInvoices />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/manage-payers"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <PayerManagement />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/reports"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <Reports />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/advanced-invoicing"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <InvoicesPage />
+                                    </Suspense>
+                                }
+                            />
+                        </Route>
+                    </Routes>
+                </Suspense>
+            </AuthContextProvider>
+        </ErrorBoundary>
     );
 }
 

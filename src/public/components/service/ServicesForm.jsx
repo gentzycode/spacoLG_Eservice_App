@@ -5,6 +5,7 @@ import { getActiveservices, getLGAs } from '../../../apis/noAuthActions';
 import ServiceLoader from '../../../common/ServiceLoader';
 import { GrFormPreviousLink } from 'react-icons/gr';
 import { AuthContext } from '../../../context/AuthContext';
+import toast, { toastMessages } from '../../../utils/toast';
 
 const ServicesForm = ({ toggleShowform }) => {
     const location = useLocation();
@@ -27,16 +28,36 @@ const ServicesForm = ({ toggleShowform }) => {
         if (event === "0") {
             setActiveservices(null);
             setError('You must select a Local Government Area!');
+            toast.warning('Please select a Local Government Area');
         } else {
             setError(null);
+            toast.info('Loading services for selected LGA...');
             getActiveservices(event, setActiveservices, setLoading, setNoServicesMessage);
         }
     };
 
     const goToAuthServicePage = (sObj) => {
+        toast.success(toastMessages.services.serviceSelected);
         localStorage.setItem('selectedService', JSON.stringify(sObj));
-        window.location.reload();
+
+        // Small delay to show toast
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
     };
+
+    // Show error toasts
+    useEffect(() => {
+        if (noServicesMessage) {
+            toast.warning(noServicesMessage);
+        }
+    }, [noServicesMessage]);
+
+    useEffect(() => {
+        if (activeservices && activeservices.length > 0) {
+            toast.success(`Found ${activeservices.length} service(s) available!`);
+        }
+    }, [activeservices]);
 
     return (
         <div className={`${location.pathname === '/application' ? 'w-full' : 'w-4/5'} bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mt-6 animate-fadeIn`}>

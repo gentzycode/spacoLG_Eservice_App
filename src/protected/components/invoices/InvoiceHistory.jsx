@@ -17,10 +17,27 @@ const InvoiceHistory = ({ token, agentId }) => {
     const [isFetching, setIsFetching] = useState(false);
     const [selectedUnpaid, setSelectedUnpaid] = useState([]);
     const [selectedPaid, setSelectedPaid] = useState([]);
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
     useEffect(() => {
         fetchInvoices();
     }, [token, agentId]);
+
+    useEffect(() => {
+        const updateDarkMode = () => {
+            setIsDarkMode(document.documentElement.classList.contains('dark'));
+        };
+
+        updateDarkMode();
+
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     const fetchInvoices = async () => {
         setLoading(true);
@@ -177,12 +194,79 @@ const InvoiceHistory = ({ token, agentId }) => {
     ];
 
     const customStyles = {
-        table: { style: { borderRadius: '10px', overflow: 'hidden', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' } },
-        headRow: { style: { background: 'linear-gradient(to right, #3B78BD, #F0B652)', borderBottom: '2px solid #d1d5db', fontSize: '14px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: '#fff' } },
+        table: {
+            style: {
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: isDarkMode ? '1px solid #4b5563' : '1px solid #e5e7eb',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff'
+            }
+        },
+        headRow: {
+            style: {
+                background: 'linear-gradient(to right, #3B78BD, #F0B652)',
+                borderBottom: isDarkMode ? '2px solid #4b5563' : '2px solid #d1d5db',
+                fontSize: '14px',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                color: '#fff'
+            }
+        },
         headCells: { style: { padding: '14px 16px' } },
-        rows: { style: { fontSize: '15px', fontWeight: 500, color: '#111827', backgroundColor: '#ffffff', borderBottom: '1px solid #e5e7eb', '&:hover': { backgroundColor: '#f3f4f6', cursor: 'pointer' }, transition: 'all 0.3s ease' }, stripedStyle: { backgroundColor: '#f9fafb' } },
-        cells: { style: { padding: '12px 16px', borderRight: '1px solid #e5e7eb', '&:last-of-type': { borderRight: 'none' } } },
-        pagination: { style: { padding: '16px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb', fontSize: '14px', color: '#374151' }, pageButtonsStyle: { borderRadius: '6px', backgroundColor: '#f3f4f6', border: '1px solid #e5e7eb', color: '#374151', padding: '6px 12px', margin: '0 4px', transition: 'all 0.3s ease', '&:hover': { backgroundColor: '#3B78BD', color: '#fff', borderColor: '#3B78BD' }, '&:disabled': { backgroundColor: '#e5e7eb', color: '#9ca3af' } } },
+        rows: {
+            style: {
+                fontSize: '15px',
+                fontWeight: 500,
+                color: isDarkMode ? '#e5e7eb' : '#111827',
+                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                borderBottom: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+                '&:hover': {
+                    backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+                    cursor: 'pointer'
+                },
+                transition: 'all 0.3s ease'
+            },
+            stripedStyle: {
+                backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
+                color: isDarkMode ? '#e5e7eb' : '#111827'
+            }
+        },
+        cells: {
+            style: {
+                padding: '12px 16px',
+                borderRight: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+                '&:last-of-type': { borderRight: 'none' }
+            }
+        },
+        pagination: {
+            style: {
+                padding: '16px',
+                backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+                borderTop: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
+                fontSize: '14px',
+                color: isDarkMode ? '#e5e7eb' : '#374151'
+            },
+            pageButtonsStyle: {
+                borderRadius: '6px',
+                backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+                border: isDarkMode ? '1px solid #4b5563' : '1px solid #e5e7eb',
+                color: isDarkMode ? '#e5e7eb' : '#374151',
+                padding: '6px 12px',
+                margin: '0 4px',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    backgroundColor: '#3B78BD',
+                    color: '#fff',
+                    borderColor: '#3B78BD'
+                },
+                '&:disabled': {
+                    backgroundColor: isDarkMode ? '#1f2937' : '#e5e7eb',
+                    color: '#9ca3af'
+                }
+            }
+        },
     };
 
     return (

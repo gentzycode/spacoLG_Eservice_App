@@ -7,7 +7,7 @@ const SummaryCards = ({ summaries }) => {
             {summaries.map((summary, index) => (
                 <div
                     key={index}
-                    className={`p-6 rounded-lg shadow-md bg-gradient-to-r ${summary.bgColor} text-${summary.textColor} transform transition-all duration-300 hover:scale-105`}
+                    className={`p-6 rounded-lg shadow-md bg-gradient-to-r ${summary.bgColor} text-${summary.textColor} dark:brightness-90 dark:shadow-xl transform transition-all duration-300 hover:scale-105`}
                 >
                     <h3 className="text-lg font-semibold">{summary.title}</h3>
                     <p className="text-2xl font-bold">{summary.value}</p>

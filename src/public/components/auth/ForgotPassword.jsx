@@ -1,8 +1,8 @@
 import { AiOutlineQuestion } from 'react-icons/ai';
 import { forgotPassword } from '../../../apis/noAuthActions';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ButtonLoader from '../../../common/ButtonLoader';
-import { ToastContainer, toast } from 'react-toastify';
+import toast, { toastMessages } from '../../../utils/toast';
 
 const ForgotPassword = ({ handleChildUpdate }) => {
     const [username_or_email, setUsername_or_email] = useState();
@@ -13,6 +13,11 @@ const ForgotPassword = ({ handleChildUpdate }) => {
     const handleReset = (e) => {
         e.preventDefault();
 
+        if (!username_or_email) {
+            toast.warning('Please enter your email address');
+            return;
+        }
+
         const data = {
             username_or_email
         };
@@ -20,19 +25,24 @@ const ForgotPassword = ({ handleChildUpdate }) => {
         forgotPassword(data, setSuccess, setError, setSending);
     };
 
-    if (success !== null) {
-        toast.success(success?.message);
-        setTimeout(() => handleChildUpdate('reset-password'), 3000);
-    }
+    useEffect(() => {
+        if (success !== null) {
+            toast.success(success?.message || toastMessages.auth.passwordResetSent);
+            setTimeout(() => {
+                handleChildUpdate('reset-password');
+            }, 3000);
+        }
+    }, [success]);
 
-    if (error !== null) {
-        toast.error(error?.message);
-        setError(null);
-    }
+    useEffect(() => {
+        if (error !== null) {
+            toast.error(error?.message || toastMessages.auth.passwordResetError);
+            setError(null);
+        }
+    }, [error]);
 
     return (
         <div className="w-full">
-            <ToastContainer />
             <form onSubmit={handleReset} className='w-full mt-6 mb-6 space-y-8'>
                 <div>
                     <div className='text-gray-500 mb-1'>Email</div>

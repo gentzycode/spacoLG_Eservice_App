@@ -3,11 +3,11 @@ import React from 'react';
 
 const Filters = ({ filters, onFilterChange, onApplyFilters }) => {
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8 animate-fadeIn">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 animate-fadeIn">
             <h2 className="text-lg font-semibold text-[#3B78BD] dark:text-[#F0B652] mb-4">Filter Options</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Date Range
                     </label>
                     <input
@@ -15,18 +15,18 @@ const Filters = ({ filters, onFilterChange, onApplyFilters }) => {
                         name="dateRange"
                         value={filters.dateRange}
                         onChange={onFilterChange}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Category
                     </label>
                     <select
                         name="category"
                         value={filters.category}
                         onChange={onFilterChange}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-[#3B78BD] dark:focus:ring-[#F0B652] focus:border-transparent transition-all duration-200"
                     >
                         <option value="">All</option>
                         <option value="wallet">Wallet</option>

@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { GiArchiveRegister } from 'react-icons/gi';
 import { useLocation } from 'react-router-dom';
 import ButtonLoader from '../../../common/ButtonLoader';
@@ -6,6 +6,7 @@ import { signUp } from '../../../apis/noAuthActions';
 import { AuthContext } from '../../../context/AuthContext';
 import { formatError } from '../../../apis/functions';
 import WarningAlert from '../../../common/WarningAlert';
+import toast, { toastMessages } from '../../../utils/toast';
 
 const Register = ({ handleChildUpdate }) => {
     const locatn = useLocation();
@@ -26,32 +27,74 @@ const Register = ({ handleChildUpdate }) => {
         e.preventDefault();
         setError(null);
 
+        // Validation
         if (username.length < 6) {
+            toast.warning('Username must be at least 6 characters!');
             setError('The username must be at least 6 characters!');
-        } else {
-            const data = {
-                username,
-                email,
-                mobile,
-                password_hash,
-                password_hash_confirmation,
-                type: userType
-            };
-            console.log(data);
-
-            signUp(data, setSuccess, setError, setRegistering);
+            return;
         }
+
+        if (password_hash !== password_hash_confirmation) {
+            toast.error('Passwords do not match!');
+            return;
+        }
+
+        if (password_hash.length < 8) {
+            toast.warning('Password must be at least 8 characters!');
+            return;
+        }
+
+        const data = {
+            username,
+            email,
+            mobile,
+            password_hash,
+            password_hash_confirmation,
+            type: userType
+        };
+
+        signUp(data, setSuccess, setError, setRegistering);
     };
 
-    if (success && success?.status === 'success') {
-        storeAuthObject({
-            username,
-            password: password_hash
-        });
+    // Handle success
+    useEffect(() => {
+        if (success && success?.status === 'success') {
+            toast.success(toastMessages.auth.registerSuccess);
 
-        tempUserid(success?.data?.id);
-        handleChildUpdate('verify-email');
-    }
+            storeAuthObject({
+                username,
+                password: password_hash
+            });
+
+            tempUserid(success?.data?.id);
+
+            // Small delay to show toast
+            setTimeout(() => {
+                handleChildUpdate('verify-email');
+            }, 1500);
+        }
+    }, [success]);
+
+    // Handle errors
+    useEffect(() => {
+        if (error !== null && typeof error === 'object') {
+            // Show specific field errors as toasts
+            if (error.email) {
+                toast.error(error.email[0] || 'Email error');
+            }
+            if (error.username) {
+                toast.error(error.username[0] || 'Username error');
+            }
+            if (error.password_hash) {
+                toast.error(error.password_hash[0] || 'Password error');
+            }
+            if (error.mobile) {
+                toast.error(error.mobile[0] || 'Mobile number error');
+            }
+        } else if (error && typeof error === 'string') {
+            toast.error(error);
+        }
+    }, [error]);
 
     return (
         <div className="w-full">

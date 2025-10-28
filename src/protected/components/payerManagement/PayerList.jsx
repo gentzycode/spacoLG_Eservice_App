@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactPaginate from 'react-paginate';
 import { AiOutlineCopy, AiOutlineEye, AiOutlineEyeInvisible, AiOutlineDollar, AiOutlineInfoCircle } from 'react-icons/ai';
 import './PayerList.css';
@@ -8,15 +8,32 @@ const maskNumber = (number) => {
 };
 
 const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, type, pageCount, onPageChange, currentPage }) => {
-    const [maskedMobileNumbers, setMaskedMobileNumbers] = React.useState({});
+    const [maskedMobileNumbers, setMaskedMobileNumbers] = useState({});
+    const [isDarkMode, setIsDarkMode] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const initialMasked = payers.reduce((acc, payer) => {
             acc[payer.id] = true;
             return acc;
         }, {});
         setMaskedMobileNumbers(initialMasked);
     }, [payers]);
+
+    useEffect(() => {
+        const updateDarkMode = () => {
+            setIsDarkMode(document.documentElement.classList.contains('dark'));
+        };
+
+        updateDarkMode();
+
+        const observer = new MutationObserver(updateDarkMode);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     const handleCopyReference = (reference) => {
         navigator.clipboard.writeText(reference);
@@ -47,7 +64,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-[#F0B652]"></div>
                 </div>
             ) : payers.length === 0 ? (
-                <p className="text-center py-6 text-gray-600">{`No ${title.toLowerCase()} available.`}</p>
+                <p className="text-center py-6 text-gray-600 dark:text-gray-300">{`No ${title.toLowerCase()} available.`}</p>
             ) : (
                 <>
                     <ul className="payer-list space-y-4">
@@ -59,7 +76,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                             return (
                                 <li
                                     key={payer.id}
-                                    className="payer-item bg-white rounded-lg shadow-md p-4 flex items-center transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
+                                    className="payer-item bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex items-center transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
                                     tabIndex="0"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' || e.key === ' ') {
@@ -80,9 +97,9 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                                         </div>
                                     </div>
                                     <div className="flex-grow ml-4 cursor-pointer" onClick={() => onEdit(payer)}>
-                                        <p className="text-lg font-semibold text-gray-800">{name}</p>
-                                        <p className="text-sm text-gray-600">Ref: {reference}</p>
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">{name}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">Ref: {reference}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">
                                             Mobile: {maskedMobileNumbers[payer.id] ? maskNumber(mobile) : mobile}
                                         </p>
                                     </div>
@@ -90,7 +107,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                                         <div className="tooltip">
                                             <AiOutlineCopy
                                                 size={20}
-                                                className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                className="cursor-pointer text-[#3B78BD] dark:text-[#F0B652] hover:text-[#F0B652] dark:hover:text-[#3B78BD]"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleCopyReference(reference);
@@ -102,7 +119,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                                             {maskedMobileNumbers[payer.id] ? (
                                                 <AiOutlineEyeInvisible
                                                     size={20}
-                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                    className="cursor-pointer text-[#3B78BD] dark:text-[#F0B652] hover:text-[#F0B652] dark:hover:text-[#3B78BD]"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         toggleMask(payer.id);
@@ -111,7 +128,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                                             ) : (
                                                 <AiOutlineEye
                                                     size={20}
-                                                    className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                    className="cursor-pointer text-[#3B78BD] dark:text-[#F0B652] hover:text-[#F0B652] dark:hover:text-[#3B78BD]"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         toggleMask(payer.id);
@@ -123,7 +140,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                                         <div className="tooltip">
                                             <AiOutlineDollar
                                                 size={20}
-                                                className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                className="cursor-pointer text-[#3B78BD] dark:text-[#F0B652] hover:text-[#F0B652] dark:hover:text-[#3B78BD]"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     openPaymentModal(payer);
@@ -134,7 +151,7 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                                         <div className="tooltip">
                                             <AiOutlineInfoCircle
                                                 size={20}
-                                                className="cursor-pointer text-[#3B78BD] hover:text-[#F0B652]"
+                                                className="cursor-pointer text-[#3B78BD] dark:text-[#F0B652] hover:text-[#F0B652] dark:hover:text-[#3B78BD]"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     openInsightsModal(payer);
@@ -158,11 +175,11 @@ const PayerList = ({ title, payers, onEdit, onSelect, selectedPayers, loading, t
                         onPageChange={onPageChange}
                         containerClassName={'pagination flex justify-center mt-4 space-x-2'}
                         pageClassName={'mx-1'}
-                        pageLinkClassName={'px-4 py-2 bg-gray-200 rounded-lg hover:bg-[#F0B652] text-gray-700 hover:text-white transition-all duration-300'}
+                        pageLinkClassName={'px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-[#F0B652] text-gray-700 dark:text-gray-300 hover:text-white transition-all duration-300'}
                         previousClassName={'mx-1'}
-                        previousLinkClassName={'px-4 py-2 bg-gray-200 rounded-lg hover:bg-[#F0B652] text-gray-700 hover:text-white transition-all duration-300'}
+                        previousLinkClassName={'px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-[#F0B652] text-gray-700 dark:text-gray-300 hover:text-white transition-all duration-300'}
                         nextClassName={'mx-1'}
-                        nextLinkClassName={'px-4 py-2 bg-gray-200 rounded-lg hover:bg-[#F0B652] text-gray-700 hover:text-white transition-all duration-300'}
+                        nextLinkClassName={'px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-[#F0B652] text-gray-700 dark:text-gray-300 hover:text-white transition-all duration-300'}
                         activeClassName={'bg-[#F0B652] text-white'}
                         forcePage={currentPage}
                     />

@@ -38,6 +38,25 @@ const TokensHistory = ({ token, agentId }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [tokens, setTokens] = useState([]);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    useEffect(() => {
+        // Check for dark mode
+        const checkDarkMode = () => {
+            setIsDarkMode(document.documentElement.classList.contains('dark'));
+        };
+
+        checkDarkMode();
+
+        // Set up observer for dark mode changes
+        const observer = new MutationObserver(checkDarkMode);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -143,21 +162,22 @@ const TokensHistory = ({ token, agentId }) => {
             ),
             width: '56px',
         },
-    ], [columnsVisible, selectedTokens, filteredItems]);
+    ], [columnsVisible, selectedTokens, filteredItems, isDarkMode]);
 
     const customStyles = {
         table: {
             style: {
                 borderRadius: '10px',
                 overflow: 'hidden',
-                border: '1px solid #e5e7eb',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                border: isDarkMode ? '1px solid #4b5563' : '1px solid #e5e7eb',
+                boxShadow: isDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(0,0,0,0.1)',
+                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
             },
         },
         headRow: {
             style: {
                 background: 'linear-gradient(to right, #3B78BD, #F0B652)',
-                borderBottom: '2px solid #d1d5db',
+                borderBottom: isDarkMode ? '2px solid #4b5563' : '2px solid #d1d5db',
                 fontSize: '14px',
                 fontWeight: 600,
                 textTransform: 'uppercase',
@@ -177,17 +197,17 @@ const TokensHistory = ({ token, agentId }) => {
             style: {
                 fontSize: '15px',
                 fontWeight: 500,
-                color: '#111827',
-                backgroundColor: '#ffffff',
-                borderBottom: '1px solid #e5e7eb',
+                color: isDarkMode ? '#e5e7eb' : '#111827',
+                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+                borderBottom: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                 '&:hover': {
-                    backgroundColor: '#f3f4f6',
+                    backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
                     cursor: 'pointer',
                 },
                 transition: 'all 0.3s ease',
             },
             stripedStyle: {
-                backgroundColor: '#f9fafb',
+                backgroundColor: isDarkMode ? '#111827' : '#f9fafb',
             },
         },
         cells: {
@@ -196,7 +216,7 @@ const TokensHistory = ({ token, agentId }) => {
                 paddingBottom: '12px',
                 paddingLeft: '16px',
                 paddingRight: '16px',
-                borderRight: '1px solid #e5e7eb',
+                borderRight: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                 '&:last-of-type': {
                     borderRight: 'none',
                 },
@@ -205,16 +225,16 @@ const TokensHistory = ({ token, agentId }) => {
         pagination: {
             style: {
                 padding: '16px',
-                backgroundColor: '#fff',
-                borderTop: '1px solid #e5e7eb',
+                backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+                borderTop: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                 fontSize: '14px',
-                color: '#374151',
+                color: isDarkMode ? '#e5e7eb' : '#374151',
             },
             pageButtonsStyle: {
                 borderRadius: '6px',
-                backgroundColor: '#f3f4f6',
-                border: '1px solid #e5e7eb',
-                color: '#374151',
+                backgroundColor: isDarkMode ? '#374151' : '#f3f4f6',
+                border: isDarkMode ? '1px solid #4b5563' : '1px solid #e5e7eb',
+                color: isDarkMode ? '#e5e7eb' : '#374151',
                 padding: '6px 12px',
                 margin: '0 4px',
                 transition: 'all 0.3s ease',
@@ -224,8 +244,8 @@ const TokensHistory = ({ token, agentId }) => {
                     borderColor: '#3B78BD',
                 },
                 '&:disabled': {
-                    backgroundColor: '#e5e7eb',
-                    color: '#9ca3af',
+                    backgroundColor: isDarkMode ? '#1f2937' : '#e5e7eb',
+                    color: isDarkMode ? '#6b7280' : '#9ca3af',
                 },
             },
         },

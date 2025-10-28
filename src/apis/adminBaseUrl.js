@@ -1,5 +1,5 @@
-import axios from "axios";
+// Deprecated: Use adminApiClient from ./apiClient.js instead
+// This file is kept for backward compatibility
+import { adminApiClient } from './apiClient';
 
-export default axios.create({
-    baseURL: import.meta.env.VITE_ADMIN_BASE_URL
-});
+export default adminApiClient;

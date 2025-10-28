@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback, useMemo } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { getIndividuals, createIndividual, updateIndividual, getCorporates, createCorporate, updateCorporate } from '../../apis/authActions';
 import IndividualModal from '../components/payerManagement/IndividualModal';
@@ -30,7 +30,11 @@ class ErrorBoundary extends React.Component {
 
     render() {
         if (this.state.hasError) {
-            return <div className="text-red-500 text-center p-4">Something went wrong. Please try refreshing the page.</div>;
+            return (
+                <div className="text-red-500 dark:text-red-400 text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+                    Something went wrong. Please try refreshing the page.
+                </div>
+            );
         }
         return this.props.children;
     }
@@ -70,127 +74,8 @@ const PayerManagement = () => {
     };
     const chartInstances = useRef({});
 
-    useEffect(() => {
-        fetchIndividuals();
-        fetchCorporates();
-
-        // Add event listeners for payment and insights modals
-        const handlePaymentModal = (event) => {
-            setSelectedPayer(event.detail);
-            setPaymentTarget({
-                category: event.detail.individual_ref
-                    ? { value: 'individual', label: 'Individual' }
-                    : { value: 'corporate', label: 'Corporate' },
-                referenceNumber: event.detail.individual_ref || event.detail.corporate_ref
-            });
-            setShowPaymentModal(true);
-        };
-
-        const handleInsightsModal = (event) => {
-            setSelectedPayer(event.detail);
-            setShowInsightsModal(true);
-        };
-
-        window.addEventListener('openPaymentModal', handlePaymentModal);
-        window.addEventListener('openInsightsModal', handleInsightsModal);
-
-        return () => {
-            window.removeEventListener('openPaymentModal', handlePaymentModal);
-            window.removeEventListener('openInsightsModal', handleInsightsModal);
-        };
-    }, []);
-
-    useEffect(() => {
-        // Destroy existing charts
-        Object.values(chartInstances.current).forEach(chart => chart?.destroy());
-
-        // Doughnut Chart (Individuals vs. Corporates)
-        if (chartRefs.doughnutRef.current) {
-            chartInstances.current.doughnut = new Chart(chartRefs.doughnutRef.current.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Individuals', 'Corporates'],
-                    datasets: [{
-                        data: [individuals.length, corporates.length],
-                        backgroundColor: ['#3B78BD', '#F0B652'],
-                        borderWidth: 1,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'bottom' } },
-                },
-            });
-        }
-
-        // Bar Chart (Individuals over Time)
-        if (chartRefs.barRef.current) {
-            chartInstances.current.bar = new Chart(chartRefs.barRef.current.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr'],
-                    datasets: [{
-                        label: 'Individuals',
-                        data: [10, 20, 15, 25],
-                        backgroundColor: '#3B78BD',
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' } },
-                    scales: { y: { beginAtZero: true } },
-                },
-            });
-        }
-
-        // Line Chart (Corporates over Time)
-        if (chartRefs.lineRef.current) {
-            chartInstances.current.line = new Chart(chartRefs.lineRef.current.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr'],
-                    datasets: [{
-                        label: 'Corporates',
-                        data: [5, 10, 8, 12],
-                        borderColor: '#F0B652',
-                        fill: false,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' } },
-                    scales: { y: { beginAtZero: true } },
-                },
-            });
-        }
-
-        // Pie Chart (Payment Status)
-        if (chartRefs.pieRef.current) {
-            chartInstances.current.pie = new Chart(chartRefs.pieRef.current.getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: ['Paid', 'Unpaid'],
-                    datasets: [{
-                        data: [70, 30],
-                        backgroundColor: ['#4CAF50', '#F44336'],
-                        borderWidth: 1,
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'bottom' } },
-                },
-            });
-        }
-
-        // Cleanup on unmount
-        return () => {
-            Object.values(chartInstances.current).forEach(chart => chart?.destroy());
-            chartInstances.current = {};
-        };
-    }, [individuals, corporates]);
-
-    const fetchIndividuals = () => {
+    // Memoized fetch functions
+    const fetchIndividuals = useCallback(() => {
         setLoading(true);
         getIndividuals(token, (data) => {
             setIndividuals(data);
@@ -198,9 +83,9 @@ const PayerManagement = () => {
             setError(err.message || 'Failed to fetch individuals');
             console.error('Error fetching individuals:', err);
         }, () => setLoading(false));
-    };
+    }, [token]);
 
-    const fetchCorporates = () => {
+    const fetchCorporates = useCallback(() => {
         setLoading(true);
         getCorporates(token, (data) => {
             setCorporates(data);
@@ -208,100 +93,265 @@ const PayerManagement = () => {
             setError(err.message || 'Failed to fetch corporates');
             console.error('Error fetching corporates:', err);
         }, () => setLoading(false));
-    };
+    }, [token]);
 
-    const handleCreateIndividual = async (payload) => {
+    // Memoized event handlers
+    const handlePaymentModal = useCallback((event) => {
+        setSelectedPayer(event.detail);
+        setPaymentTarget({
+            category: event.detail.individual_ref
+                ? { value: 'individual', label: 'Individual' }
+                : { value: 'corporate', label: 'Corporate' },
+            referenceNumber: event.detail.individual_ref || event.detail.corporate_ref
+        });
+        setShowPaymentModal(true);
+    }, []);
+
+    const handleInsightsModal = useCallback((event) => {
+        setSelectedPayer(event.detail);
+        setShowInsightsModal(true);
+    }, []);
+
+    useEffect(() => {
+        fetchIndividuals();
+        fetchCorporates();
+
+        // Add event listeners for payment and insights modals
+        window.addEventListener('openPaymentModal', handlePaymentModal);
+        window.addEventListener('openInsightsModal', handleInsightsModal);
+
+        return () => {
+            window.removeEventListener('openPaymentModal', handlePaymentModal);
+            window.removeEventListener('openInsightsModal', handleInsightsModal);
+        };
+    }, [fetchIndividuals, fetchCorporates, handlePaymentModal, handleInsightsModal]);
+
+    // Chart data memoization
+    const chartData = useMemo(() => ({
+        doughnut: {
+            labels: ['Individuals', 'Corporates'],
+            datasets: [{
+                data: [individuals.length, corporates.length],
+                backgroundColor: [
+                    'rgb(59, 120, 189)', // #3B78BD
+                    'rgb(240, 182, 82)'  // #F0B652
+                ],
+                borderWidth: 1,
+            }],
+        },
+        bar: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+            datasets: [{
+                label: 'Individuals',
+                data: [10, 20, 15, 25],
+                backgroundColor: 'rgb(59, 120, 189)',
+            }],
+        },
+        line: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+            datasets: [{
+                label: 'Corporates',
+                data: [5, 10, 8, 12],
+                borderColor: 'rgb(240, 182, 82)',
+                fill: false,
+            }],
+        },
+        pie: {
+            labels: ['Paid', 'Unpaid'],
+            datasets: [{
+                data: [70, 30],
+                backgroundColor: [
+                    'rgb(76, 175, 80)',  // #4CAF50
+                    'rgb(244, 67, 54)'   // #F44336
+                ],
+                borderWidth: 1,
+            }],
+        }
+    }), [individuals.length, corporates.length]);
+
+    useEffect(() => {
+        // Destroy existing charts on cleanup
+        const cleanup = () => {
+            Object.values(chartInstances.current).forEach(chart => {
+                if (chart && typeof chart.destroy === 'function') {
+                    chart.destroy();
+                }
+            });
+            chartInstances.current = {};
+        };
+
+        cleanup();
+
+        // Doughnut Chart (Individuals vs. Corporates)
+        if (chartRefs.doughnutRef.current) {
+            const ctx = chartRefs.doughnutRef.current.getContext('2d');
+            if (ctx) {
+                chartInstances.current.doughnut = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: chartData.doughnut,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        },
+                    },
+                });
+            }
+        }
+
+        // Bar Chart (Individuals over Time)
+        if (chartRefs.barRef.current) {
+            const ctx = chartRefs.barRef.current.getContext('2d');
+            if (ctx) {
+                chartInstances.current.bar = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData.bar,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true } },
+                    },
+                });
+            }
+        }
+
+        // Line Chart (Corporates over Time)
+        if (chartRefs.lineRef.current) {
+            const ctx = chartRefs.lineRef.current.getContext('2d');
+            if (ctx) {
+                chartInstances.current.line = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData.line,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true } },
+                    },
+                });
+            }
+        }
+
+        // Pie Chart (Payment Status)
+        if (chartRefs.pieRef.current) {
+            const ctx = chartRefs.pieRef.current.getContext('2d');
+            if (ctx) {
+                chartInstances.current.pie = new Chart(ctx, {
+                    type: 'pie',
+                    data: chartData.pie,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: { legend: { position: 'bottom' } },
+                    },
+                });
+            }
+        }
+
+        // Cleanup on unmount
+        return cleanup;
+    }, [chartData]);
+
+    const handleCreateIndividual = useCallback(async (payload) => {
         try {
             const newIndividual = await createIndividual(token, payload);
-            setIndividuals([...individuals, newIndividual]);
+            setIndividuals(prev => [...prev, newIndividual]);
             setShowAddIndividualModal(false);
         } catch (err) {
             setError(err.message);
             console.error('Error creating individual:', err);
         }
-    };
+    }, [token]);
 
-    const handleUpdateIndividual = async (id, payload) => {
+    const handleUpdateIndividual = useCallback(async (id, payload) => {
         try {
             const updatedIndividual = await updateIndividual(token, id, payload);
-            setIndividuals(individuals.map(ind => ind.id === id ? updatedIndividual : ind));
+            setIndividuals(prev => prev.map(ind => ind.id === id ? updatedIndividual : ind));
             setShowIndividualModal(false);
         } catch (err) {
             setError(err.message);
             console.error('Error updating individual:', err);
         }
-    };
+    }, [token]);
 
-    const handleCreateCorporate = async (payload) => {
+    const handleCreateCorporate = useCallback(async (payload) => {
         try {
             const newCorporate = await createCorporate(token, payload);
-            setCorporates([...corporates, newCorporate]);
+            setCorporates(prev => [...prev, newCorporate]);
             setShowCorporateModal(false);
         } catch (err) {
             setError(err.message);
             console.error('Error creating corporate:', err);
         }
-    };
+    }, [token]);
 
-    const handleUpdateCorporate = async (id, payload) => {
+    const handleUpdateCorporate = useCallback(async (id, payload) => {
         try {
             const updatedCorporate = await updateCorporate(token, id, payload);
-            setCorporates(corporates.map(corp => corp.id === id ? updatedCorporate : corp));
+            setCorporates(prev => prev.map(corp => corp.id === id ? updatedCorporate : corp));
             setShowCorporateModal(false);
         } catch (err) {
             setError(err.message);
             console.error('Error updating corporate:', err);
         }
-    };
+    }, [token]);
 
-    const handleSearch = (e) => {
+    const handleSearch = useCallback((e) => {
         setSearchTerm(e.target.value);
         setCurrentPageIndividuals(0);
         setCurrentPageCorporates(0);
-    };
+    }, []);
 
-    const handleFilterChange = (e) => {
+    const handleFilterChange = useCallback((e) => {
         setFilterType(e.target.value);
         setCurrentPageIndividuals(0);
         setCurrentPageCorporates(0);
-    };
+    }, []);
 
-    const filteredIndividuals = individuals.filter(individual =>
-        (individual.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         individual.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         individual.individual_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         individual.mobile_number?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filterType === 'all' || filterType === 'individual')
+    const filteredIndividuals = useMemo(() =>
+        individuals.filter(individual =>
+            (individual.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             individual.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             individual.individual_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             individual.mobile_number?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (filterType === 'all' || filterType === 'individual')
+        ),
+        [individuals, searchTerm, filterType]
     );
 
-    const filteredCorporates = corporates.filter(corporate =>
-        (corporate.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         corporate.corporate_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         corporate.phone_number?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filterType === 'all' || filterType === 'corporate')
+    const filteredCorporates = useMemo(() =>
+        corporates.filter(corporate =>
+            (corporate.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             corporate.corporate_ref?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             corporate.phone_number?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+            (filterType === 'all' || filterType === 'corporate')
+        ),
+        [corporates, searchTerm, filterType]
     );
 
-    const handlePageClickIndividuals = ({ selected }) => {
+    const handlePageClickIndividuals = useCallback(({ selected }) => {
         setCurrentPageIndividuals(selected);
-    };
+    }, []);
 
-    const handlePageClickCorporates = ({ selected }) => {
+    const handlePageClickCorporates = useCallback(({ selected }) => {
         setCurrentPageCorporates(selected);
-    };
+    }, []);
 
-    const handleSelectIndividual = (id) => {
+    const handleSelectIndividual = useCallback((id) => {
         setSelectedIndividuals(prev =>
             prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
         );
-    };
+    }, []);
 
-    const handleSelectCorporate = (id) => {
+    const handleSelectCorporate = useCallback((id) => {
         setSelectedCorporates(prev =>
             prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
         );
-    };
+    }, []);
 
-    const handleBulkGenerateInvoice = () => {
+    const handleBulkGenerateInvoice = useCallback(() => {
         if (selectedIndividuals.length + selectedCorporates.length === 0) {
             alert('Please select at least one payer');
             return;
@@ -315,9 +365,9 @@ const PayerManagement = () => {
             referenceNumber: firstSelected.individual_ref || firstSelected.corporate_ref
         });
         setShowGenerateInvoiceModal(true);
-    };
+    }, [selectedIndividuals, selectedCorporates, individuals, corporates]);
 
-    const exportToPDF = () => {
+    const exportToPDF = useCallback(() => {
         const doc = new jsPDF();
         doc.autoTable({
             head: [['Name', 'Type', 'Reference', 'Mobile Number']],
@@ -337,33 +387,67 @@ const PayerManagement = () => {
             ]
         });
         doc.save('payers.pdf');
-    };
+    }, [individuals, corporates]);
 
-    const onEditPayer = (payer) => {
+    const onEditPayer = useCallback((payer) => {
         setSelectedPayer(payer);
         if (payer.individual_ref) {
             setShowIndividualModal(true);
         } else {
             setShowCorporateModal(true);
         }
-    };
+    }, []);
+
+    const paginatedIndividuals = useMemo(() =>
+        filteredIndividuals.slice(currentPageIndividuals * itemsPerPage, (currentPageIndividuals + 1) * itemsPerPage),
+        [filteredIndividuals, currentPageIndividuals, itemsPerPage]
+    );
+
+    const paginatedCorporates = useMemo(() =>
+        filteredCorporates.slice(currentPageCorporates * itemsPerPage, (currentPageCorporates + 1) * itemsPerPage),
+        [filteredCorporates, currentPageCorporates, itemsPerPage]
+    );
+
+    const individualsPageCount = useMemo(() =>
+        Math.ceil(filteredIndividuals.length / itemsPerPage),
+        [filteredIndividuals.length, itemsPerPage]
+    );
+
+    const corporatesPageCount = useMemo(() =>
+        Math.ceil(filteredCorporates.length / itemsPerPage),
+        [filteredCorporates.length, itemsPerPage]
+    );
+
+    // Loading spinner component
+    const LoadingSpinner = useMemo(() => (
+        <div className="flex items-center justify-center p-8">
+            <div className="relative">
+                <div className="w-16 h-16 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
+                <div className="mt-4 text-center text-gray-600 dark:text-gray-400 font-medium">Loading...</div>
+            </div>
+        </div>
+    ), []);
 
     return (
         <ErrorBoundary>
-            <div className="w-full p-6 min-h-screen">
-                {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+            <div className="w-full p-4 sm:p-6 min-h-screen bg-gray-50 dark:bg-gray-900">
+                {error && (
+                    <div className="text-red-600 dark:text-red-400 text-center mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                        {error}
+                    </div>
+                )}
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex justify-between items-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800">Payer Management</h1>
-                        <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100">Payer Management</h1>
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                             <button
-                                className="px-4 py-2 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300 shadow-lg transform hover:scale-105"
+                                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                 onClick={() => setShowAddIndividualModal(true)}
                             >
                                 Add Individual
                             </button>
                             <button
-                                className="px-4 py-2 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300 shadow-lg transform hover:scale-105"
+                                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                 onClick={() => {
                                     setSelectedPayer(null);
                                     setShowCorporateModal(true);
@@ -372,19 +456,19 @@ const PayerManagement = () => {
                                 Add Corporate
                             </button>
                             <button
-                                className="px-4 py-2 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300 shadow-lg transform hover:scale-105"
+                                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                 onClick={() => setShowGenerateInvoiceModal(true)}
                             >
                                 Generate Invoice
                             </button>
                             <button
-                                className="px-4 py-2 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300 shadow-lg transform hover:scale-105"
+                                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                 onClick={() => setShowPayInvoiceModal(true)}
                             >
                                 Pay Invoice
                             </button>
                             <button
-                                className="px-4 py-2 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300 shadow-lg transform hover:scale-105"
+                                className="px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                 onClick={() => setShowQuickUseTokenModal(true)}
                             >
                                 Quick Use Token
@@ -392,22 +476,22 @@ const PayerManagement = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                        <div className="bg-white p-4 rounded-lg shadow-lg">
-                            <h4 className="text-md font-semibold text-gray-700 mb-2">Individuals vs. Corporates</h4>
-                            <canvas ref={chartRefs.doughnutRef} className="w-40 h-40 mx-auto"></canvas>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                            <h4 className="text-sm sm:text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Individuals vs. Corporates</h4>
+                            <canvas ref={chartRefs.doughnutRef} className="w-full h-40 mx-auto"></canvas>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-lg">
-                            <h4 className="text-md font-semibold text-gray-700 mb-2">Individuals Over Time</h4>
-                            <canvas ref={chartRefs.barRef} className="w-40 h-40 mx-auto"></canvas>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                            <h4 className="text-sm sm:text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Individuals Over Time</h4>
+                            <canvas ref={chartRefs.barRef} className="w-full h-40 mx-auto"></canvas>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-lg">
-                            <h4 className="text-md font-semibold text-gray-700 mb-2">Corporates Over Time</h4>
-                            <canvas ref={chartRefs.lineRef} className="w-40 h-40 mx-auto"></canvas>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                            <h4 className="text-sm sm:text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Corporates Over Time</h4>
+                            <canvas ref={chartRefs.lineRef} className="w-full h-40 mx-auto"></canvas>
                         </div>
-                        <div className="bg-white p-4 rounded-lg shadow-lg">
-                            <h4 className="text-md font-semibold text-gray-700 mb-2">Payment Status</h4>
-                            <canvas ref={chartRefs.pieRef} className="w-40 h-40 mx-auto"></canvas>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                            <h4 className="text-sm sm:text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">Payment Status</h4>
+                            <canvas ref={chartRefs.pieRef} className="w-full h-40 mx-auto"></canvas>
                         </div>
                     </div>
 
@@ -416,36 +500,36 @@ const PayerManagement = () => {
                             <input
                                 type="text"
                                 placeholder="Search by name, reference, or mobile..."
-                                className="w-full sm:w-64 p-3 border rounded-l-lg focus:ring-2 focus:ring-[#F0B652] transition-all duration-200"
+                                className="w-full sm:w-64 p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-l-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-600 focus:outline-none transition-all duration-200"
                                 value={searchTerm}
                                 onChange={handleSearch}
                             />
-                            <button className="px-4 py-3 bg-[#F0B652] text-white rounded-r-lg hover:bg-[#3B78BD] transition-all duration-300">
+                            <button className="px-4 py-3 bg-yellow-500 dark:bg-yellow-600 text-white rounded-r-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-300">
                                 <AiOutlineSearch size={24} />
                             </button>
                         </div>
-                        <div className="flex space-x-3">
-                            <div className="relative">
+                        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+                            <div className="relative flex-1 sm:flex-initial">
                                 <select
                                     value={filterType}
                                     onChange={handleFilterChange}
-                                    className="appearance-none w-40 p-3 border rounded-lg focus:ring-2 focus:ring-[#F0B652] transition-all duration-200"
+                                    className="appearance-none w-full sm:w-40 p-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-600 focus:outline-none transition-all duration-200"
                                 >
                                     <option value="all">All Payers</option>
                                     <option value="individual">Individuals</option>
                                     <option value="corporate">Corporates</option>
                                 </select>
-                                <AiOutlineFilter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600" size={20} />
+                                <AiOutlineFilter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-400 pointer-events-none" size={20} />
                             </div>
                             <button
-                                className="px-4 py-3 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300"
+                                className="px-3 sm:px-4 py-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                                 onClick={handleBulkGenerateInvoice}
                                 disabled={selectedIndividuals.length + selectedCorporates.length === 0}
                             >
                                 Bulk Generate Invoice
                             </button>
                             <button
-                                className="px-4 py-3 bg-white text-[#3B78BD] rounded-lg hover:bg-[#F0B652] hover:text-white transition-all duration-300"
+                                className="px-3 sm:px-4 py-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-all duration-300 text-sm sm:text-base"
                                 onClick={exportToPDF}
                             >
                                 Export to PDF
@@ -453,47 +537,53 @@ const PayerManagement = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-lg shadow-lg animate-fadeIn">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 animate-fadeIn">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-[#3B78BD]">Individuals</h2>
-                                <button onClick={() => setIsIndividualCollapsed(!isIndividualCollapsed)} className="text-[#3B78BD] hover:text-[#F0B652]">
+                                <h2 className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">Individuals</h2>
+                                <button
+                                    onClick={() => setIsIndividualCollapsed(!isIndividualCollapsed)}
+                                    className="text-blue-600 dark:text-blue-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-200 text-sm sm:text-base"
+                                >
                                     {isIndividualCollapsed ? 'Expand' : 'Collapse'}
                                 </button>
                             </div>
                             {!isIndividualCollapsed && (
                                 <PayerList
                                     title="Individuals"
-                                    payers={filteredIndividuals.slice(currentPageIndividuals * itemsPerPage, (currentPageIndividuals + 1) * itemsPerPage)}
+                                    payers={paginatedIndividuals}
                                     onEdit={onEditPayer}
                                     onSelect={handleSelectIndividual}
                                     selectedPayers={selectedIndividuals}
                                     loading={loading}
                                     type="individual"
-                                    pageCount={Math.ceil(filteredIndividuals.length / itemsPerPage)}
+                                    pageCount={individualsPageCount}
                                     onPageChange={handlePageClickIndividuals}
                                     currentPage={currentPageIndividuals}
                                 />
                             )}
                         </div>
 
-                        <div className="bg-white p-6 rounded-lg shadow-lg animate-fadeIn">
+                        <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 animate-fadeIn">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-[#3B78BD]">Corporates</h2>
-                                <button onClick={() => setIsCorporateCollapsed(!isCorporateCollapsed)} className="text-[#3B78BD] hover:text-[#F0B652]">
+                                <h2 className="text-lg sm:text-xl font-bold text-blue-600 dark:text-blue-400">Corporates</h2>
+                                <button
+                                    onClick={() => setIsCorporateCollapsed(!isCorporateCollapsed)}
+                                    className="text-blue-600 dark:text-blue-400 hover:text-yellow-500 dark:hover:text-yellow-400 transition-colors duration-200 text-sm sm:text-base"
+                                >
                                     {isCorporateCollapsed ? 'Expand' : 'Collapse'}
                                 </button>
                             </div>
                             {!isCorporateCollapsed && (
                                 <PayerList
                                     title="Corporates"
-                                    payers={filteredCorporates.slice(currentPageCorporates * itemsPerPage, (currentPageCorporates + 1) * itemsPerPage)}
+                                    payers={paginatedCorporates}
                                     onEdit={onEditPayer}
                                     onSelect={handleSelectCorporate}
                                     selectedPayers={selectedCorporates}
                                     loading={loading}
                                     type="corporate"
-                                    pageCount={Math.ceil(filteredCorporates.length / itemsPerPage)}
+                                    pageCount={corporatesPageCount}
                                     onPageChange={handlePageClickCorporates}
                                     currentPage={currentPageCorporates}
                                 />
@@ -533,17 +623,20 @@ const PayerManagement = () => {
                     )}
 
                     {showPaymentModal && selectedPayer && (
-                        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-auto">
-                            <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-4xl transform transition-all duration-300 scale-100 hover:scale-105">
-                                <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-[#3B78BD] to-[#F0B652] p-4 rounded-t-lg">
-                                    <h2 className="text-2xl font-bold text-white">Make Payment</h2>
-                                    <button className="text-white hover:text-gray-200 transition-colors duration-200" onClick={() => setShowPaymentModal(false)}>
+                        <div className="fixed inset-0 bg-gray-900/75 dark:bg-black/85 flex items-center justify-center z-50 p-4 overflow-auto">
+                            <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-4xl transform transition-all duration-300 scale-100 hover:scale-105 border border-gray-200 dark:border-gray-700">
+                                <div className="flex justify-between items-center mb-4 bg-gradient-to-r from-blue-600 to-yellow-500 dark:from-blue-700 dark:to-yellow-600 p-4 rounded-t-lg">
+                                    <h2 className="text-xl sm:text-2xl font-bold text-white">Make Payment</h2>
+                                    <button
+                                        className="text-white hover:text-gray-200 transition-colors duration-200"
+                                        onClick={() => setShowPaymentModal(false)}
+                                    >
                                         <AiOutlineClose size={24} />
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <button
-                                        className="w-full p-4 bg-[#3B78BD] text-white rounded-lg hover:bg-[#F0B652] transition-all duration-300 shadow-lg transform hover:scale-105"
+                                        className="w-full p-4 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-yellow-500 hover:dark:bg-yellow-600 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                         onClick={() => {
                                             setShowPaymentModal(false);
                                             setShowGenerateInvoiceModal(true);
@@ -558,7 +651,7 @@ const PayerManagement = () => {
                                         Generate Invoice
                                     </button>
                                     <button
-                                        className="w-full p-4 bg-[#F0B652] text-white rounded-lg hover:bg-[#6B7280] transition-all duration-300 shadow-lg transform hover:scale-105"
+                                        className="w-full p-4 bg-yellow-500 dark:bg-yellow-600 text-white rounded-lg hover:bg-gray-600 hover:dark:bg-gray-700 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                         onClick={() => {
                                             setShowPaymentModal(false);
                                             setShowPayInvoiceModal(true);
@@ -567,7 +660,7 @@ const PayerManagement = () => {
                                         Pay Invoice
                                     </button>
                                     <button
-                                        className="w-full p-4 bg-[#6B7280] text-white rounded-lg hover:bg-[#3B78BD] transition-all duration-300 shadow-lg transform hover:scale-105"
+                                        className="w-full p-4 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-blue-600 hover:dark:bg-blue-700 transition-all duration-300 shadow-lg transform hover:scale-105 text-sm sm:text-base"
                                         onClick={() => {
                                             setShowPaymentModal(false);
                                             setShowQuickUseTokenModal(true);
@@ -622,4 +715,4 @@ const PayerManagement = () => {
     );
 };
 
-export default PayerManagement;
+export default React.memo(PayerManagement);

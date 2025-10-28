@@ -4,7 +4,7 @@ import ButtonLoader from '../../../common/ButtonLoader';
 import { signIn } from '../../../apis/noAuthActions';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
-import { toast, ToastContainer } from 'react-toastify';
+import toast, { toastMessages } from '../../../utils/toast';
 
 const Login = ({ handleChildUpdate }) => {
     const locatn = useLocation();
@@ -19,30 +19,49 @@ const Login = ({ handleChildUpdate }) => {
 
     const handleLogin = (e) => {
         e.preventDefault();
+
+        // Validation
+        if (!username || !password) {
+            toast.warning('Please enter both username and password');
+            return;
+        }
+
         const data = { username, password };
         signIn(data, setSuccess, setError, setLoggingin);
     };
 
     useEffect(() => {
         if (success !== null) {
+            toast.success(toastMessages.auth.loginSuccess);
             localStorage.setItem('isLoggedIn', JSON.stringify(success));
             updateUser(success.user);
-            if (locatn.pathname === '/service') {
-                navigate('/application');
-            } else {
-                navigate('/dashboard');
-            }
-            location.reload();
+
+            // Small delay to show toast before navigation
+            setTimeout(() => {
+                if (locatn.pathname === '/service') {
+                    navigate('/application');
+                } else {
+                    navigate('/dashboard');
+                }
+                location.reload();
+            }, 1000);
         }
     }, [success, locatn.pathname, navigate, updateUser]);
 
     useEffect(() => {
         if (error) {
             if (error.user_id) {
+                toast.info('Please verify your email to continue');
                 tempUserid(error.user_id);
                 handleChildUpdate('verify-email');
             } else if (error.message) {
                 toast.error(error.message);
+                setError(null);
+            } else if (typeof error === 'string') {
+                toast.error(error);
+                setError(null);
+            } else {
+                toast.error(toastMessages.auth.loginError);
                 setError(null);
             }
         }
@@ -54,7 +73,6 @@ const Login = ({ handleChildUpdate }) => {
                 {locatn.pathname !== '/service' && <RiShieldKeyholeLine size={25} />}
                 {locatn.pathname !== '/service' && <h1 className='text-2xl'>Login</h1>}
             </div>
-            <ToastContainer />
             {error && error.user_id && (
                 <p className='text-[#0d544c] cursor-pointer' onClick={() => handleChildUpdate('verify-email')}>
                     Click here to verify your email.

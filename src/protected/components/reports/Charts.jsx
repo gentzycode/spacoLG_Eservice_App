@@ -6,11 +6,11 @@ import BarChart from '../../../charts/BarChart';
 const Charts = ({ walletData, tokenData }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fadeIn">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 transition-colors duration-300">
                 <h3 className="text-lg font-semibold text-[#3B78BD] dark:text-[#F0B652] mb-4">Wallet Transactions Over Time</h3>
                 <LineChart data={walletData} />
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 transition-colors duration-300">
                 <h3 className="text-lg font-semibold text-[#3B78BD] dark:text-[#F0B652] mb-4">Token Usage Statistics</h3>
                 <BarChart data={tokenData} />
             </div>
