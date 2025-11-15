@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../../context/AuthContext';
 import { getAllUsers, getAllRoles, getLGAsStaff, getAllAuthorizers, removeAuthorizer } from '../../../apis/adminActions';
 import { getLGAs } from '../../../apis/noAuthActions';
-import PageLoader from '../../../common/PageLoader';
+import InitLoader from '../../../common/InitLoader';
 import CreateUser from '../components/users/CreateUser';
 import UserDetail from '../components/users/UserDetail';
 import LgasStaffModal from '../components/lgas-staff/LgasStaffModal';
@@ -24,9 +24,9 @@ import {
     FaBuilding,
     FaCertificate,
     FaCheckCircle,
-    FaMapMarkerAlt
+    FaMapMarkerAlt,
+    FaFileCircleCheck
 } from 'react-icons/fa';
-import { FaFileCircleCheck } from 'react-icons/fa6';
 import { MdGridView, MdTableRows } from 'react-icons/md';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { ImOffice } from 'react-icons/im';
@@ -61,7 +61,6 @@ const UsersUnified = () => {
     // Common states
     const [error, setError] = useState(null);
     const [fetching, setFetching] = useState(false);
-    const [initialLoading, setInitialLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [lgaFilter, setLgaFilter] = useState('all');
@@ -73,28 +72,11 @@ const UsersUnified = () => {
     const [itemsPerPage] = useState(12); // 12 items per page for grid (3x4 layout)
 
     useEffect(() => {
-        const loadAllData = async () => {
-            setInitialLoading(true);
-            try {
-                // Load all data in parallel
-                await Promise.all([
-                    getAllUsers(token, setUsers, setError, setFetching),
-                    getAllRoles(token, setRoles, setError),
-                    getLGAsStaff(token, setLgasstaff, setError, setFetching),
-                    getLGAs(setLgas, setError),
-                    getAllAuthorizers(token, setAuthorizers, setError, setFetching)
-                ]);
-            } catch (err) {
-                console.error('Error loading data:', err);
-            } finally {
-                // Add a small delay to ensure smooth transition
-                setTimeout(() => {
-                    setInitialLoading(false);
-                }, 500);
-            }
-        };
-
-        loadAllData();
+        getAllUsers(token, setUsers, setError, setFetching);
+        getAllRoles(token, setRoles, setError);
+        getLGAsStaff(token, setLgasstaff, setError, setFetching);
+        getLGAs(setLgas, setError);
+        getAllAuthorizers(token, setAuthorizers, setError, setFetching);
     }, [record]);
 
     useEffect(() => {
@@ -110,11 +92,6 @@ const UsersUnified = () => {
 
     if (error !== null && error?.message === 'Token has expired') {
         logout();
-    }
-
-    // Show full-screen loader during initial data load
-    if (initialLoading) {
-        return <PageLoader message="Loading users data..." fullScreen={true} />;
     }
 
     // Filter functions
@@ -721,10 +698,9 @@ const UsersUnified = () => {
 
             {/* Content Grid */}
             {fetching ? (
-                <PageLoader
-                    message={`Loading ${activeTab === 'users' ? 'Users' : activeTab === 'staff' ? 'LGA Staff' : 'Authorizers'}...`}
-                    fullScreen={false}
-                />
+                <div className="flex justify-center items-center h-64">
+                    <InitLoader />
+                </div>
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -751,7 +727,12 @@ const UsersUnified = () => {
             {staffmodal && <LgasStaffModal users={users} lgas={lgas} setShowmodal={setStaffmodal} lgastaff={lgastaff} setLagstaff={setLgastaff} />}
             {authmodal && <AddModal setShowmodal={setAuthmodal} />}
             {deleting && (
-                <PageLoader message="Removing authorizer..." fullScreen={true} />
+                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl">
+                        <InitLoader />
+                        <p className="text-gray-700 dark:text-gray-300 mt-4">Removing authorizer...</p>
+                    </div>
+                </div>
             )}
 
             <style jsx>{`

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { HiDocumentText, HiUserGroup } from 'react-icons/hi';
-import { FaRegListAlt, FaRegUser, FaFileAlt } from 'react-icons/fa';
+import { FaRegListAlt, FaRegUser, FaFileAlt, FaCreditCard, FaCog, FaChartBar, FaShieldAlt } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { AiFillHome } from 'react-icons/ai';
@@ -35,8 +35,10 @@ const NavDB = ({ collapsed }) => {
         { id: 1, title: "Home", url: PROTECTED_ROUTES.DASHBOARD, icon: <AiFillHome size={17} /> },
         { id: 2, title: "Users", url: SUPER_ADMIN_ROUTES.USERS, icon: <HiUserGroup size={17} /> },
         { id: 3, title: "Tariffs", url: SUPER_ADMIN_ROUTES.TARIFFS, icon: <RiWalletFill size={17} /> },
-        { id: 4, title: "LGAs Staff", url: SUPER_ADMIN_ROUTES.LGAS_STAFF, icon: <BsHouses size={17} /> },
-        { id: 5, title: "Authorizers", url: SUPER_ADMIN_ROUTES.AUTHORIZERS, icon: <FaFileAlt size={17} /> },
+        { id: 4, title: "Payment Gateways", url: SUPER_ADMIN_ROUTES.PAYMENT_GATEWAYS, icon: <FaCreditCard size={17} /> },
+        { id: 5, title: "Financial Reports", url: SUPER_ADMIN_ROUTES.FINANCIAL_REPORTS, icon: <FaChartBar size={17} /> },
+        { id: 6, title: "Security & Audit", url: SUPER_ADMIN_ROUTES.AUDIT_LOGS, icon: <FaShieldAlt size={17} /> },
+        { id: 7, title: "System Settings", url: SUPER_ADMIN_ROUTES.SYSTEM_SETTINGS, icon: <FaCog size={17} /> },
     ];
 
     const agent = [

@@ -42,12 +42,15 @@ const InvoiceHistory = ({ token, agentId }) => {
     const fetchInvoices = async () => {
         setLoading(true);
         try {
-            await getUnpaidInvoices(token, setUnpaidInvoices, setError, setLoading);
-            await getPaidInvoicesByAgent(token, agentId, setPaidInvoices, setError, setLoading);
+            // Parallelize API calls for better performance
+            const [unpaidData, paidData] = await Promise.all([
+                getUnpaidInvoices(token, setUnpaidInvoices, setError, setLoading),
+                getPaidInvoicesByAgent(token, agentId, setPaidInvoices, setError, setLoading)
+            ]);
+
+            // Filter invalid data
             setUnpaidInvoices(prev => prev.filter(item => item && typeof item === 'object' && item.id));
             setPaidInvoices(prev => prev.filter(item => item && typeof item === 'object' && item.id));
-            console.log('Unpaid Invoices:', unpaidInvoices);
-            console.log('Paid Invoices:', paidInvoices);
         } catch (err) {
             setError('Failed to fetch invoices');
         } finally {
@@ -57,17 +60,41 @@ const InvoiceHistory = ({ token, agentId }) => {
 
     const filteredUnpaid = useMemo(() => {
         const trimmedFilter = filterText.trim().toLowerCase();
+        if (!trimmedFilter) return unpaidInvoices || [];
+
         return (unpaidInvoices || []).filter(item => {
-            const refNumber = item.invoice_ref ? item.invoice_ref.trim().toLowerCase() : '';
-            return refNumber.includes(trimmedFilter);
+            // Search across multiple fields for better UX
+            const refNumber = item.invoice_ref?.toLowerCase() || '';
+            const purpose = item.purpose?.toLowerCase() || '';
+            const description = item.description?.toLowerCase() || '';
+            const payerName = item.payer_name?.toLowerCase() || '';
+            const paymentMethod = item.payment_method?.toLowerCase() || '';
+
+            return refNumber.includes(trimmedFilter) ||
+                   purpose.includes(trimmedFilter) ||
+                   description.includes(trimmedFilter) ||
+                   payerName.includes(trimmedFilter) ||
+                   paymentMethod.includes(trimmedFilter);
         });
     }, [filterText, unpaidInvoices]);
 
     const filteredPaid = useMemo(() => {
         const trimmedFilter = filterText.trim().toLowerCase();
+        if (!trimmedFilter) return paidInvoices || [];
+
         return (paidInvoices || []).filter(item => {
-            const refNumber = item.invoice_ref ? item.invoice_ref.trim().toLowerCase() : '';
-            return refNumber.includes(trimmedFilter);
+            // Search across multiple fields for better UX
+            const refNumber = item.invoice_ref?.toLowerCase() || '';
+            const purpose = item.purpose?.toLowerCase() || '';
+            const description = item.description?.toLowerCase() || '';
+            const payerName = item.payer_name?.toLowerCase() || '';
+            const paymentMethod = item.payment_method?.toLowerCase() || '';
+
+            return refNumber.includes(trimmedFilter) ||
+                   purpose.includes(trimmedFilter) ||
+                   description.includes(trimmedFilter) ||
+                   payerName.includes(trimmedFilter) ||
+                   paymentMethod.includes(trimmedFilter);
         });
     }, [filterText, paidInvoices]);
 

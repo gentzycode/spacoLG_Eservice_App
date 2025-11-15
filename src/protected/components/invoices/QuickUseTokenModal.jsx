@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import axios from '../../../apis/baseUrl';
 import { AuthContext } from '../../../context/AuthContext';
 import { getEserviceItems, quickUseToken, getIdentifiers } from '../../../apis/authActions';
 import { AiOutlineClose } from 'react-icons/ai';
@@ -13,6 +14,9 @@ const QuickUseTokenModal = ({ closeModal, agentId }) => {
     const [selectedIdentifier, setSelectedIdentifier] = useState(null);
     const [tokenString, setTokenString] = useState('');
     const [identifierValue, setIdentifierValue] = useState('');
+    const [quantity, setQuantity] = useState(1);
+    const [selectedItemDetails, setSelectedItemDetails] = useState(null);
+    const [calculatedPrice, setCalculatedPrice] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
@@ -33,17 +37,94 @@ const QuickUseTokenModal = ({ closeModal, agentId }) => {
         fetchData();
     }, [token]);
 
+    // Real-time price calculation when item or quantity changes
+    useEffect(() => {
+        const calculatePrice = async () => {
+            if (!selectedEservice) {
+                setCalculatedPrice(null);
+                setSelectedItemDetails(null);
+                return;
+            }
+
+            const item = eserviceItems.find(i => i.id === selectedEservice.value);
+            if (!item) return;
+
+            setSelectedItemDetails(item);
+
+            // If item doesn't require quantity, use fixed price
+            if (!item.requires_quantity) {
+                setCalculatedPrice({
+                    total_amount: item.value,
+                    breakdown: {
+                        unit_price: item.value,
+                        quantity: 1,
+                        subtotal: item.value,
+                    },
+                    formula_used: `₦${Number(item.value).toLocaleString()}`
+                });
+                return;
+            }
+
+            // For quantity-based items, call backend API
+            try {
+                const response = await axios.get(
+                    `/auth/eservice-items/${item.id}/calculate-price`,
+                    {
+                        params: { quantity },
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }
+                );
+
+                if (response.data.status === 'success') {
+                    setCalculatedPrice(response.data.data);
+                }
+            } catch (err) {
+                console.error('Price calculation failed:', err);
+                // Fallback to simple calculation
+                const fallbackAmount = quantity * item.value;
+                setCalculatedPrice({
+                    total_amount: fallbackAmount,
+                    breakdown: {
+                        unit_price: item.value,
+                        quantity: quantity,
+                        subtotal: fallbackAmount,
+                    },
+                    formula_used: `${quantity} × ₦${Number(item.value).toLocaleString()}`
+                });
+            }
+        };
+
+        calculatePrice();
+    }, [selectedEservice, quantity, eserviceItems, token]);
+
     const handleQuickUse = async () => {
         setLoading(true);
         setError(null);
         setSuccess(false);
         try {
-            await quickUseToken(token, agentId, {
+            const payload = {
                 token: tokenString,
                 eservice_item_id: selectedEservice.value,
                 identifier_type: selectedIdentifier ? selectedIdentifier.value : null,
                 identifier_value: selectedIdentifier ? identifierValue : null,
-            });
+            };
+
+            // Add quantity if item requires it
+            if (selectedItemDetails?.requires_quantity) {
+                payload.quantity = parseFloat(quantity);
+            }
+
+            // Add pricing breakdown for audit trail
+            if (calculatedPrice?.breakdown) {
+                payload.pricing_breakdown = calculatedPrice.breakdown;
+            }
+
+            // Add calculated amount
+            if (calculatedPrice?.total_amount) {
+                payload.amount = calculatedPrice.total_amount;
+            }
+
+            await quickUseToken(token, agentId, payload);
             setSuccess(true);
             setLoading(false);
         } catch (err) {
@@ -97,11 +178,24 @@ const QuickUseTokenModal = ({ closeModal, agentId }) => {
                         styles={customStyles}
                         className="w-full"
                         value={selectedEservice}
-                        onChange={(selectedOption) => setSelectedEservice(selectedOption)}
-                        options={eserviceItems.map(item => ({
-                            value: item.id,
-                            label: `${item.name} - ₦${Number(item.value).toLocaleString()} (${item.category})`
-                        }))}
+                        onChange={(selectedOption) => {
+                            setSelectedEservice(selectedOption);
+                            setQuantity(1);
+                            setCalculatedPrice(null);
+                        }}
+                        options={eserviceItems.map(item => {
+                            let labelText = item.name;
+
+                            if (item.has_variable_pricing && item.pricingRule) {
+                                labelText += ` - ${item.pricingRule.description || 'Variable pricing'}`;
+                            } else if (item.requires_quantity && item.quantity_unit) {
+                                labelText += ` - ₦${Number(item.value).toLocaleString()} per ${item.quantity_unit}`;
+                            } else {
+                                labelText += ` - ₦${Number(item.value).toLocaleString()} (${item.category})`;
+                            }
+
+                            return { value: item.id, label: labelText };
+                        })}
                         isClearable
                     />
                 </div>
@@ -135,6 +229,77 @@ const QuickUseTokenModal = ({ closeModal, agentId }) => {
                         disabled={!selectedIdentifier}
                     />
                 </div>
+
+                {/* Generic quantity input - works for ALL items requiring quantity */}
+                {selectedItemDetails?.requires_quantity && (
+                    <div className="mb-6">
+                        <label className="block mb-2 text-lg font-medium text-gray-700">
+                            {selectedItemDetails.quantity_label || 'Quantity'}
+                        </label>
+                        <div className="flex items-center space-x-3">
+                            <input
+                                type="number"
+                                step="0.01"
+                                min={selectedItemDetails.min_quantity || 0.01}
+                                max={selectedItemDetails.max_quantity || undefined}
+                                className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600"
+                                value={quantity}
+                                onChange={e => setQuantity(e.target.value)}
+                                placeholder={`Enter ${selectedItemDetails.quantity_unit || 'quantity'}`}
+                            />
+                            <span className="text-gray-600 font-semibold min-w-[80px]">
+                                {selectedItemDetails.quantity_unit || 'units'}
+                            </span>
+                        </div>
+                        {selectedItemDetails.min_quantity && (
+                            <p className="mt-1 text-sm text-gray-500">
+                                Minimum: {selectedItemDetails.min_quantity} {selectedItemDetails.quantity_unit}
+                            </p>
+                        )}
+                    </div>
+                )}
+
+                {/* Price Preview - Shows for ALL items */}
+                {calculatedPrice && (
+                    <div className="mb-6 p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border-2 border-green-300">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-lg font-semibold text-gray-700">
+                                Calculated Amount:
+                            </span>
+                            <span className="text-2xl font-bold text-green-700">
+                                ₦{Number(calculatedPrice.total_amount).toLocaleString()}
+                            </span>
+                        </div>
+
+                        {/* Pricing Breakdown */}
+                        {calculatedPrice.breakdown && calculatedPrice.breakdown.quantity > 1 && (
+                            <div className="mt-3 pt-3 border-t border-green-200 text-sm space-y-1">
+                                <div className="flex justify-between text-gray-600">
+                                    <span>Unit Price:</span>
+                                    <span>₦{Number(calculatedPrice.breakdown.unit_price).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between text-gray-600">
+                                    <span>Quantity:</span>
+                                    <span>{calculatedPrice.breakdown.quantity} {selectedItemDetails?.quantity_unit}</span>
+                                </div>
+                                <div className="flex justify-between font-semibold text-gray-700">
+                                    <span>Subtotal:</span>
+                                    <span>₦{Number(calculatedPrice.breakdown.subtotal).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Formula display for transparency */}
+                        {calculatedPrice.formula_used && (
+                            <div className="mt-3 pt-3 border-t border-green-200">
+                                <p className="text-xs text-gray-500 italic">
+                                    Calculation: {calculatedPrice.formula_used}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="mb-6">
                     <label className="block mb-2 text-lg font-medium text-gray-700">Token</label>
                     <input
@@ -172,9 +337,9 @@ const QuickUseTokenModal = ({ closeModal, agentId }) => {
                         Close
                     </button>
                     <button
-                        className={`px-5 py-3 rounded-lg text-white transition-all duration-200 ${loading || !selectedEservice || !tokenString ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-900'}`}
+                        className={`px-5 py-3 rounded-lg text-white transition-all duration-200 ${loading || !selectedEservice || !tokenString || !calculatedPrice ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-900'}`}
                         onClick={handleQuickUse}
-                        disabled={loading || !selectedEservice || !tokenString}
+                        disabled={loading || !selectedEservice || !tokenString || !calculatedPrice}
                     >
                         {loading ? 'Processing...' : 'Use Token'}
                     </button>

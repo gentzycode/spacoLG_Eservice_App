@@ -5,22 +5,23 @@ import { getEserviceItems, generateInvoice } from '../../../apis/authActions';
 import { AiOutlineClose } from 'react-icons/ai';
 import Confetti from 'react-confetti';
 import Select from 'react-select';
-import PayInvoiceModal from './PayInvoiceModal'; // Import the PayInvoiceModal
+import PayInvoiceModal from './PayInvoiceModal';
 
 const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNumber }) => {
     const { token } = useContext(AuthContext);
     const [category, setCategory] = useState(defaultCategory || { value: 'individual', label: 'Individual' });
     const [referenceNumber, setReferenceNumber] = useState(defaultReferenceNumber || '');
     const [eserviceItemId, setEserviceItemId] = useState(null);
-    const [tenementRate, setTenementRate] = useState('');
-    const [calculatedAmount, setCalculatedAmount] = useState(null);
+    const [quantity, setQuantity] = useState(1);
+    const [selectedItemDetails, setSelectedItemDetails] = useState(null);
+    const [calculatedPrice, setCalculatedPrice] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [invoiceData, setInvoiceData] = useState(null);
     const [payerInfo, setPayerInfo] = useState(null);
     const [eserviceItems, setEserviceItems] = useState([]);
     const [showConfetti, setShowConfetti] = useState(false);
-    const [showPayModal, setShowPayModal] = useState(false); // State to control PayInvoiceModal visibility
+    const [showPayModal, setShowPayModal] = useState(false);
 
     useEffect(() => {
         const fetchEserviceItems = async () => {
@@ -40,14 +41,71 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
         if (referenceNumber) fetchPayerInfo();
     }, [referenceNumber]);
 
+    // Real-time price calculation when item or quantity changes
     useEffect(() => {
-        if (tenementRate && eserviceItemId?.label.includes('Tenement Rate')) {
-            const calculated = (parseFloat(tenementRate) * 0.25).toFixed(2); // Correct: ₦0.25 per ₦1.00
-            setCalculatedAmount(calculated);
-        } else {
-            setCalculatedAmount(null);
-        }
-    }, [tenementRate, eserviceItemId]);
+        const calculatePrice = async () => {
+            if (!eserviceItemId) {
+                setCalculatedPrice(null);
+                setSelectedItemDetails(null);
+                return;
+            }
+
+            const item = eserviceItems.find(i => i.id === eserviceItemId.value);
+            if (!item) return;
+
+            setSelectedItemDetails(item);
+
+            // If item doesn't require quantity, use fixed price
+            if (!item.requires_quantity) {
+                setCalculatedPrice({
+                    total_amount: item.value,
+                    breakdown: {
+                        unit_price: item.value,
+                        quantity: 1,
+                        subtotal: item.value,
+                        discount_amount: 0,
+                        tax_amount: 0,
+                    },
+                    formula_used: `₦${Number(item.value).toLocaleString()}`
+                });
+                return;
+            }
+
+            // For quantity-based or formula-based items, call backend API
+            try {
+                const response = await axios.get(
+                    `/auth/eservice-items/${item.id}/calculate-price`,
+                    {
+                        params: { quantity },
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }
+                );
+
+                if (response.data.status === 'success') {
+                    setCalculatedPrice(response.data.data);
+                } else {
+                    setError('Failed to calculate price');
+                }
+            } catch (err) {
+                console.error('Price calculation failed:', err);
+                // Fallback to simple calculation
+                const fallbackAmount = quantity * item.value;
+                setCalculatedPrice({
+                    total_amount: fallbackAmount,
+                    breakdown: {
+                        unit_price: item.value,
+                        quantity: quantity,
+                        subtotal: fallbackAmount,
+                        discount_amount: 0,
+                        tax_amount: 0,
+                    },
+                    formula_used: `${quantity} × ₦${Number(item.value).toLocaleString()}`
+                });
+            }
+        };
+
+        calculatePrice();
+    }, [eserviceItemId, quantity, eserviceItems, token]);
 
     const fetchPayerInfo = async () => {
         setLoading(true);
@@ -71,21 +129,26 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            let finalAmount = null;
-            if (eserviceItemId?.label.includes('Tenement Rate') && tenementRate) {
-                finalAmount = (parseFloat(tenementRate) * 0.25).toFixed(2);
-            } else if (eserviceItemId) {
-                const item = eserviceItems.find(item => item.id === eserviceItemId.value);
-                finalAmount = item ? item.value : 0;
+            const payload = {
+                category: category.value,
+                reference_number: referenceNumber,
+                eservice_item_id: eserviceItemId?.value || null,
+                amount: calculatedPrice?.total_amount || 0,
+            };
+
+            // Add quantity if item requires it
+            if (selectedItemDetails?.requires_quantity) {
+                payload.quantity = parseFloat(quantity);
             }
+
+            // Add pricing breakdown for audit trail
+            if (calculatedPrice?.breakdown) {
+                payload.pricing_breakdown = calculatedPrice.breakdown;
+            }
+
             await generateInvoice(
                 token,
-                {
-                    category: category.value,
-                    reference_number: referenceNumber,
-                    eservice_item_id: eserviceItemId?.value || null,
-                    amount: finalAmount
-                },
+                payload,
                 setInvoiceData,
                 setError,
                 setLoading
@@ -94,11 +157,13 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
             setTimeout(() => setShowConfetti(false), 3000);
         } catch (err) {
             setError('Failed to generate invoice');
+        } finally {
+            setLoading(false);
         }
     };
 
     const handlePayNow = () => {
-        setShowPayModal(true); // Open the PayInvoiceModal
+        setShowPayModal(true);
     };
 
     const customStyles = {
@@ -114,11 +179,16 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
 
     const formatEserviceOptions = eserviceItems.map(item => {
         let labelText = item.name;
-        if (item.name.toLowerCase().includes('tenement rate')) {
-            labelText += ' - 25 Kobo/₦1.00 (annually)';
+
+        // Use pricing rule description if available
+        if (item.has_variable_pricing && item.pricingRule) {
+            labelText += ` - ${item.pricingRule.description || item.pricingRule.getReadableDescription || 'Variable pricing'}`;
+        } else if (item.requires_quantity && item.quantity_unit) {
+            labelText += ` - ₦${Number(item.value).toLocaleString()} per ${item.quantity_unit}`;
         } else {
             labelText += ` - ₦${Number(item.value).toLocaleString()} (${item.category})`;
         }
+
         return { value: item.id, label: labelText };
     });
 
@@ -126,20 +196,32 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
         <>
             <div style={{ position: 'fixed', inset: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: '50' }}>
                 {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
-                <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-3xl relative">
+                <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-3xl relative max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center mb-6 bg-gradient-to-r from-[#3B78BD] to-[#F0B652] p-4 text-white rounded-t-lg">
                         <h2 className="text-xl font-bold">Generate Invoice</h2>
                         <button className="text-white" onClick={closeModal}><AiOutlineClose size={24} /></button>
                     </div>
 
                     <div className="mb-6">
-                        <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Category</label>
-                        <Select styles={customStyles} className="w-full" value={category} onChange={selected => { setCategory(selected); setReferenceNumber(''); setPayerInfo(null); }} options={[{ value: 'individual', label: 'Individual' }, { value: 'corporate', label: 'Corporate' }]} />
+                        <label className="block mb-2 text-lg font-medium text-[#3B78BD]">Category</label>
+                        <Select
+                            styles={customStyles}
+                            className="w-full"
+                            value={category}
+                            onChange={selected => { setCategory(selected); setReferenceNumber(''); setPayerInfo(null); }}
+                            options={[{ value: 'individual', label: 'Individual' }, { value: 'corporate', label: 'Corporate' }]}
+                        />
                     </div>
 
                     <div className="mb-6">
-                        <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Reference Number</label>
-                        <input type="text" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B78BD]" value={referenceNumber} onChange={e => setReferenceNumber(e.target.value)} placeholder={`Please provide this ${category.label}'s reference number`} />
+                        <label className="block mb-2 text-lg font-medium text-[#3B78BD]">Reference Number</label>
+                        <input
+                            type="text"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B78BD]"
+                            value={referenceNumber}
+                            onChange={e => setReferenceNumber(e.target.value)}
+                            placeholder={`Please provide this ${category.label}'s reference number`}
+                        />
                     </div>
 
                     {payerInfo && (
@@ -161,16 +243,94 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
                     )}
 
                     <div className="mb-6">
-                        <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">E-Service Item</label>
-                        <Select styles={customStyles} className="w-full" value={eserviceItemId} onChange={selected => { setEserviceItemId(selected); setTenementRate(''); setCalculatedAmount(null); }} options={formatEserviceOptions} />
+                        <label className="block mb-2 text-lg font-medium text-[#3B78BD]">E-Service Item</label>
+                        <Select
+                            styles={customStyles}
+                            className="w-full"
+                            value={eserviceItemId}
+                            onChange={selected => { setEserviceItemId(selected); setQuantity(1); setCalculatedPrice(null); }}
+                            options={formatEserviceOptions}
+                        />
                     </div>
 
-                    {eserviceItemId?.label.includes('Tenement Rate') && (
+                    {/* Generic quantity input - works for ALL items requiring quantity */}
+                    {selectedItemDetails?.requires_quantity && (
                         <div className="mb-6">
-                            <label className="block mb-2 text-lg font-medium text-[#3B78BD] dark:text-[#F0B652]">Enter Tenement Rate Value (₦)</label>
-                            <input type="number" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B78BD]" value={tenementRate} onChange={e => setTenementRate(e.target.value)} placeholder="Enter the assessed value of the property" />
-                            {calculatedAmount && (
-                                <p className="mt-2 text-lg text-green-700">Calculated Amount (₦0.25 per ₦1): ₦{Number(calculatedAmount).toLocaleString()}</p>
+                            <label className="block mb-2 text-lg font-medium text-[#3B78BD]">
+                                {selectedItemDetails.quantity_label || 'Quantity'}
+                            </label>
+                            <div className="flex items-center space-x-3">
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min={selectedItemDetails.min_quantity || 0.01}
+                                    max={selectedItemDetails.max_quantity || undefined}
+                                    className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#3B78BD]"
+                                    value={quantity}
+                                    onChange={e => setQuantity(e.target.value)}
+                                    placeholder={`Enter ${selectedItemDetails.quantity_unit || 'quantity'}`}
+                                />
+                                <span className="text-gray-600 font-semibold min-w-[80px]">
+                                    {selectedItemDetails.quantity_unit || 'units'}
+                                </span>
+                            </div>
+                            {selectedItemDetails.min_quantity && (
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Minimum: {selectedItemDetails.min_quantity} {selectedItemDetails.quantity_unit}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Price Preview - Shows for ALL items */}
+                    {calculatedPrice && (
+                        <div className="mb-6 p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border-2 border-green-300">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-lg font-semibold text-gray-700">
+                                    Calculated Amount:
+                                </span>
+                                <span className="text-2xl font-bold text-green-700">
+                                    ₦{Number(calculatedPrice.total_amount).toLocaleString()}
+                                </span>
+                            </div>
+
+                            {/* Pricing Breakdown */}
+                            {calculatedPrice.breakdown && calculatedPrice.breakdown.quantity > 1 && (
+                                <div className="mt-3 pt-3 border-t border-green-200 text-sm space-y-1">
+                                    <div className="flex justify-between text-gray-600">
+                                        <span>Unit Price:</span>
+                                        <span>₦{Number(calculatedPrice.breakdown.unit_price).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-gray-600">
+                                        <span>Quantity:</span>
+                                        <span>{calculatedPrice.breakdown.quantity} {selectedItemDetails?.quantity_unit}</span>
+                                    </div>
+                                    <div className="flex justify-between font-semibold text-gray-700">
+                                        <span>Subtotal:</span>
+                                        <span>₦{Number(calculatedPrice.breakdown.subtotal).toLocaleString()}</span>
+                                    </div>
+                                    {calculatedPrice.breakdown.discount_amount > 0 && (
+                                        <div className="flex justify-between text-green-600">
+                                            <span>Discount:</span>
+                                            <span>-₦{Number(calculatedPrice.breakdown.discount_amount).toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    {calculatedPrice.breakdown.tax_amount > 0 && (
+                                        <div className="flex justify-between text-gray-600">
+                                            <span>Tax:</span>
+                                            <span>₦{Number(calculatedPrice.breakdown.tax_amount).toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Formula display for transparency */}
+                            {calculatedPrice.formula_used && (
+                                <div className="mt-3 pt-3 border-t border-green-200">
+                                    <p className="text-xs text-gray-500 italic">
+                                        Calculation: {calculatedPrice.formula_used}
+                                    </p>
+                                </div>
                             )}
                         </div>
                     )}
@@ -189,7 +349,11 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
                     <div className="flex justify-end space-x-4">
                         <button className="px-5 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-700" onClick={closeModal}>Close</button>
                         {!invoiceData ? (
-                            <button className="px-5 py-3 bg-[#3B78BD] hover:bg-[#F0B652] text-white rounded-lg transition" onClick={handleSubmit} disabled={loading || !referenceNumber || (!eserviceItemId || (eserviceItemId.label.includes('Tenement Rate') && !tenementRate))}>
+                            <button
+                                className="px-5 py-3 bg-[#3B78BD] hover:bg-[#F0B652] text-white rounded-lg transition"
+                                onClick={handleSubmit}
+                                disabled={loading || !referenceNumber || !eserviceItemId || !calculatedPrice}
+                            >
                                 {loading ? 'Processing...' : 'Generate'}
                             </button>
                         ) : (
@@ -204,7 +368,7 @@ const GenerateInvoiceModal = ({ closeModal, defaultCategory, defaultReferenceNum
             {showPayModal && (
                 <PayInvoiceModal
                     closeModal={() => setShowPayModal(false)}
-                    referenceNumber={invoiceData?.invoice?.reference_number} // Pass the generated invoice's reference number
+                    referenceNumber={invoiceData?.invoice?.reference_number}
                 />
             )}
         </>

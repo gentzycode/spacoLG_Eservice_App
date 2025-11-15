@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import UserDashboard from '../components/dashboards/UserDashboard';
+import SuperAdminDashboard from '../components/dashboards/SuperAdminDashboard';
 
 const Dashboard = () => {
     const { token, user } = useContext(AuthContext);
@@ -16,10 +17,15 @@ const Dashboard = () => {
         setUsername(user?.username);
     }, [user]);
 
+    // Show SuperAdminDashboard for SuperAdmin role
+    if (user?.role === 'SuperAdmin') {
+        return <SuperAdminDashboard username={username} />;
+    }
+
     return (
         <div className="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-500 animate-fadeIn">
-            <UserDashboard 
-                username={username} 
+            <UserDashboard
+                username={username}
                 goToApplications={goToApplications}
                 primaryColor="#3B78BD"
                 accentColor="#F0B652"

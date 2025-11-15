@@ -49,6 +49,11 @@ export const SUPER_ADMIN_ROUTES = {
   TARIFFS: '/tariffs',
   LGAS_STAFF: '/lgas-staff',
   AUTHORIZERS: '/authorizers',
+  PAYMENT_GATEWAYS: '/payment-gateways',
+  SYSTEM_SETTINGS: '/system-settings',
+  FINANCIAL_REPORTS: '/financial-reports',
+  AUDIT_LOGS: '/audit-logs',
+  AGENT_MANAGEMENT: '/agent-management',
 };
 
 // Combine all routes for easy access

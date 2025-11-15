@@ -50,7 +50,7 @@ const MyWallet = () => {
     }, []);
 
     return (
-        <div className="w-full p-4 sm:p-6 lg:p-8 font-poppins bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-500 animate-fadeIn">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 font-poppins bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-500 animate-fadeIn">
             {error && (
                 <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-center">
                     {error}

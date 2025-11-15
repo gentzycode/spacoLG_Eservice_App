@@ -174,12 +174,8 @@ export const initializeSecurity = () => {
         console.info = () => {};
     }
 
-    // Add security headers (if using service worker)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js').catch((error) => {
-            console.error('Service Worker registration failed:', error);
-        });
-    }
+    // Service worker is registered in main.jsx only in production
+    // No need to register it here to avoid duplicate registration
 };
 
 // Export all security utilities

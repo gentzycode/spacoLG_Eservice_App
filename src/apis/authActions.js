@@ -401,16 +401,19 @@ export const getInvoiceStatistics = async (token, agentId, setStatistics, setErr
     setStatistics(data?.statistics || {});
 };
 
-export const getUnpaidInvoices = async (token, setUnpaidInvoices, setError, setLoading) => {
+export const getUnpaidInvoices = async (token, setUnpaidInvoices, setError, setLoading, page = 1, perPage = 50) => {
     const data = await apiRequest({
         method: 'get',
-        url: '/all-unpaid-invoices',
+        url: `/all-unpaid-invoices?page=${page}&per_page=${perPage}`,
         token,
         setError,
         setLoading,
     });
 
-    setUnpaidInvoices(data?.invoices || []);
+    // Handle paginated response
+    const invoices = data?.invoices?.data || data?.invoices || [];
+    setUnpaidInvoices(invoices);
+    return data?.invoices; // Return full pagination object
 };
 
 export const getAgentUnpaidInvoices = async (token, agentId, setUnpaidInvoices, setError, setLoading) => {
@@ -425,16 +428,19 @@ export const getAgentUnpaidInvoices = async (token, agentId, setUnpaidInvoices, 
     setUnpaidInvoices(data?.invoices || []);
 };
 
-export const getPaidInvoicesByAgent = async (token, agentId, setPaidInvoices, setError, setLoading) => {
+export const getPaidInvoicesByAgent = async (token, agentId, setPaidInvoices, setError, setLoading, page = 1, perPage = 50) => {
     const data = await apiRequest({
         method: 'get',
-        url: `/agents/${agentId}/invoices/paid`,
+        url: `/agents/${agentId}/invoices/paid?page=${page}&per_page=${perPage}`,
         token,
         setError,
         setLoading,
     });
 
-    setPaidInvoices(data?.invoices || []);
+    // Handle paginated response
+    const invoices = data?.invoices?.data || data?.invoices || [];
+    setPaidInvoices(invoices);
+    return data?.invoices; // Return full pagination object
 };
 
 export const getInvoiceById = async (token, invoiceId) => {
@@ -702,4 +708,157 @@ export const checkRegistrationNumberExists = async (registration_number) => {
     });
 
     return data?.exists || false;
+};
+
+// ===================================================================
+// MONNIFY PAYMENT GATEWAY FUNCTIONS
+// ===================================================================
+
+/**
+ * Initialize Monnify online payment (Card/Bank Transfer)
+ */
+export const initializeMonnifyPayment = async (token, payload) => {
+    return await apiRequest({
+        method: 'post',
+        url: '/monnify/initialize',
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Initialize Monnify offline payment (Bank Transfer/USSD)
+ */
+export const initializeMonnifyOfflinePayment = async (token, payload) => {
+    return await apiRequest({
+        method: 'post',
+        url: '/monnify/initialize-offline',
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Verify Monnify transaction
+ */
+export const verifyMonnifyTransaction = async (token, transactionReference) => {
+    return await apiRequest({
+        method: 'get',
+        url: `/monnify/verify/${transactionReference}`,
+        token,
+    });
+};
+
+/**
+ * Generate USSD code for payment
+ */
+export const generateMonnifyUSSD = async (token, payload) => {
+    return await apiRequest({
+        method: 'post',
+        url: '/monnify/ussd/generate',
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Get USSD supported banks
+ */
+export const getMonnifyUSSDBanks = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/monnify/ussd/banks',
+        token,
+    });
+};
+
+/**
+ * Get offline payment details
+ */
+export const getMonnifyOfflinePaymentDetails = async (token, paymentReference) => {
+    return await apiRequest({
+        method: 'get',
+        url: `/monnify/offline/${paymentReference}`,
+        token,
+    });
+};
+
+/**
+ * Cancel offline payment
+ */
+export const cancelMonnifyOfflinePayment = async (token, paymentReference) => {
+    return await apiRequest({
+        method: 'delete',
+        url: `/monnify/offline/${paymentReference}/cancel`,
+        token,
+    });
+};
+
+/**
+ * Get Monnify payment statistics
+ */
+export const getMonnifyStatistics = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/monnify/statistics',
+        token,
+    });
+};
+
+/**
+ * Get Monnify transactions with filters
+ */
+export const getMonnifyTransactions = async (token, params = {}) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/monnify/transactions',
+        token,
+        params,
+    });
+};
+
+/**
+ * Initiate refund (Super Admin only)
+ */
+export const initiateMonnifyRefund = async (token, payload) => {
+    return await apiRequest({
+        method: 'post',
+        url: '/monnify/refund',
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Get Monnify wallet balance (Super Admin only)
+ */
+export const getMonnifyWalletBalance = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/monnify/wallet/balance',
+        token,
+    });
+};
+
+/**
+ * Get Monnify dashboard (Super Admin only)
+ */
+export const getMonnifyDashboard = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/auth/super-admin/monnify/dashboard',
+        token,
+    });
+};
+
+/**
+ * Toggle Monnify mode (Super Admin only)
+ */
+export const toggleMonnifyMode = async (token, mode) => {
+    return await apiRequest({
+        method: 'put',
+        url: '/auth/super-admin/monnify/mode',
+        token,
+        data: { mode },
+    });
 };

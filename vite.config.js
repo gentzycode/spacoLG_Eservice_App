@@ -33,54 +33,22 @@ export default defineConfig({
         outDir: 'dist',
         assetsDir: 'assets',
         // Enable source maps for production debugging (can disable if not needed)
-        sourcemap: false,
+        sourcemap: true,
         // Optimize chunk size
         chunkSizeWarningLimit: 1000,
         // Rollup optimizations
         rollupOptions: {
             output: {
-                // Manual chunk splitting for better caching
-                manualChunks: (id) => {
-                    // Vendor chunks
-                    if (id.includes('node_modules')) {
-                        // Separate large libraries
-                        if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-                            return 'react-vendor';
-                        }
-                        if (id.includes('@mui') || id.includes('@material-tailwind') || id.includes('@emotion')) {
-                            return 'ui-vendor';
-                        }
-                        if (id.includes('chart.js') || id.includes('react-chartjs')) {
-                            return 'chart-vendor';
-                        }
-                        if (id.includes('axios')) {
-                            return 'axios-vendor';
-                        }
-                        if (id.includes('framer-motion')) {
-                            return 'animation-vendor';
-                        }
-                        // All other node_modules
-                        return 'vendor';
-                    }
-                },
+                // Let Vite handle chunk splitting automatically
                 // Optimize chunk names
                 chunkFileNames: 'assets/js/[name]-[hash].js',
                 entryFileNames: 'assets/js/[name]-[hash].js',
                 assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
             },
         },
-        // Minification
-        minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: true, // Remove console.log in production
-                drop_debugger: true,
-                pure_funcs: ['console.log', 'console.info', 'console.debug'],
-            },
-            format: {
-                comments: false, // Remove comments
-            },
-        },
+        // Use esbuild minification with safer target
+        minify: 'esbuild',
+        target: 'es2020', // Use newer target to avoid aggressive transpilation
         // CSS code splitting
         cssCodeSplit: true,
         // Optimize assets
@@ -97,12 +65,19 @@ export default defineConfig({
             'react-dom',
             'react-router-dom',
             'axios',
+            // Pre-bundle Emotion to avoid circular dependency issues
+            '@emotion/react',
+            '@emotion/styled',
+            '@emotion/cache',
+            '@emotion/utils',
+            '@emotion/serialize',
         ],
         exclude: [],
         esbuildOptions: {
             // Ensure React is treated as external in development
             mainFields: ['module', 'main'],
             conditions: ['import', 'module', 'default'],
+            target: 'es2020',
         }
     },
     // Environment variables
@@ -110,7 +85,10 @@ export default defineConfig({
     // Performance optimizations
     esbuild: {
         logOverride: { 'this-is-undefined-in-esm': 'silent' },
-        // Only drop console in production build
-        drop: import.meta.env?.MODE === 'production' ? ['console', 'debugger'] : [],
+        target: 'es2020',
+        // Don't drop console in build to avoid issues
+        drop: [],
+        // Keep names for better debugging
+        keepNames: true,
     },
 });

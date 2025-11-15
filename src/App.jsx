@@ -33,6 +33,11 @@ const AdminApplicationDetail = lazy(() => import('./protected/lga_admin/pages/Ad
 const Users = lazy(() => import('./protected/super_admin/pages/Users'));
 const LgasStaff = lazy(() => import('./protected/super_admin/pages/LgasStaff'));
 const Authorizers = lazy(() => import('./protected/super_admin/pages/Authorizers'));
+const PricingManagement = lazy(() => import('./protected/super_admin/pages/PricingManagement'));
+const PaymentGateways = lazy(() => import('./protected/super_admin/pages/PaymentGateways'));
+const SystemSettings = lazy(() => import('./protected/super_admin/pages/SystemSettings'));
+const FinancialReports = lazy(() => import('./protected/super_admin/pages/FinancialReports'));
+const SecurityAuditLogs = lazy(() => import('./protected/super_admin/pages/SecurityAuditLogs'));
 
 // Financial routes - lazy loaded
 const Payments = lazy(() => import('./protected/pages/Payments'));
@@ -194,6 +199,46 @@ function App() {
                                 element={
                                     <Suspense fallback={<Loader />}>
                                         <Authorizers />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/tariffs'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <PricingManagement />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/payment-gateways'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <PaymentGateways />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/system-settings'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <SystemSettings />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/financial-reports'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <FinancialReports />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/audit-logs'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <SecurityAuditLogs />
                                     </Suspense>
                                 }
                             />
