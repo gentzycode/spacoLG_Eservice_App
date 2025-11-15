@@ -17,11 +17,13 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS);
-        }).then(() => {
-            self.skipWaiting();
+            return cache.addAll(STATIC_ASSETS).catch((error) => {
+                console.warn('Failed to cache static assets:', error);
+            });
         })
     );
+    // Don't force immediate activation - wait for old service worker to be released
+    // self.skipWaiting() will be called only when user navigates away and back
 });
 
 // Activate event - clean up old caches
@@ -35,10 +37,11 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
-        }).then(() => {
-            self.clients.claim();
         })
     );
+    // Claim clients only after activation is complete
+    // This prevents reload loops
+    return self.clients.claim();
 });
 
 // Fetch event - implement caching strategies
@@ -51,6 +54,11 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    // Skip unsupported URL schemes (chrome-extension, chrome, etc.)
+    if (!url.protocol.startsWith('http')) {
+        return;
+    }
+
     // API requests - Network First strategy
     if (url.pathname.includes('/api/')) {
         event.respondWith(
@@ -59,10 +67,12 @@ self.addEventListener('fetch', (event) => {
                     // Clone the response
                     const responseClone = response.clone();
 
-                    // Cache successful responses
-                    if (response.status === 200) {
+                    // Cache successful responses (only basic and cors types)
+                    if (response.status === 200 && (response.type === 'basic' || response.type === 'cors')) {
                         caches.open(API_CACHE_NAME).then((cache) => {
-                            cache.put(request, responseClone);
+                            cache.put(request, responseClone).catch((error) => {
+                                console.warn('Failed to cache API request:', request.url, error);
+                            });
                         });
                     }
 
@@ -84,17 +94,24 @@ self.addEventListener('fetch', (event) => {
             }
 
             return fetch(request).then((response) => {
-                // Don't cache non-successful responses
-                if (!response || response.status !== 200 || response.type === 'error') {
+                // Don't cache non-successful responses or opaque responses
+                if (!response || response.status !== 200 || response.type === 'error' || response.type === 'opaque') {
+                    return response;
+                }
+
+                // Only cache same-origin or cors responses
+                if (response.type !== 'basic' && response.type !== 'cors') {
                     return response;
                 }
 
                 // Clone the response
                 const responseClone = response.clone();
 
-                // Cache the response
+                // Cache the response safely
                 caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(request, responseClone);
+                    cache.put(request, responseClone).catch((error) => {
+                        console.warn('Failed to cache request:', request.url, error);
+                    });
                 });
 
                 return response;
