@@ -21,15 +21,17 @@ const Sidebar = ({ toggleSidebar, navOpen, collapsed }) => {
                     navOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${collapsed ? 'md:w-[70px]' : 'w-[230px]'}`}
             >
-                {/* Full-Height Banner Background */}
+                {/* Background Image - covers entire scrollable area */}
                 <div
-                    className="absolute inset-0 bg-cover bg-center"
+                    className="absolute top-0 left-0 w-full min-h-full bg-cover bg-center"
                     style={{ backgroundImage: `url(${BannerImage})` }}
                 ></div>
-                <div className="absolute inset-0 bg-black/60 dark:bg-black/70"></div>
+
+                {/* Dark Overlay - covers entire scrollable area */}
+                <div className="absolute top-0 left-0 w-full min-h-full bg-black/60 dark:bg-black/70"></div>
 
                 {/* Content Over Banner */}
-                <div className="relative z-10 h-full flex flex-col">
+                <div className="relative z-10 min-h-screen flex flex-col pb-6">
                     {/* Top Bar with Close Button (Mobile Only) */}
                     <div className="flex justify-end items-center p-4 md:pt-6 md:pb-0">
                         {/* Mobile Close Button */}

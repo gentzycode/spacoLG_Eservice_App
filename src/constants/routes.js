@@ -32,8 +32,12 @@ export const AGENT_ROUTES = {
   APPLICATIONS: '/applications',
   MANAGE_INVOICES: '/manage-invoices',
   ADVANCED_INVOICING: '/advanced-invoicing',
+  INVOICE_V2_MANAGER: '/invoice-v2-manager',
+  ASSESSMENT_MANAGER: '/assessment-manager',
+  TEMPLATE_MANAGER: '/template-manager',
   MANAGE_PAYERS: '/manage-payers',
   REPORTS: '/reports',
+  DAILY_TICKETS: '/daily-tickets',
 };
 
 // Staff Routes
@@ -47,9 +51,17 @@ export const STAFF_ROUTES = {
 export const SUPER_ADMIN_ROUTES = {
   USERS: '/users',
   TARIFFS: '/tariffs',
+  REVENUE_HEADS: '/revenue-heads',
+  PENALTIES: '/penalties',
+  DAILY_TICKETS: '/daily-tickets',
+  INVOICE_V2_MANAGER: '/invoice-v2-manager',
+  ASSESSMENT_MANAGER: '/assessment-manager',
+  TEMPLATE_MANAGER: '/template-manager',
+  MANAGE_PAYERS: '/manage-payers',
   LGAS_STAFF: '/lgas-staff',
   AUTHORIZERS: '/authorizers',
   PAYMENT_GATEWAYS: '/payment-gateways',
+  ROLE_MANAGEMENT: '/role-management',
   SYSTEM_SETTINGS: '/system-settings',
   FINANCIAL_REPORTS: '/financial-reports',
   AUDIT_LOGS: '/audit-logs',

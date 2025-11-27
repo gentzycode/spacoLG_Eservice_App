@@ -21,29 +21,79 @@ ChartJS.register(
     Legend
 );
 
-const LineChart = () => {
+const LineChart = ({ chartData = null }) => {
+    // Default data if no chartData provided
+    const defaultLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    const defaultValues = [0, 0, 0, 0, 0, 0];
+
+    // Use provided chart data or defaults
+    const labels = chartData?.map(item => item.month) || defaultLabels;
+    const values = chartData?.map(item => item.revenue / 1000000) || defaultValues; // Convert to millions
+
     const data = {
-        labels: ["January", "February", "March", "April", "May", "June"],
+        labels: labels,
         datasets: [
             {
-                label: "Applications Over Time",
-                data: [10, 20, 15, 25, 30, 40],
-                borderColor: "rgba(75,192,192,1)",
-                backgroundColor: "rgba(75,192,192,0.2)",
-                tension: 0.3,
+                label: "Revenue (₦ Millions)",
+                data: values,
+                borderColor: "#0d544c",
+                backgroundColor: "rgba(13, 84, 76, 0.1)",
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: "#0d544c",
+                pointBorderColor: "#fff",
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
             },
         ],
     };
 
     const options = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
-            legend: { position: "top" },
-            title: { display: true, text: "Applications Over Time" },
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `₦${context.parsed.y.toFixed(2)}M`;
+                    }
+                },
+                backgroundColor: 'rgba(13, 84, 76, 0.9)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#0d544c',
+                borderWidth: 1,
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return '₦' + value + 'M';
+                    }
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)',
+                }
+            },
+            x: {
+                grid: {
+                    display: false,
+                }
+            }
         },
     };
 
-    return <Line data={data} options={options} />;
+    return (
+        <div style={{ height: '300px' }}>
+            <Line data={data} options={options} />
+        </div>
+    );
 };
 
 export default LineChart;

@@ -2,45 +2,60 @@ import React from 'react'
 import { Pie } from 'react-chartjs-2'
 import { Chart as ChartJs} from 'chart.js/auto'
 
-const data = {
-    labels : [
-    'Anambra East',
-    'Anambra West',
-    'Ayamelum',
-    'Ogbaru',
-    'Onitsha North',
-    'Onitsha South',
-    'Oyi',
-    'Awka North',
-    'Awka South',
-    'Anaocha',
-    'Dunukofia',
-    'Idemili North',
-    'Idemili South',
-    'Njikoka',
-    'Aguata',
-    'Ekwusigo',
-    'Ihiala',
-    'Nnewi North',
-    'Nnewi South',
-    'Orumba North',
-    'Orumba South'],
-    datasets : [
-        {
-            label : 'Count',
-            data : [20, 34, 12, 9, 18, 45, 33, 16, 8, 7, 22, 30, 39, 45, 13, 19, 10, 2, 17, 27, 4],
-            backgroundColor : ['#0d544c', '#807f7b', '#d2a007'],
-            borderColor : '#cccccc',
-            borderWidth : 1,
+const PieChart = ({ chartData = null }) => {
+    // Default data if no chartData provided
+    const defaultData = {
+        labels: ['Tenement Rate', 'Business Permits', 'Other Services'],
+        datasets: [
+            {
+                label: 'Revenue %',
+                data: [45, 30, 25],
+                backgroundColor: ['#0d544c', '#3B78BD', '#F0B652'],
+                borderColor: '#ffffff',
+                borderWidth: 2,
+            },
+        ],
+    };
+
+    // Use provided chart data or defaults
+    const data = chartData ? {
+        labels: chartData.map(item => item.name),
+        datasets: [
+            {
+                label: 'Revenue %',
+                data: chartData.map(item => item.percentage),
+                backgroundColor: chartData.map(item => item.color),
+                borderColor: '#ffffff',
+                borderWidth: 2,
+            },
+        ],
+    } : defaultData;
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `${context.label}: ${context.parsed}%`;
+                    }
+                },
+                backgroundColor: 'rgba(13, 84, 76, 0.9)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: '#0d544c',
+                borderWidth: 1,
+            },
         },
-    ],
-}
+    };
 
-
-const PieChart = () => {
     return (
-        <div className='p-4'>
-            <Pie data={data} />
+        <div style={{ height: '200px' }}>
+            <Pie data={data} options={options} />
         </div>
     )
 }

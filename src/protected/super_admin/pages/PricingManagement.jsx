@@ -5,16 +5,20 @@ import {
     FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaCheckCircle,
     FaExclamationTriangle, FaDollarSign, FaMoneyBillWave,
     FaChartLine, FaToggleOn, FaToggleOff, FaSearch, FaFilter,
-    FaListAlt, FaThLarge, FaChevronLeft, FaChevronRight
+    FaListAlt, FaThLarge, FaChevronLeft, FaChevronRight, FaBook, FaFileExport, FaDownload
 } from 'react-icons/fa';
 import { MdCategory, MdTrendingUp } from 'react-icons/md';
 import { BsGraphUpArrow } from 'react-icons/bs';
 import InitLoader from '../../../common/InitLoader';
+import { fetchTariffs, fetchRevenueHeads, createTariff, updateTariff, deleteTariff } from '../../../apis/revenueActions';
+import { toast } from 'react-toastify';
+import { CSVLink } from 'react-csv';
 
 const PricingManagement = () => {
     const { token } = useContext(AuthContext);
     const [eserviceItems, setEserviceItems] = useState([]);
     const [filteredItems, setFilteredItems] = useState([]);
+    const [revenueHeads, setRevenueHeads] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
     const [pricingRules, setPricingRules] = useState([]);
     const [showRuleModal, setShowRuleModal] = useState(false);
@@ -27,6 +31,7 @@ const PricingManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
     const [filterCategory, setFilterCategory] = useState('all');
+    const [filterRevenueHead, setFilterRevenueHead] = useState('all');
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +42,8 @@ const PricingManagement = () => {
         totalTariffs: 0,
         activeTariffs: 0,
         totalRevenue: 0,
-        categories: []
+        categories: [],
+        categoriesCount: 0
     });
 
     // Form state for pricing rule
@@ -60,17 +66,24 @@ const PricingManagement = () => {
 
     // Form state for tariff/e-service item
     const [tariffForm, setTariffForm] = useState({
-        name: '',
-        category: '',
-        value: '',
+        revenue_head_id: '',
+        category: 'One-Off',
+        local_government_id: '',
+        duration: '',
+        amount: '',
+        purpose: '',
+        name: '', // For display in modal
+        description: '', // For display in modal
+        value: '', // Alias for amount (for backward compatibility)
+        bylaw_reference: '',
+        payment_frequency: 'one-time',
         has_variable_pricing: false,
-        description: '',
         is_active: true
     });
 
-    // Fetch all e-service items on mount
+    // Fetch all tariffs and revenue heads on mount
     useEffect(() => {
-        fetchEserviceItems();
+        loadData();
     }, []);
 
     // Update statistics when eserviceItems change
@@ -78,14 +91,39 @@ const PricingManagement = () => {
         calculateStatistics();
     }, [eserviceItems]);
 
-    // Filter items based on search and category
+    // Sync tariffForm when editingTariff changes
+    useEffect(() => {
+        if (editingTariff) {
+            console.log('useEffect: Syncing form with editingTariff:', editingTariff);
+            const formData = {
+                revenue_head_id: editingTariff.revenue_head_id || '',
+                category: editingTariff.category || 'One-Off',
+                local_government_id: editingTariff.local_government_id || '',
+                duration: editingTariff.duration || '',
+                amount: editingTariff.amount || '',
+                purpose: editingTariff.purpose || '',
+                name: editingTariff.purpose || editingTariff.name || '',
+                description: editingTariff.description || '',
+                value: editingTariff.amount || editingTariff.value || '',
+                bylaw_reference: editingTariff.bylaw_reference || '',
+                payment_frequency: editingTariff.payment_frequency || 'one-time',
+                has_variable_pricing: editingTariff.has_variable_pricing || false,
+                is_active: editingTariff.is_active !== false
+            };
+            console.log('useEffect: Setting tariffForm to:', formData);
+            setTariffForm(formData);
+        }
+    }, [editingTariff]);
+
+    // Filter items based on search, category, and revenue head
     useEffect(() => {
         let filtered = eserviceItems;
 
         if (searchTerm) {
             filtered = filtered.filter(item =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.category?.toLowerCase().includes(searchTerm.toLowerCase())
+                item.purpose?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.bylaw_reference?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
@@ -93,44 +131,66 @@ const PricingManagement = () => {
             filtered = filtered.filter(item => item.category === filterCategory);
         }
 
+        if (filterRevenueHead !== 'all') {
+            filtered = filtered.filter(item => item.revenue_head_id === parseInt(filterRevenueHead));
+        }
+
         setFilteredItems(filtered);
         setCurrentPage(1); // Reset to first page when filters change
-    }, [searchTerm, filterCategory, eserviceItems]);
+    }, [searchTerm, filterCategory, filterRevenueHead, eserviceItems]);
 
     const calculateStatistics = () => {
         const totalTariffs = eserviceItems.length;
         const activeTariffs = eserviceItems.filter(item => item.is_active !== false).length;
         const totalRevenue = eserviceItems.reduce((sum, item) => {
-            return sum + (parseFloat(item.value) || 0);
+            return sum + (parseFloat(item.amount) || 0);
         }, 0);
 
-        // Get unique categories
-        const categorySet = new Set(eserviceItems.map(item => item.category).filter(Boolean));
+        // Get unique categories (with fallback to ensure we always show something)
+        const categorySet = new Set(
+            eserviceItems
+                .map(item => item.category)
+                .filter(cat => cat !== null && cat !== undefined && cat !== '')
+        );
         const categories = Array.from(categorySet);
+
+        // If no categories found but we have tariffs, default to showing count of revenue heads
+        const categoriesCount = categories.length > 0
+            ? categories.length
+            : new Set(eserviceItems.map(item => item.revenue_head_id).filter(Boolean)).size;
 
         setStatistics({
             totalTariffs,
             activeTariffs,
             totalRevenue,
-            categories
+            categories,
+            categoriesCount
         });
     };
 
-    const fetchEserviceItems = async () => {
+    const loadData = async () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get('/eservice-items', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const items = response.data.data || response.data || [];
-            setEserviceItems(items);
-            setFilteredItems(items);
+            const [tariffsResponse, revenueHeadsResponse] = await Promise.all([
+                fetchTariffs(),
+                fetchRevenueHeads()
+            ]);
+
+            // Backend returns { status, code, data: [...] } for tariffs (not paginated)
+            const tariffs = tariffsResponse.data || [];
+            const heads = revenueHeadsResponse.data?.data || [];
+
+            console.log('Loaded tariffs:', tariffs.slice(0, 2)); // Debug: show first 2 tariffs
+            console.log('First tariff has purpose:', tariffs[0]?.purpose); // Debug
+
+            setEserviceItems(tariffs);
+            setFilteredItems(tariffs);
+            setRevenueHeads(heads);
             setLoading(false);
         } catch (err) {
-            console.error('Error fetching e-service items:', err);
-            const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch e-service items';
-            setError(`Error: ${errorMessage}. Please check if you have the required permissions or contact your administrator.`);
+            console.error('Error loading data:', err);
+            toast.error('Failed to load tariffs');
             setEserviceItems([]);
             setFilteredItems([]);
             setLoading(false);
@@ -167,30 +227,42 @@ const PricingManagement = () => {
         }, 100);
     };
 
+    const handleCloseTariffModal = () => {
+        setShowTariffModal(false);
+        setEditingTariff(null);
+        // Reset form will happen via useEffect when editingTariff becomes null
+    };
+
     const handleAddTariff = () => {
         setEditingTariff(null);
         setTariffForm({
+            revenue_head_id: '',
+            category: 'One-Off',
+            local_government_id: '',
+            duration: '',
+            amount: '',
+            purpose: '',
             name: '',
-            category: '',
-            value: '',
-            has_variable_pricing: false,
             description: '',
+            value: '',
+            bylaw_reference: '',
+            payment_frequency: 'one-time',
+            has_variable_pricing: false,
             is_active: true
         });
         setShowTariffModal(true);
     };
 
     const handleEditTariff = (item) => {
+        console.log('handleEditTariff: Editing tariff:', item);
+
+        // Set editingTariff - useEffect will handle syncing the form
         setEditingTariff(item);
-        setTariffForm({
-            name: item.name || '',
-            category: item.category || '',
-            value: item.value || '',
-            has_variable_pricing: item.has_variable_pricing || false,
-            description: item.description || '',
-            is_active: item.is_active !== false
-        });
-        setShowTariffModal(true);
+
+        // Open modal after a short delay to ensure useEffect has run
+        setTimeout(() => {
+            setShowTariffModal(true);
+        }, 50);
     };
 
     const handleSaveTariff = async () => {
@@ -198,31 +270,29 @@ const PricingManagement = () => {
         setError(null);
 
         try {
+            // Prepare data for API - sync name/purpose and value/amount
+            const dataToSave = {
+                ...tariffForm,
+                purpose: tariffForm.name || tariffForm.purpose, // Use name as purpose
+                amount: tariffForm.value || tariffForm.amount, // Use value as amount
+            };
+
             if (editingTariff) {
                 // Update existing tariff
-                await axios.put(
-                    `/eservice-items/${editingTariff.id}`,
-                    tariffForm,
-                    { headers: { 'Authorization': `Bearer ${token}` } }
-                );
-                setSuccess('Tariff updated successfully!');
+                await updateTariff(editingTariff.id, dataToSave);
+                toast.success('Tariff updated successfully!');
             } else {
                 // Create new tariff
-                await axios.post(
-                    '/eservice-items',
-                    tariffForm,
-                    { headers: { 'Authorization': `Bearer ${token}` } }
-                );
-                setSuccess('Tariff created successfully!');
+                await createTariff(dataToSave);
+                toast.success('Tariff created successfully!');
             }
 
-            await fetchEserviceItems();
-            setShowTariffModal(false);
+            await loadData();
+            handleCloseTariffModal();
             setLoading(false);
-
-            setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to save tariff');
+            console.error('Error saving tariff:', err);
+            toast.error(err.response?.data?.message || 'Failed to save tariff');
             setLoading(false);
         }
     };
@@ -234,17 +304,13 @@ const PricingManagement = () => {
 
         setLoading(true);
         try {
-            await axios.delete(
-                `/eservice-items/${itemId}`,
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            setSuccess('Tariff deleted successfully!');
-            await fetchEserviceItems();
+            await deleteTariff(itemId);
+            toast.success('Tariff deleted successfully!');
+            await loadData();
             setLoading(false);
-
-            setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
-            setError('Failed to delete tariff');
+            console.error('Error deleting tariff:', err);
+            toast.error('Failed to delete tariff');
             setLoading(false);
         }
     };
@@ -431,6 +497,59 @@ const PricingManagement = () => {
         return pages;
     };
 
+    // Prepare CSV export data
+    const prepareExportData = () => {
+        return eserviceItems.map((item, index) => {
+            // Find the revenue head name
+            const revenueHead = revenueHeads.find(rh => rh.id === item.revenue_head_id);
+
+            return {
+                'S/N': index + 1,
+                'Tariff ID': item.id || 'N/A',
+                'Service/Purpose': item.purpose || item.name || 'N/A',
+                'Category': item.category || 'Not Set',
+                'Revenue Head': revenueHead?.name || 'Not Assigned',
+                'Amount (₦)': item.amount ? parseFloat(item.amount).toFixed(2) : '0.00',
+                'Payment Frequency': item.payment_frequency || 'one-time',
+                'Duration': item.duration || 'N/A',
+                'Status': item.is_active !== false ? 'Active' : 'Inactive',
+                'Variable Pricing': item.has_variable_pricing ? 'Yes' : 'No',
+                'Bylaw Reference': item.bylaw_reference || 'N/A',
+                'Description': item.description || 'N/A',
+                'LGA ID': item.local_government_id || 'N/A',
+                'Created At': item.created_at ? new Date(item.created_at).toLocaleDateString() : 'N/A',
+                'Updated At': item.updated_at ? new Date(item.updated_at).toLocaleDateString() : 'N/A'
+            };
+        });
+    };
+
+    // CSV Headers
+    const csvHeaders = [
+        { label: 'S/N', key: 'S/N' },
+        { label: 'Tariff ID', key: 'Tariff ID' },
+        { label: 'Service/Purpose', key: 'Service/Purpose' },
+        { label: 'Category', key: 'Category' },
+        { label: 'Revenue Head', key: 'Revenue Head' },
+        { label: 'Amount (₦)', key: 'Amount (₦)' },
+        { label: 'Payment Frequency', key: 'Payment Frequency' },
+        { label: 'Duration', key: 'Duration' },
+        { label: 'Status', key: 'Status' },
+        { label: 'Variable Pricing', key: 'Variable Pricing' },
+        { label: 'Bylaw Reference', key: 'Bylaw Reference' },
+        { label: 'Description', key: 'Description' },
+        { label: 'LGA ID', key: 'LGA ID' },
+        { label: 'Created At', key: 'Created At' },
+        { label: 'Updated At', key: 'Updated At' }
+    ];
+
+    // Generate filename with timestamp
+    const generateFilename = () => {
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+        return `Tariffs_Export_${dateStr}_${timeStr}.csv`;
+    };
+
     return (
         <div className="w-full bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-500 animate-fadeIn">
             <div className="w-full p-4 md:p-6">
@@ -445,13 +564,30 @@ const PricingManagement = () => {
                             Comprehensive tariff management with advanced pricing rules
                         </p>
                     </div>
-                    <button
-                        onClick={handleAddTariff}
-                        className="mt-4 md:mt-0 flex items-center space-x-2 py-3 px-6 rounded-md bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:from-[#3B78BD] hover:to-[#0d544c] text-white transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                        <FaPlus />
-                        <span>Add New Tariff</span>
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
+                        {/* Export Button */}
+                        <CSVLink
+                            data={prepareExportData()}
+                            headers={csvHeaders}
+                            filename={generateFilename()}
+                            className="flex items-center justify-center space-x-2 py-3 px-6 rounded-md bg-gradient-to-r from-[#F0B652] to-[#f5c976] hover:from-[#f5c976] hover:to-[#F0B652] text-white transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                            onClick={() => {
+                                toast.success(`Exporting ${eserviceItems.length} tariffs...`);
+                            }}
+                        >
+                            <FaFileExport />
+                            <span>Export Tariffs</span>
+                        </CSVLink>
+
+                        {/* Add New Tariff Button */}
+                        <button
+                            onClick={handleAddTariff}
+                            className="flex items-center justify-center space-x-2 py-3 px-6 rounded-md bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:from-[#3B78BD] hover:to-[#0d544c] text-white transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                        >
+                            <FaPlus />
+                            <span>Add New Tariff</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Success/Error Messages */}
@@ -518,8 +654,10 @@ const PricingManagement = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-white/80 text-sm font-medium">Categories</p>
-                                <h3 className="text-3xl font-bold mt-2">{statistics.categories.length}</h3>
-                                <p className="text-white/60 text-xs mt-1">Service categories</p>
+                                <h3 className="text-3xl font-bold mt-2">{statistics.categoriesCount || statistics.categories.length}</h3>
+                                <p className="text-white/60 text-xs mt-1">
+                                    {statistics.categories.length > 0 ? 'Payment types' : 'Service categories'}
+                                </p>
                             </div>
                             <div className="bg-white/20 p-3 rounded-lg">
                                 <MdCategory size={24} />
@@ -528,8 +666,31 @@ const PricingManagement = () => {
                     </div>
                 </div>
 
-                {/* Search, Filter, and View Controls */}
+                {/* Search, Filter, View Controls, and Export Summary */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+                    {/* Export Summary Info */}
+                    <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center space-x-2">
+                                <FaDownload className="text-blue-600 dark:text-blue-400" />
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Export Status:
+                                </span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    {eserviceItems.length} total tariffs ready
+                                </span>
+                                {filteredItems.length !== eserviceItems.length && (
+                                    <span className="text-sm text-blue-600 dark:text-blue-400">
+                                        ({filteredItems.length} filtered)
+                                    </span>
+                                )}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                CSV format with 15 columns
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
                         {/* Search */}
                         <div className="flex-1 relative">
@@ -610,7 +771,7 @@ const PricingManagement = () => {
                                 <div className="p-5">
                                     <div className="flex items-start justify-between mb-3">
                                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex-1">
-                                            {item.name}
+                                            {item.purpose || 'Unnamed Tariff'}
                                         </h3>
                                         {item.is_active !== false ? (
                                             <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">
@@ -638,7 +799,7 @@ const PricingManagement = () => {
                                             </div>
                                         ) : (
                                             <div className="text-2xl font-bold text-[#0d544c] dark:text-[#3B78BD]">
-                                                ₦{Number(item.value).toLocaleString()}
+                                                ₦{Number(item.amount || 0).toLocaleString()}
                                             </div>
                                         )}
                                     </div>
@@ -750,7 +911,7 @@ const PricingManagement = () => {
                                         <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="font-semibold text-gray-900 dark:text-white">
-                                                    {item.name}
+                                                    {item.purpose || 'Unnamed Tariff'}
                                                 </div>
                                                 {item.description && (
                                                     <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">
@@ -771,7 +932,7 @@ const PricingManagement = () => {
                                                     </div>
                                                 ) : (
                                                     <span className="text-lg font-bold text-[#0d544c] dark:text-[#3B78BD]">
-                                                        ₦{Number(item.value).toLocaleString()}
+                                                        ₦{Number(item.amount || 0).toLocaleString()}
                                                     </span>
                                                 )}
                                             </td>
@@ -1030,7 +1191,7 @@ const PricingManagement = () => {
 
             {/* Add/Edit Tariff Modal */}
             {showTariffModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] p-4 pt-20 pb-20 overflow-y-auto">
+                <div key={editingTariff?.id || 'new'} className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center z-[9999] p-4 pt-20 pb-20 overflow-y-auto">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
                         <div className="sticky top-0 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] p-6 rounded-t-lg">
                             <div className="flex justify-between items-center">
@@ -1038,7 +1199,7 @@ const PricingManagement = () => {
                                     {editingTariff ? 'Edit Tariff' : 'Add New Tariff'}
                                 </h2>
                                 <button
-                                    onClick={() => setShowTariffModal(false)}
+                                    onClick={handleCloseTariffModal}
                                     className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
                                 >
                                     <FaTimes size={24} />
@@ -1047,6 +1208,9 @@ const PricingManagement = () => {
                         </div>
 
                         <div className="p-6 space-y-6">
+                            {/* Debug: Log form state when modal renders */}
+                            {console.log('Modal rendering with tariffForm:', tariffForm)}
+
                             {/* Tariff Name */}
                             <div>
                                 <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -1054,7 +1218,7 @@ const PricingManagement = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    value={tariffForm.name}
+                                    value={tariffForm.name || ''}
                                     onChange={e => setTariffForm({ ...tariffForm, name: e.target.value })}
                                     className="w-full p-3 border border-gray-400 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-[#3B78BD] focus:border-[#3B78BD]"
                                     placeholder="e.g., Tenement Rate"
@@ -1069,7 +1233,7 @@ const PricingManagement = () => {
                                 </label>
                                 <input
                                     type="text"
-                                    value={tariffForm.category}
+                                    value={tariffForm.category || ''}
                                     onChange={e => setTariffForm({ ...tariffForm, category: e.target.value })}
                                     className="w-full p-3 border border-gray-400 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-[#3B78BD] focus:border-[#3B78BD]"
                                     placeholder="e.g., Property Tax"
@@ -1082,7 +1246,7 @@ const PricingManagement = () => {
                                     Description
                                 </label>
                                 <textarea
-                                    value={tariffForm.description}
+                                    value={tariffForm.description || ''}
                                     onChange={e => setTariffForm({ ...tariffForm, description: e.target.value })}
                                     className="w-full p-3 border border-gray-400 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-[#3B78BD] focus:border-[#3B78BD]"
                                     rows="3"
@@ -1113,7 +1277,7 @@ const PricingManagement = () => {
                                     <input
                                         type="number"
                                         step="0.01"
-                                        value={tariffForm.value}
+                                        value={tariffForm.value || ''}
                                         onChange={e => setTariffForm({ ...tariffForm, value: e.target.value })}
                                         className="w-full p-3 border border-gray-400 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-[#3B78BD] focus:border-[#3B78BD]"
                                         placeholder="5000.00"
@@ -1139,7 +1303,7 @@ const PricingManagement = () => {
                             {/* Action Buttons */}
                             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <button
-                                    onClick={() => setShowTariffModal(false)}
+                                    onClick={handleCloseTariffModal}
                                     className="px-5 py-3 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
                                 >
                                     Cancel

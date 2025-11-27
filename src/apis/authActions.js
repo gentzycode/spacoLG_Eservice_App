@@ -817,6 +817,44 @@ export const getMonnifyTransactions = async (token, params = {}) => {
     });
 };
 
+// ===================================================================
+// TRANZAKT PAYMENT GATEWAY FUNCTIONS
+// ===================================================================
+
+/**
+ * Initialize Tranzakt payment
+ */
+export const initializeTranzaktPayment = async (token, payload) => {
+    return await apiRequest({
+        method: 'post',
+        url: '/tranzakt/initialize',
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Verify Tranzakt payment
+ */
+export const verifyTranzaktPayment = async (token, invoiceId) => {
+    return await apiRequest({
+        method: 'get',
+        url: `/tranzakt/verify/${invoiceId}`,
+        token,
+    });
+};
+
+/**
+ * Get Tranzakt status
+ */
+export const getTranzaktStatus = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/tranzakt/status',
+        token,
+    });
+};
+
 /**
  * Initiate refund (Super Admin only)
  */
@@ -860,5 +898,98 @@ export const toggleMonnifyMode = async (token, mode) => {
         url: '/auth/super-admin/monnify/mode',
         token,
         data: { mode },
+    });
+};
+
+// ==================== Role & Permission Management APIs ====================
+
+/**
+ * Get all roles (Super Admin only)
+ */
+export const getRoles = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/super-admin/roles',
+        token,
+    });
+};
+
+/**
+ * Get role details by ID (Super Admin only)
+ */
+export const getRoleDetails = async (token, roleId) => {
+    return await apiRequest({
+        method: 'get',
+        url: `/super-admin/roles/${roleId}`,
+        token,
+    });
+};
+
+/**
+ * Create a new role (Super Admin only)
+ */
+export const createRole = async (token, payload) => {
+    return await apiRequest({
+        method: 'post',
+        url: '/super-admin/roles',
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Update an existing role (Super Admin only)
+ */
+export const updateRole = async (token, roleId, payload) => {
+    return await apiRequest({
+        method: 'put',
+        url: `/super-admin/roles/${roleId}`,
+        token,
+        data: payload,
+    });
+};
+
+/**
+ * Delete a role (Super Admin only)
+ */
+export const deleteRole = async (token, roleId) => {
+    return await apiRequest({
+        method: 'delete',
+        url: `/super-admin/roles/${roleId}`,
+        token,
+    });
+};
+
+/**
+ * Assign permissions to a role (Super Admin only)
+ */
+export const assignRolePermissions = async (token, roleId, permissionIds) => {
+    return await apiRequest({
+        method: 'post',
+        url: `/super-admin/roles/${roleId}/permissions`,
+        token,
+        data: { permissions: permissionIds },
+    });
+};
+
+/**
+ * Get all permissions (Super Admin only)
+ */
+export const getPermissions = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/super-admin/permissions',
+        token,
+    });
+};
+
+/**
+ * Get permissions grouped by module (Super Admin only)
+ */
+export const getPermissionsGrouped = async (token) => {
+    return await apiRequest({
+        method: 'get',
+        url: '/super-admin/permissions/grouped',
+        token,
     });
 };

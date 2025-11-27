@@ -37,6 +37,25 @@ const SuperAdminDashboard = ({ username }) => {
         totalAgents: 0,
         recentTransactions: [],
         revenueGrowth: 0,
+        monthlyRevenueGrowth: 0,
+        payersGrowth: 0,
+        collectionRate: 0,
+        collectionRateChange: 0,
+        averageInvoiceValue: 0,
+        avgInvoiceValueChange: 0,
+        outstandingAmount: 0,
+        revenueSources: [],
+        newPayersLast30Days: 0,
+        paymentSuccessRate: 0,
+        currentMonthName: '',
+        avgResponseTime: 'N/A',
+        systemHealth: 'Good',
+        todayLogins: 0,
+        activeUsersToday: 0,
+        todayTransactions: 0,
+        last7DaysActivity: [],
+        monthlyRevenueTrend: [],
+        paymentPerformance: null,
     });
 
     useEffect(() => {
@@ -60,6 +79,25 @@ const SuperAdminDashboard = ({ username }) => {
                     totalAgents: 0,
                     recentTransactions: [],
                     revenueGrowth: 0,
+                    monthlyRevenueGrowth: 0,
+                    payersGrowth: 0,
+                    collectionRate: 0,
+                    collectionRateChange: 0,
+                    averageInvoiceValue: 0,
+                    avgInvoiceValueChange: 0,
+                    outstandingAmount: 0,
+                    revenueSources: [],
+                    newPayersLast30Days: 0,
+                    paymentSuccessRate: 0,
+                    currentMonthName: '',
+                    avgResponseTime: 'N/A',
+                    systemHealth: 'Good',
+                    todayLogins: 0,
+                    activeUsersToday: 0,
+                    todayTransactions: 0,
+                    last7DaysActivity: [],
+                    monthlyRevenueTrend: [],
+                    paymentPerformance: null,
                 });
             }
         } catch (err) {
@@ -182,11 +220,11 @@ const SuperAdminDashboard = ({ username }) => {
                     title="Monthly Revenue"
                     value={formatCurrency(dashboardData.monthlyRevenue)}
                     icon={BsCashStack}
-                    trend="up"
-                    trendValue="8.2"
+                    trend={dashboardData.monthlyRevenueGrowth >= 0 ? "up" : "down"}
+                    trendValue={Math.abs(dashboardData.monthlyRevenueGrowth || 0).toFixed(1)}
                     iconBg="bg-[#3B78BD]/10"
                     iconColor="text-[#3B78BD]"
-                    subtitle="November 2025"
+                    subtitle={dashboardData.currentMonthName || new Date().toLocaleDateString('en-NG', { month: 'long', year: 'numeric' })}
                 />
                 <MetricCard
                     title="Total Invoices"
@@ -200,8 +238,8 @@ const SuperAdminDashboard = ({ username }) => {
                     title="Active Payers"
                     value={dashboardData.totalPayers.toLocaleString()}
                     icon={FaUsers}
-                    trend="up"
-                    trendValue="5.4"
+                    trend={dashboardData.payersGrowth >= 0 ? "up" : "down"}
+                    trendValue={Math.abs(dashboardData.payersGrowth || 0).toFixed(1)}
                     iconBg="bg-purple-100 dark:bg-purple-900/20"
                     iconColor="text-purple-600 dark:text-purple-400"
                     subtitle={`${dashboardData.totalAgents} agents`}
@@ -214,15 +252,15 @@ const SuperAdminDashboard = ({ username }) => {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <p className="text-white/80 text-sm font-medium mb-1">Collection Rate</p>
-                            <h3 className="text-3xl font-bold">87.3%</h3>
+                            <h3 className="text-3xl font-bold">{dashboardData.collectionRate?.toFixed(1) || '0.0'}%</h3>
                         </div>
                         <div className="bg-white/20 p-3 rounded-xl">
                             <MdTrendingUp size={28} />
                         </div>
                     </div>
                     <div className="flex items-center space-x-2 text-white/90">
-                        <FaArrowUp size={12} />
-                        <span className="text-sm">+3.2% from last month</span>
+                        {dashboardData.collectionRateChange >= 0 ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />}
+                        <span className="text-sm">{dashboardData.collectionRateChange >= 0 ? '+' : ''}{dashboardData.collectionRateChange?.toFixed(1) || '0.0'}% from last month</span>
                     </div>
                 </div>
 
@@ -230,15 +268,15 @@ const SuperAdminDashboard = ({ username }) => {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <p className="text-white/80 text-sm font-medium mb-1">Avg. Invoice Value</p>
-                            <h3 className="text-3xl font-bold">₦100,933</h3>
+                            <h3 className="text-3xl font-bold">{formatCurrency(dashboardData.averageInvoiceValue || 0)}</h3>
                         </div>
                         <div className="bg-white/20 p-3 rounded-xl">
                             <FaMoneyBillWave size={28} />
                         </div>
                     </div>
                     <div className="flex items-center space-x-2 text-white/90">
-                        <FaArrowUp size={12} />
-                        <span className="text-sm">+12.5% increase</span>
+                        {dashboardData.avgInvoiceValueChange >= 0 ? <FaArrowUp size={12} /> : <FaArrowDown size={12} />}
+                        <span className="text-sm">{dashboardData.avgInvoiceValueChange >= 0 ? '+' : ''}{Math.abs(dashboardData.avgInvoiceValueChange || 0).toFixed(1)}% {dashboardData.avgInvoiceValueChange >= 0 ? 'increase' : 'decrease'}</span>
                     </div>
                 </div>
 
@@ -246,7 +284,7 @@ const SuperAdminDashboard = ({ username }) => {
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <p className="text-white/80 text-sm font-medium mb-1">Outstanding</p>
-                            <h3 className="text-3xl font-bold">₦8.7M</h3>
+                            <h3 className="text-3xl font-bold">{formatCurrency(dashboardData.outstandingAmount || 0)}</h3>
                         </div>
                         <div className="bg-white/20 p-3 rounded-xl">
                             <MdPendingActions size={28} />
@@ -276,7 +314,7 @@ const SuperAdminDashboard = ({ username }) => {
                             </button>
                         </div>
                     </div>
-                    <LineChart />
+                    <LineChart chartData={dashboardData.monthlyRevenueTrend} />
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
@@ -284,13 +322,13 @@ const SuperAdminDashboard = ({ username }) => {
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">Revenue Sources</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400">By service category</p>
                     </div>
-                    <PieChart />
+                    <PieChart chartData={dashboardData.revenueSources} />
                     <div className="mt-6 space-y-3">
-                        {[
+                        {(dashboardData.revenueSources || [
                             { name: 'Tenement Rate', percentage: 45, color: '#0d544c' },
                             { name: 'Business Permits', percentage: 30, color: '#3B78BD' },
                             { name: 'Other Services', percentage: 25, color: '#F0B652' },
-                        ].map((item, index) => (
+                        ]).map((item, index) => (
                             <div key={index} className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
@@ -308,19 +346,19 @@ const SuperAdminDashboard = ({ username }) => {
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
                     <div className="mb-6">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">Payment Performance</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Monthly payment collection analysis</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Invoice status breakdown</p>
                     </div>
-                    <BarChart />
+                    <BarChart chartData={dashboardData.paymentPerformance} />
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Quick Stats</h3>
                     <div className="space-y-4">
                         {[
-                            { label: 'New Payers (30d)', value: '234', icon: FaUserTie, color: 'text-green-600' },
+                            { label: 'New Payers (30d)', value: dashboardData.newPayersLast30Days || 0, icon: FaUserTie, color: 'text-green-600' },
                             { label: 'Active Agents', value: dashboardData.totalAgents, icon: FaUsers, color: 'text-blue-600' },
-                            { label: 'Avg Response Time', value: '2.3 hrs', icon: FaClock, color: 'text-purple-600' },
-                            { label: 'Payment Success', value: '96.2%', icon: FaCheckCircle, color: 'text-green-600' },
+                            { label: 'Avg Response Time', value: dashboardData.avgResponseTime || 'N/A', icon: FaClock, color: 'text-purple-600' },
+                            { label: 'Payment Success', value: `${dashboardData.paymentSuccessRate?.toFixed(1) || '0.0'}%`, icon: FaCheckCircle, color: 'text-green-600' },
                         ].map((stat, index) => (
                             <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
                                 <div className="flex items-center space-x-3">
@@ -331,6 +369,61 @@ const SuperAdminDashboard = ({ username }) => {
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* System Status and Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 shadow-xl text-white">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-white/80 text-sm font-medium mb-1">System Health</p>
+                            <h3 className="text-2xl font-bold">{dashboardData.systemHealth || 'Good'}</h3>
+                        </div>
+                        <div className="bg-white/20 p-3 rounded-xl">
+                            <FaCheckCircle size={24} />
+                        </div>
+                    </div>
+                    <p className="text-white/80 text-xs">All systems operational</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Today's Logins</p>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData.todayLogins || 0}</h3>
+                        </div>
+                        <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-xl">
+                            <FaUsers className="text-blue-600 dark:text-blue-400" size={20} />
+                        </div>
+                    </div>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">{dashboardData.activeUsersToday || 0} unique users</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Today's Transactions</p>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData.todayTransactions || 0}</h3>
+                        </div>
+                        <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-xl">
+                            <FaFileInvoiceDollar className="text-purple-600 dark:text-purple-400" size={20} />
+                        </div>
+                    </div>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">Invoice activity today</p>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Active Sessions</p>
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData.activeUsersToday || 0}</h3>
+                        </div>
+                        <div className="bg-green-100 dark:bg-green-900/20 p-3 rounded-xl">
+                            <FaUserTie className="text-green-600 dark:text-green-400" size={20} />
+                        </div>
+                    </div>
+                    <p className="text-gray-400 dark:text-gray-500 text-xs">Currently online</p>
                 </div>
             </div>
 

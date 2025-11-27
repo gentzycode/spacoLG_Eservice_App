@@ -10,6 +10,13 @@ import AuthContextProvider from './context/AuthContext';
 import Landing2 from './public/pages/Landing2';
 import Auth from './public/pages/Auth';
 
+// Public verification page - lazy loaded
+const VerifyTicket = lazy(() => import('./public/VerifyTicket'));
+
+// Payment verification page - lazy loaded
+const PaymentVerification = lazy(() => import('./pages/PaymentVerification'));
+const OnlinePayment = lazy(() => import('./pages/OnlinePayment'));
+
 // Lazy load all other components for code splitting
 const PrivateRoute = lazy(() => import('./protected/PrivateRoute'));
 const DefaultLayout = lazy(() => import('./protected/DefaultLayout'));
@@ -33,7 +40,10 @@ const AdminApplicationDetail = lazy(() => import('./protected/lga_admin/pages/Ad
 const Users = lazy(() => import('./protected/super_admin/pages/Users'));
 const LgasStaff = lazy(() => import('./protected/super_admin/pages/LgasStaff'));
 const Authorizers = lazy(() => import('./protected/super_admin/pages/Authorizers'));
+const RoleManagement = lazy(() => import('./protected/super_admin/pages/RoleManagement'));
 const PricingManagement = lazy(() => import('./protected/super_admin/pages/PricingManagement'));
+const RevenueHeads = lazy(() => import('./protected/super_admin/pages/RevenueHeads'));
+const PenaltyManagement = lazy(() => import('./protected/super_admin/pages/PenaltyManagement'));
 const PaymentGateways = lazy(() => import('./protected/super_admin/pages/PaymentGateways'));
 const SystemSettings = lazy(() => import('./protected/super_admin/pages/SystemSettings'));
 const FinancialReports = lazy(() => import('./protected/super_admin/pages/FinancialReports'));
@@ -47,10 +57,16 @@ const ManageTokens = lazy(() => import('./protected/pages/ManageTokens'));
 const ManageInvoices = lazy(() => import('./protected/pages/ManageInvoices'));
 const PayerManagement = lazy(() => import('./protected/pages/PayerManagement'));
 const InvoicesPage = lazy(() => import('./protected/pages/InvoicesPage'));
+const DailyTickets = lazy(() => import('./protected/pages/DailyTickets'));
 
 // Other routes - lazy loaded
 const Support = lazy(() => import('./protected/pages/Support'));
 const Reports = lazy(() => import('./protected/pages/Reports'));
+
+// Invoice V2 & Assessment routes - lazy loaded
+const InvoiceV2Manager = lazy(() => import('./protected/pages/InvoiceV2Manager'));
+const AssessmentManager = lazy(() => import('./protected/pages/AssessmentManager'));
+const TemplateManager = lazy(() => import('./protected/pages/TemplateManager'));
 
 // Import lazy routes
 const routes = lazy(() => import('./routes'));
@@ -77,6 +93,36 @@ function App() {
                         {/* Public routes - no suspense needed, already loaded */}
                         <Route path='/' element={<Landing2 />} />
                         <Route path='/auth' element={<Auth />} />
+
+                        {/* Public ticket verification - lazy loaded */}
+                        <Route
+                            path='/verify-ticket/:ticketNumber'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <VerifyTicket />
+                                </Suspense>
+                            }
+                        />
+
+                        {/* Payment verification - lazy loaded (public, no auth required) */}
+                        <Route
+                            path='/payment/verify'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <PaymentVerification />
+                                </Suspense>
+                            }
+                        />
+
+                        {/* Online payment - lazy loaded (requires auth) */}
+                        <Route
+                            path='/payment/online'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <OnlinePayment />
+                                </Suspense>
+                            }
+                        />
 
                         {/* Public routes - lazy loaded */}
                         <Route
@@ -211,10 +257,42 @@ function App() {
                                 }
                             />
                             <Route
+                                path='/revenue-heads'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <RevenueHeads />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/penalties'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <PenaltyManagement />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/daily-tickets'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <DailyTickets />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
                                 path='/payment-gateways'
                                 element={
                                     <Suspense fallback={<Loader />}>
                                         <PaymentGateways />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path='/role-management'
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <RoleManagement />
                                     </Suspense>
                                 }
                             />
@@ -311,6 +389,30 @@ function App() {
                                 element={
                                     <Suspense fallback={<Loader />}>
                                         <InvoicesPage />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/invoice-v2-manager"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <InvoiceV2Manager />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/assessment-manager"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <AssessmentManager />
+                                    </Suspense>
+                                }
+                            />
+                            <Route
+                                path="/template-manager"
+                                element={
+                                    <Suspense fallback={<Loader />}>
+                                        <TemplateManager />
                                     </Suspense>
                                 }
                             />

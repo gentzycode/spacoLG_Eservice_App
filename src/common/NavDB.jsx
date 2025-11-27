@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { HiDocumentText, HiUserGroup } from 'react-icons/hi';
-import { FaRegListAlt, FaRegUser, FaFileAlt, FaCreditCard, FaCog, FaChartBar, FaShieldAlt } from 'react-icons/fa';
+import { FaRegListAlt, FaRegUser, FaFileAlt, FaCreditCard, FaCog, FaChartBar, FaShieldAlt, FaExclamationTriangle, FaBook, FaTicketAlt, FaUserShield, FaFileInvoice, FaClipboardCheck, FaClipboardList } from 'react-icons/fa';
 import { Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { AiFillHome } from 'react-icons/ai';
@@ -34,11 +34,19 @@ const NavDB = ({ collapsed }) => {
     const superAdmin = [
         { id: 1, title: "Home", url: PROTECTED_ROUTES.DASHBOARD, icon: <AiFillHome size={17} /> },
         { id: 2, title: "Users", url: SUPER_ADMIN_ROUTES.USERS, icon: <HiUserGroup size={17} /> },
-        { id: 3, title: "Tariffs", url: SUPER_ADMIN_ROUTES.TARIFFS, icon: <RiWalletFill size={17} /> },
-        { id: 4, title: "Payment Gateways", url: SUPER_ADMIN_ROUTES.PAYMENT_GATEWAYS, icon: <FaCreditCard size={17} /> },
-        { id: 5, title: "Financial Reports", url: SUPER_ADMIN_ROUTES.FINANCIAL_REPORTS, icon: <FaChartBar size={17} /> },
-        { id: 6, title: "Security & Audit", url: SUPER_ADMIN_ROUTES.AUDIT_LOGS, icon: <FaShieldAlt size={17} /> },
-        { id: 7, title: "System Settings", url: SUPER_ADMIN_ROUTES.SYSTEM_SETTINGS, icon: <FaCog size={17} /> },
+        { id: 3, title: "Revenue Heads", url: SUPER_ADMIN_ROUTES.REVENUE_HEADS, icon: <FaBook size={17} /> },
+        { id: 4, title: "Tariffs", url: SUPER_ADMIN_ROUTES.TARIFFS, icon: <RiWalletFill size={17} /> },
+        { id: 5, title: "Penalties", url: SUPER_ADMIN_ROUTES.PENALTIES, icon: <FaExclamationTriangle size={17} /> },
+        { id: 6, title: "Daily Tickets", url: SUPER_ADMIN_ROUTES.DAILY_TICKETS, icon: <FaTicketAlt size={17} /> },
+        { id: 7, title: "Invoice V2 Manager", url: SUPER_ADMIN_ROUTES.INVOICE_V2_MANAGER, icon: <FaFileInvoice size={17} /> },
+        { id: 8, title: "Assessment Manager", url: SUPER_ADMIN_ROUTES.ASSESSMENT_MANAGER, icon: <FaClipboardCheck size={17} /> },
+        { id: 9, title: "Template Manager", url: SUPER_ADMIN_ROUTES.TEMPLATE_MANAGER, icon: <FaClipboardList size={17} /> },
+        { id: 10, title: "Manage Payers", url: SUPER_ADMIN_ROUTES.MANAGE_PAYERS, icon: <FaRegUser size={17} /> },
+        { id: 11, title: "Payment Gateways", url: SUPER_ADMIN_ROUTES.PAYMENT_GATEWAYS, icon: <FaCreditCard size={17} /> },
+        { id: 12, title: "Role Management", url: SUPER_ADMIN_ROUTES.ROLE_MANAGEMENT, icon: <FaUserShield size={17} /> },
+        { id: 13, title: "Financial Reports", url: SUPER_ADMIN_ROUTES.FINANCIAL_REPORTS, icon: <FaChartBar size={17} /> },
+        { id: 14, title: "Security & Audit", url: SUPER_ADMIN_ROUTES.AUDIT_LOGS, icon: <FaShieldAlt size={17} /> },
+        { id: 15, title: "System Settings", url: SUPER_ADMIN_ROUTES.SYSTEM_SETTINGS, icon: <FaCog size={17} /> },
     ];
 
     const agent = [
@@ -48,8 +56,12 @@ const NavDB = ({ collapsed }) => {
         { id: 4, title: "Applications", url: AGENT_ROUTES.APPLICATIONS, icon: <HiDocumentText size={17} /> },
         { id: 5, title: "General Invoices", url: AGENT_ROUTES.MANAGE_INVOICES, icon: <MdOutlineAccountBalanceWallet size={17} /> },
         { id: 6, title: "Advanced Invoicing", url: AGENT_ROUTES.ADVANCED_INVOICING, icon: <MdOutlineAccountBalanceWallet size={17} /> },
-        { id: 7, title: "Manage Payers", url: AGENT_ROUTES.MANAGE_PAYERS, icon: <FaRegUser size={17} /> },
-        { id: 8, title: "Reports", url: AGENT_ROUTES.REPORTS, icon: <FaRegListAlt size={17} /> },
+        { id: 7, title: "Invoice V2 Manager", url: AGENT_ROUTES.INVOICE_V2_MANAGER, icon: <FaFileInvoice size={17} /> },
+        { id: 8, title: "Assessment Manager", url: AGENT_ROUTES.ASSESSMENT_MANAGER, icon: <FaClipboardCheck size={17} /> },
+        { id: 9, title: "Template Manager", url: AGENT_ROUTES.TEMPLATE_MANAGER, icon: <FaClipboardList size={17} /> },
+        { id: 10, title: "Manage Payers", url: AGENT_ROUTES.MANAGE_PAYERS, icon: <FaRegUser size={17} /> },
+        { id: 11, title: "Daily Tickets", url: AGENT_ROUTES.DAILY_TICKETS, icon: <FaTicketAlt size={17} /> },
+        { id: 12, title: "Reports", url: AGENT_ROUTES.REPORTS, icon: <FaRegListAlt size={17} /> },
     ];
 
     useEffect(() => {
