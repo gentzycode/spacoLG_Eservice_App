@@ -1,0 +1,409 @@
+/* Payment Gateway Modal Overlay */
+.payment-gateway-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-in-out;
+    padding: 20px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Payment Modal Container */
+.payment-gateway-modal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Modal Header */
+.payment-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 24px 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.payment-modal-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.payment-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: #6b7280;
+    transition: all 0.2s;
+    border-radius: 8px;
+}
+
+.payment-modal-close:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.payment-modal-close:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Invoice Info Section */
+.payment-invoice-info {
+    padding: 20px 24px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.payment-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.payment-info-label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.payment-info-value {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.payment-amount {
+    font-size: 20px;
+    color: #00a86b;
+}
+
+/* Gateway Options */
+.payment-gateway-options {
+    padding: 24px;
+}
+
+.gateway-options-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+}
+
+.gateway-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Gateway Card */
+.gateway-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.gateway-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--gateway-color) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.gateway-card:hover::before {
+    opacity: 0.05;
+}
+
+.gateway-card:hover {
+    border-color: var(--gateway-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gateway-card.selected {
+    border-color: var(--gateway-color);
+    background-color: rgba(0, 168, 107, 0.02);
+    box-shadow: 0 0 0 3px rgba(0, 168, 107, 0.1);
+}
+
+.gateway-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f9fafb;
+}
+
+.gateway-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: #e5e7eb;
+}
+
+.gateway-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.gateway-radio {
+    display: flex;
+    align-items: center;
+}
+
+.gateway-radio input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #00a86b;
+}
+
+.gateway-radio input[type="radio"]:disabled {
+    cursor: not-allowed;
+}
+
+.gateway-info {
+    flex: 1;
+}
+
+.gateway-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+
+.gateway-description {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.gateway-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s;
+}
+
+.gateway-card:hover .gateway-icon {
+    transform: scale(1.1);
+}
+
+.gateway-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #fbbf24;
+    color: #78350f;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    z-index: 2;
+}
+
+/* Modal Actions */
+.payment-modal-actions {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.payment-modal-actions button {
+    flex: 1;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-secondary {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #e5e7eb;
+}
+
+.btn-primary {
+    background-color: #00a86b;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #008c5a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
+}
+
+.payment-modal-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Security Notice */
+.payment-security-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px 24px 24px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.security-icon {
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .payment-gateway-modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .payment-gateway-modal {
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 95vh;
+    }
+
+    .payment-modal-header h2 {
+        font-size: 20px;
+    }
+
+    .payment-amount {
+        font-size: 18px;
+    }
+
+    .gateway-card {
+        padding: 14px;
+    }
+
+    .gateway-name {
+        font-size: 15px;
+    }
+
+    .gateway-description {
+        font-size: 12px;
+    }
+
+    .gateway-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .payment-modal-actions {
+        flex-direction: column;
+    }
+
+    .payment-modal-actions button {
+        width: 100%;
+    }
+}
+
+/* Smooth scrollbar */
+.payment-gateway-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.payment-gateway-modal::-webkit-scrollbar-track {
+    background: #f3f4f6;
+}
+
+.payment-gateway-modal::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.payment-gateway-modal::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

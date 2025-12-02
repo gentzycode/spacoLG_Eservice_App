@@ -8,6 +8,7 @@ const InvoiceV2Table = ({
     onView,
     onEdit,
     onRecordPayment,
+    onPayOnline,
     onApprove,
     onCancel,
     onDelete,
@@ -158,14 +159,25 @@ const InvoiceV2Table = ({
                                         </button>
                                     )}
 
+                                    {/* Pay Online Button - For unpaid/partially paid invoices */}
+                                    {invoice.payment_status !== 'paid' && invoice.status !== 'cancelled' && onPayOnline && (
+                                        <button
+                                            onClick={() => onPayOnline(invoice)}
+                                            className="px-2 py-1 bg-[#00a86b] hover:bg-[#008c5a] text-white text-xs rounded transition-colors"
+                                            title="Pay Online via Gateway"
+                                        >
+                                            Pay Online
+                                        </button>
+                                    )}
+
                                     {/* Record Payment Button - For unpaid/partially paid invoices */}
                                     {invoice.payment_status !== 'paid' && invoice.status !== 'cancelled' && onRecordPayment && (
                                         <button
                                             onClick={() => onRecordPayment(invoice)}
                                             className="px-2 py-1 bg-[#3B78BD] hover:bg-[#F0B652] text-white text-xs rounded transition-colors"
-                                            title="Record Payment"
+                                            title="Record Offline Payment"
                                         >
-                                            Pay
+                                            Record Payment
                                         </button>
                                     )}
 

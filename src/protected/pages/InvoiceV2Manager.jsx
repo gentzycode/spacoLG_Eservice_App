@@ -14,6 +14,8 @@ import CreateInvoiceV2Modal from '../components/invoiceV2/CreateInvoiceV2Modal';
 import EditInvoiceV2Modal from '../components/invoiceV2/EditInvoiceV2Modal';
 import ViewInvoiceV2Modal from '../components/invoiceV2/ViewInvoiceV2Modal';
 import RecordPaymentModal from '../components/invoiceV2/RecordPaymentModal';
+import PaymentGatewayModal from '../components/invoiceV2/PaymentGatewayModal';
+import PaymentCallbackHandler from '../components/invoiceV2/PaymentCallbackHandler';
 import ConfirmModal from '../components/common/ConfirmModal';
 import InputModal from '../components/common/InputModal';
 import { toast } from 'react-toastify';
@@ -49,6 +51,7 @@ const InvoiceV2Manager = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showPaymentGatewayModal, setShowPaymentGatewayModal] = useState(false);
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -126,6 +129,11 @@ const InvoiceV2Manager = () => {
         setShowPaymentModal(true);
     };
 
+    const handlePayOnline = (invoice) => {
+        setSelectedInvoice(invoice);
+        setShowPaymentGatewayModal(true);
+    };
+
     const handleApprove = (invoice) => {
         setSelectedInvoice(invoice);
         setShowApproveModal(true);
@@ -194,10 +202,17 @@ const InvoiceV2Manager = () => {
         setShowEditModal(false);
         setShowViewModal(false);
         setShowPaymentModal(false);
+        setShowPaymentGatewayModal(false);
         setShowApproveModal(false);
         setShowCancelModal(false);
         setShowDeleteModal(false);
         setSelectedInvoice(null);
+    };
+
+    const handlePaymentComplete = (invoiceId) => {
+        console.log('Payment completed for invoice:', invoiceId);
+        fetchData();
+        fetchStats();
     };
 
     const handleSuccess = () => {
@@ -258,6 +273,7 @@ const InvoiceV2Manager = () => {
                             onView={handleView}
                             onEdit={handleEdit}
                             onRecordPayment={handleRecordPayment}
+                            onPayOnline={handlePayOnline}
                             onApprove={handleApprove}
                             onCancel={handleCancel}
                             onDelete={handleDelete}
@@ -330,6 +346,16 @@ const InvoiceV2Manager = () => {
                     token={token}
                 />
             )}
+
+            {showPaymentGatewayModal && selectedInvoice && (
+                <PaymentGatewayModal
+                    invoice={selectedInvoice}
+                    onClose={handleModalClose}
+                />
+            )}
+
+            {/* Payment Callback Handler */}
+            <PaymentCallbackHandler onPaymentComplete={handlePaymentComplete} />
 
             {/* Approve Confirmation */}
             <ConfirmModal
