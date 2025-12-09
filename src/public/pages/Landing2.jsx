@@ -76,13 +76,19 @@ const Landing2 = () => {
                                     Quick Actions
                                 </h2>
                                 <div className="space-y-4">
-                                    <button 
+                                    <button
                                         onClick={() => navigate('/services')}
                                         className="w-full py-4 bg-[#f06752] text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all hover:brightness-110"
                                     >
                                         Apply for Services
                                     </button>
-                                    <button 
+                                    <button
+                                        onClick={() => navigate('/fee-schedule')}
+                                        className="w-full py-4 bg-[#3B78BD] text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all hover:brightness-110"
+                                    >
+                                        View Fee Schedule
+                                    </button>
+                                    <button
                                         onClick={() => navigate('/auth')}
                                         className="w-full py-4 bg-[#F0B652] text-gray-900 font-bold rounded-lg shadow-lg hover:shadow-xl transition-all hover:brightness-110"
                                     >

@@ -13,6 +13,9 @@ import Auth from './public/pages/Auth';
 // Public verification page - lazy loaded
 const VerifyTicket = lazy(() => import('./public/VerifyTicket'));
 
+// Public fee schedule page - lazy loaded (redesigned)
+const FeeSchedule = lazy(() => import('./public/pages/FeeScheduleRedesigned'));
+
 // Payment verification page - lazy loaded
 const PaymentVerification = lazy(() => import('./pages/PaymentVerification'));
 const OnlinePayment = lazy(() => import('./pages/OnlinePayment'));
@@ -100,6 +103,16 @@ function App() {
                             element={
                                 <Suspense fallback={<Loader />}>
                                     <VerifyTicket />
+                                </Suspense>
+                            }
+                        />
+
+                        {/* Public fee schedule - lazy loaded */}
+                        <Route
+                            path='/fee-schedule'
+                            element={
+                                <Suspense fallback={<Loader />}>
+                                    <FeeSchedule />
                                 </Suspense>
                             }
                         />
