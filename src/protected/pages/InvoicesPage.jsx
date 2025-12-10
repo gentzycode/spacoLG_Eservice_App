@@ -201,9 +201,8 @@ const InvoicesPage = () => {
                         <ReceiptVerification onPrint={handlePrintReceipt} />
                     )}
                 </div>
-            </div>
 
-            {/* Modals */}
+                {/* Modals */}
             {showCreateModal && (
                 <CreateInvoiceModal
                     onClose={() => setShowCreateModal(false)}
