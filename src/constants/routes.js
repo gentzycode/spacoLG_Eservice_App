@@ -25,7 +25,7 @@ export const PROTECTED_ROUTES = {
   SUPPORT: '/support',
 };
 
-// Agent Routes
+// Agent Route
 export const AGENT_ROUTES = {
   MY_WALLET: '/my-wallet',
   MANAGE_TOKENS: '/manage-tokens',
