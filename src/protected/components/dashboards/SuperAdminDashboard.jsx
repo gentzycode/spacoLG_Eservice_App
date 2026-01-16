@@ -16,7 +16,8 @@ import {
     FaBuilding,
     FaUserTie,
     FaCreditCard,
-    FaDollarSign
+    FaDollarSign,
+    FaSync
 } from 'react-icons/fa';
 import { MdTrendingUp, MdPendingActions, MdAttachMoney } from 'react-icons/md';
 import { BsCashStack, BsGraphUp } from 'react-icons/bs';
@@ -24,10 +25,19 @@ import PageLoader from '../../../common/PageLoader';
 import LineChart from '../../../charts/LineChart';
 import BarChart from '../../../charts/BarChart';
 import PieChart from '../../../charts/PieChart';
+import QuickActions from './QuickActions';
+import useQuickActions from '../../../hooks/useQuickActions';
 
 const SuperAdminDashboard = ({ username }) => {
     const { token } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Fetch quick actions
+    const { actions: quickActions, loading: actionsLoading } = useQuickActions({
+        autoFetch: true,
+    });
+
     const [dashboardData, setDashboardData] = useState({
         totalRevenue: 0,
         monthlyRevenue: 0,
@@ -64,8 +74,9 @@ const SuperAdminDashboard = ({ username }) => {
 
     const fetchDashboardData = async () => {
         setLoading(true);
+        setError(null);
         try {
-            const response = await axios.get('/dashboard/super-admin', {
+            const response = await axios.get('/super-admin/dashboard', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -102,6 +113,10 @@ const SuperAdminDashboard = ({ username }) => {
             }
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
+            setError({
+                message: err.response?.data?.message || 'Failed to load dashboard data',
+                details: err.message
+            });
         } finally {
             setLoading(false);
         }
@@ -194,6 +209,17 @@ const SuperAdminDashboard = ({ username }) => {
                         </p>
                     </div>
                     <div className="mt-4 md:mt-0 flex items-center space-x-3">
+                        {/* Refresh Button */}
+                        <button
+                            onClick={fetchDashboardData}
+                            disabled={loading}
+                            className="bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Refresh dashboard data"
+                        >
+                            <FaSync className={`text-[#0d544c] ${loading ? 'animate-spin' : ''}`} size={16} />
+                        </button>
+
+                        {/* Today's Date */}
                         <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
                             <p className="text-xs text-gray-500 dark:text-gray-400">Today's Date</p>
                             <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -202,6 +228,44 @@ const SuperAdminDashboard = ({ username }) => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Error Alert */}
+            {error && (
+                <div className="mb-8 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-lg">
+                    <div className="flex items-start">
+                        <FaExclamationTriangle className="text-red-500 mt-1 mr-3" size={20} />
+                        <div className="flex-1">
+                            <h3 className="text-red-800 dark:text-red-300 font-semibold mb-1">
+                                Error Loading Dashboard
+                            </h3>
+                            <p className="text-red-700 dark:text-red-400 text-sm">
+                                {error.message}
+                            </p>
+                            {error.details && (
+                                <p className="text-red-600 dark:text-red-500 text-xs mt-1">
+                                    {error.details}
+                                </p>
+                            )}
+                        </div>
+                        <button
+                            onClick={fetchDashboardData}
+                            className="ml-4 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition-colors"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Quick Actions Section */}
+            <div className="mb-8">
+                <QuickActions
+                    actions={quickActions}
+                    loading={actionsLoading}
+                    title="Quick Actions"
+                    subtitle="Fast access to frequently used features"
+                />
             </div>
 
             {/* Key Metrics Grid */}

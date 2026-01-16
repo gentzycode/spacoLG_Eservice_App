@@ -218,17 +218,18 @@ export const createUser = async ( token, data, setSuccess, setError, setCreating
             {
                 headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
             }
-        );    
+        );
 
         console.log(response.data?.data)
         setSuccess(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
-            setError('No Response from Server');
+            setError({ message: 'No Response from Server' });
         } else {
             console.log(err.response.data?.message);
-            setError(err.response.data);
+            // Pass the full error object so onError callback can access err.response.data.errors
+            setError(err);
         }
     }
     setCreating(false);
@@ -244,17 +245,18 @@ export const updateUser = async ( token, id, data, setSuccess, setError, setCrea
             {
                 headers: { 'Accept' : 'application/json', 'Authorization' : `Bearer ${token}` }
             }
-        );    
+        );
 
         console.log(response.data?.data)
         setSuccess(response.data?.data);
     }
     catch (err) {
         if (!err?.response) {
-            setError('No Response from Server');
+            setError({ message: 'No Response from Server' });
         } else {
             console.log(err.response.data?.message);
-            setError(err.response.data);
+            // Pass the full error object so onError callback can access err.response.data.errors
+            setError(err);
         }
     }
     setCreating(false);
