@@ -21,31 +21,33 @@ const Sidebar = ({ toggleSidebar, navOpen, collapsed }) => {
                     navOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
                 } ${collapsed ? 'md:w-[70px]' : 'w-[230px]'}`}
             >
-                {/* Background Image - covers entire scrollable area */}
+                {/* Content Over Banner - Background attached to content */}
                 <div
-                    className="absolute top-0 left-0 w-full min-h-full bg-cover bg-center"
-                    style={{ backgroundImage: `url(${BannerImage})` }}
-                ></div>
+                    className="relative z-10 min-h-screen flex flex-col pb-6 bg-cover bg-center"
+                    style={{
+                        backgroundImage: `url(${BannerImage})`,
+                        backgroundAttachment: 'local'
+                    }}
+                >
+                    {/* Dark Overlay - attached to content */}
+                    <div className="absolute inset-0 w-full h-full bg-black/60 dark:bg-black/70"></div>
 
-                {/* Dark Overlay - covers entire scrollable area */}
-                <div className="absolute top-0 left-0 w-full min-h-full bg-black/60 dark:bg-black/70"></div>
+                    {/* All Content - Positioned above overlay */}
+                    <div className="relative z-10 flex flex-col h-full">
+                        {/* Top Bar with Close Button (Mobile Only) */}
+                        <div className="flex justify-end items-center p-4 md:pt-6 md:pb-0">
+                            {/* Mobile Close Button */}
+                            <AiOutlineClose
+                                size={28}
+                                className="md:hidden text-white dark:text-[#F0B652] cursor-pointer hover:text-[#F0B652] transition-colors"
+                                onClick={toggleSidebar}
+                            />
+                        </div>
 
-                {/* Content Over Banner */}
-                <div className="relative z-10 min-h-screen flex flex-col pb-6">
-                    {/* Top Bar with Close Button (Mobile Only) */}
-                    <div className="flex justify-end items-center p-4 md:pt-6 md:pb-0">
-                        {/* Mobile Close Button */}
-                        <AiOutlineClose
-                            size={28}
-                            className="md:hidden text-white dark:text-[#F0B652] cursor-pointer hover:text-[#F0B652] transition-colors"
-                            onClick={toggleSidebar}
-                        />
-                    </div>
-
-                    {/* Logo and Title Section */}
-                    <div className={`w-full flex flex-col items-center mb-8 transition-all duration-300 ${
-                        collapsed ? 'md:px-2 md:mt-4' : 'px-6 md:mt-6'
-                    }`}>
+                        {/* Logo and Title Section */}
+                        <div className={`w-full flex flex-col items-center mb-8 transition-all duration-300 ${
+                            collapsed ? 'md:px-2 md:mt-4' : 'px-6 md:mt-6'
+                        }`}>
                         <div className={`rounded-full border-4 border-white dark:border-gray-600 shadow-xl animate-fadeIn transition-all duration-300 overflow-hidden ${
                             collapsed ? 'md:w-10 md:h-10 md:border-2' : 'w-16 h-16'
                         }`}>
@@ -78,13 +80,13 @@ const Sidebar = ({ toggleSidebar, navOpen, collapsed }) => {
                         </div>
                     )}
 
-                    {/* Navigation */}
-                    <div className={`w-full flex-grow transition-all duration-300 ${
-                        collapsed ? 'md:px-1' : 'px-3'
-                    }`}>
-                        <NavDB collapsed={collapsed} />
+                        {/* Navigation */}
+                        <div className={`w-full flex-grow transition-all duration-300 ${
+                            collapsed ? 'md:px-1' : 'px-3'
+                        }`}>
+                            <NavDB collapsed={collapsed} />
+                        </div>
                     </div>
-
                 </div>
             </div>
 

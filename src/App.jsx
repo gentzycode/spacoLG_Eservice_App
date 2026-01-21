@@ -7,7 +7,7 @@ import Loader from './common/Loader';
 import AuthContextProvider from './context/AuthContext';
 
 // Eager load critical components (landing page, auth)
-import Landing2 from './public/pages/Landing2';
+import LandingEnhanced from './public/pages/LandingEnhanced';
 import Auth from './public/pages/Auth';
 
 // Public verification page - lazy loaded
@@ -94,7 +94,7 @@ function App() {
                 <Suspense fallback={<Loader />}>
                     <Routes>
                         {/* Public routes - no suspense needed, already loaded */}
-                        <Route path='/' element={<Landing2 />} />
+                        <Route path='/' element={<LandingEnhanced />} />
                         <Route path='/auth' element={<Auth />} />
 
                         {/* Public ticket verification - lazy loaded */}
