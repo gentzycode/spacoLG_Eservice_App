@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import {
     FaPlus, FaCheckCircle, FaSearch, FaFilter, FaTimes, FaSave,
     FaTicketAlt, FaCar, FaStore, FaCalendarAlt, FaMoneyBillWave,
-    FaPrint, FaDownload, FaEye, FaEdit, FaTrash, FaCreditCard
+    FaPrint, FaDownload, FaEye, FaEdit, FaTrash, FaCreditCard, FaSync
 } from 'react-icons/fa';
 import { MdDirectionsCar, MdLocalTaxi } from 'react-icons/md';
-import InitLoader from '../../common/InitLoader';
+import PageLoader from '../../common/PageLoader';
 import TicketReceipt from '../components/TicketReceipt';
 import DailyTicketPaymentModal from '../components/DailyTicketPaymentModal';
 import {
@@ -607,20 +607,51 @@ const DailyTickets = () => {
     };
 
     const handleDeleteTicket = async (ticketId) => {
-        if (!window.confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
-            return;
-        }
-        setLoading(true);
-        try {
-            await deleteDailyTicket(ticketId);
-            toast.success('Ticket deleted successfully');
-            loadData();
-        } catch (error) {
-            console.error('Error deleting ticket:', error);
-            toast.error(error.response?.data?.message || 'Failed to delete ticket');
-        } finally {
-            setLoading(false);
-        }
+        // Create a custom confirmation toast
+        const confirmDelete = () => {
+            toast.dismiss();
+            performDelete();
+        };
+
+        const performDelete = async () => {
+            setLoading(true);
+            try {
+                await deleteDailyTicket(ticketId);
+                toast.success('Ticket deleted successfully');
+                loadData();
+            } catch (error) {
+                console.error('Error deleting ticket:', error);
+                toast.error(error.response?.data?.message || 'Failed to delete ticket');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // Show confirmation toast
+        toast.warning(
+            <div>
+                <p className="font-semibold mb-2">Delete this ticket?</p>
+                <p className="text-sm mb-3">This action cannot be undone.</p>
+                <div className="flex gap-2">
+                    <button
+                        onClick={confirmDelete}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold"
+                    >
+                        Delete
+                    </button>
+                    <button
+                        onClick={() => toast.dismiss()}
+                        className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>,
+            {
+                autoClose: false,
+                closeButton: false,
+            }
+        );
     };
 
     const handlePrintTicket = (ticket) => {
@@ -657,78 +688,113 @@ const DailyTickets = () => {
     };
 
     if (loading && tickets.length === 0) {
-        return <InitLoader />;
+        return <PageLoader />;
     }
 
     return (
-        <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 min-h-screen">
             {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Daily Tickets
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    Issue and manage daily collection tickets for vehicles, market stalls, and more
-                </p>
+            <div className="mb-8 animate-fadeIn">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center space-x-3">
+                            <FaTicketAlt className="text-[#0d544c]" />
+                            <span>Daily Tickets</span>
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg">
+                            Issue and manage daily collection tickets for vehicles, market stalls, and more
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={loadData}
+                            disabled={loading}
+                            className="flex items-center space-x-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-medium shadow-sm"
+                        >
+                            <FaSync size={16} className={loading ? 'animate-spin' : ''} />
+                            <span className="hidden sm:inline">Refresh</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-slideIn">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Total Tickets</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Total Tickets</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
                                 {summary.total_tickets || 0}
                             </p>
-                        </div>
-                        <FaTicketAlt className="text-blue-500 text-3xl" />
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
                                 ₦{(summary.total_amount || 0).toLocaleString()}
                             </p>
                         </div>
-                        <FaMoneyBillWave className="text-green-500 text-3xl" />
+                        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+                            <FaTicketAlt className="text-white text-xl" />
+                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Paid Tickets</p>
-                            <p className="text-2xl font-bold text-green-600">
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Total Amount</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                                {summary.total_tickets || 0}
+                            </p>
+                            <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                ₦{(summary.total_amount || 0).toLocaleString()}
+                            </p>
+                        </div>
+                        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg">
+                            <FaMoneyBillWave className="text-white text-xl" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Paid Tickets</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
                                 {summary.paid_tickets || 0}
                             </p>
+                            <p className="text-sm font-semibold text-green-600 dark:text-green-400">
+                                ₦{(summary.paid_amount || 0).toLocaleString()}
+                            </p>
                         </div>
-                        <FaCheckCircle className="text-green-500 text-3xl" />
+                        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
+                            <FaCheckCircle className="text-white text-xl" />
+                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
-                            <p className="text-2xl font-bold text-orange-600">
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Pending</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
                                 {summary.pending_tickets || 0}
                             </p>
+                            <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                ₦{(summary.pending_amount || 0).toLocaleString()}
+                            </p>
                         </div>
-                        <FaCalendarAlt className="text-orange-500 text-3xl" />
+                        <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg">
+                            <FaCalendarAlt className="text-white text-xl" />
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Filters and Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-6 animate-fadeIn">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     {/* Date Selector */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             Date
                         </label>
                         <input
@@ -736,34 +802,34 @@ const DailyTickets = () => {
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                             max={new Date().toISOString().split('T')[0]}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-[#0d544c] transition-all duration-200"
                         />
                     </div>
 
                     {/* Search */}
                     <div className="relative">
-                        <FaSearch className="absolute left-3 top-10 text-gray-400" />
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             Search
                         </label>
+                        <FaSearch className="absolute left-3 top-1/2 translate-y-1 text-gray-400" size={16} />
                         <input
                             type="text"
                             placeholder="Search tickets..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-[#0d544c] transition-all duration-200"
                         />
                     </div>
 
                     {/* Category Filter */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             Category
                         </label>
                         <select
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-[#0d544c] transition-all duration-200"
                         >
                             <option value="all">All Categories</option>
                             {categories.map(cat => (
@@ -774,13 +840,13 @@ const DailyTickets = () => {
 
                     {/* Status Filter */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             Status
                         </label>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-[#0d544c] transition-all duration-200"
                         >
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
@@ -789,58 +855,61 @@ const DailyTickets = () => {
                     </div>
                 </div>
 
-                <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Showing {filteredTickets.length} of {tickets.length} tickets
+                <div className="flex justify-between items-center flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        Showing <span className="text-[#0d544c] dark:text-[#3B78BD] font-bold">{filteredTickets.length}</span> of <span className="font-semibold">{tickets.length}</span> tickets
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <button
                             onClick={handleExportSummary}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+                            className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg"
                         >
-                            <FaDownload /> Export
+                            <FaDownload size={14} />
+                            <span>Export</span>
                         </button>
                         <button
                             onClick={handleBulkIssue}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+                            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg"
                         >
-                            <FaPlus /> Bulk Issue
+                            <FaPlus size={14} />
+                            <span>Bulk Issue</span>
                         </button>
                         <button
                             onClick={handleIssueTicket}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+                            className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:from-[#0d544c]/90 hover:to-[#3B78BD]/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all duration-300 text-sm font-semibold shadow-md hover:shadow-lg"
                         >
-                            <FaPlus /> Issue Ticket
+                            <FaPlus size={14} />
+                            <span>Issue Ticket</span>
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Tickets Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden animate-fadeIn">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
+                        <thead className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-left text-sm font-semibold">
                                     Ticket #
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-left text-sm font-semibold">
                                     Category
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-left text-sm font-semibold">
                                     Vehicle/Stall
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-left text-sm font-semibold">
                                     Payer
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-left text-sm font-semibold">
                                     Amount
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-left text-sm font-semibold">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th className="px-6 py-4 text-center text-sm font-semibold">
                                     Actions
                                 </th>
                             </tr>
@@ -1621,6 +1690,39 @@ const DailyTickets = () => {
                     }}
                 />
             )}
+
+            {/* CSS Animations */}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+
+                .animate-fadeIn {
+                    animation: fadeIn 0.5s ease-out forwards;
+                }
+
+                .animate-slideIn {
+                    animation: slideIn 0.4s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

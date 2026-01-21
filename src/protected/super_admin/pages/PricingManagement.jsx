@@ -72,6 +72,7 @@ const PricingManagement = () => {
         duration: '',
         amount: '',
         purpose: '',
+        monnify_product_code: '',
         name: '', // For display in modal
         description: '', // For display in modal
         value: '', // Alias for amount (for backward compatibility)
@@ -102,6 +103,7 @@ const PricingManagement = () => {
                 duration: editingTariff.duration || '',
                 amount: editingTariff.amount || '',
                 purpose: editingTariff.purpose || '',
+                monnify_product_code: editingTariff.monnify_product_code || '',
                 name: editingTariff.purpose || editingTariff.name || '',
                 description: editingTariff.description || '',
                 value: editingTariff.amount || editingTariff.value || '',
@@ -242,6 +244,7 @@ const PricingManagement = () => {
             duration: '',
             amount: '',
             purpose: '',
+            monnify_product_code: '',
             name: '',
             description: '',
             value: '',
@@ -810,6 +813,15 @@ const PricingManagement = () => {
                                         </p>
                                     )}
 
+                                    {item.monnify_product_code && (
+                                        <div className="mb-3">
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Monnify Code</div>
+                                            <span className="px-2 py-1 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white text-xs font-mono rounded">
+                                                {item.monnify_product_code}
+                                            </span>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                                         <button
                                             onClick={() => handleSelectItem(item)}
@@ -902,6 +914,7 @@ const PricingManagement = () => {
                                             <th className="px-6 py-4 text-left text-sm font-semibold">Tariff Name</th>
                                             <th className="px-6 py-4 text-left text-sm font-semibold">Category</th>
                                             <th className="px-6 py-4 text-left text-sm font-semibold">Pricing</th>
+                                            <th className="px-6 py-4 text-left text-sm font-semibold">Monnify Code</th>
                                             <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
                                             <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
                                         </tr>
@@ -933,6 +946,19 @@ const PricingManagement = () => {
                                                 ) : (
                                                     <span className="text-lg font-bold text-[#0d544c] dark:text-[#3B78BD]">
                                                         ₦{Number(item.amount || 0).toLocaleString()}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {item.monnify_product_code ? (
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="px-3 py-1 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white text-xs font-mono rounded">
+                                                            {item.monnify_product_code}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                                                        No code
                                                     </span>
                                                 )}
                                             </td>
@@ -1229,15 +1255,20 @@ const PricingManagement = () => {
                             {/* Category */}
                             <div>
                                 <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                    Category
+                                    Category *
                                 </label>
-                                <input
-                                    type="text"
-                                    value={tariffForm.category || ''}
+                                <select
+                                    value={tariffForm.category || 'One-Off'}
                                     onChange={e => setTariffForm({ ...tariffForm, category: e.target.value })}
                                     className="w-full p-3 border border-gray-400 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-[#3B78BD] focus:border-[#3B78BD]"
-                                    placeholder="e.g., Property Tax"
-                                />
+                                    required
+                                >
+                                    <option value="One-Off">One-Off</option>
+                                    <option value="Recurring">Recurring</option>
+                                </select>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    One-Off: Single payment | Recurring: Regular payments
+                                </p>
                             </div>
 
                             {/* Description */}
@@ -1252,6 +1283,24 @@ const PricingManagement = () => {
                                     rows="3"
                                     placeholder="Brief description of this tariff..."
                                 />
+                            </div>
+
+                            {/* Monnify Product Code */}
+                            <div>
+                                <label className="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Monnify Product Code
+                                </label>
+                                <input
+                                    type="text"
+                                    value={tariffForm.monnify_product_code || ''}
+                                    onChange={e => setTariffForm({ ...tariffForm, monnify_product_code: e.target.value })}
+                                    className="w-full p-3 border border-gray-400 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-[#3B78BD] focus:border-[#3B78BD]"
+                                    placeholder="e.g., MFY-12345"
+                                    maxLength={100}
+                                />
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Required for payment processing via Monnify gateway
+                                </p>
                             </div>
 
                             {/* Variable Pricing Toggle */}

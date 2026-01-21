@@ -53,7 +53,8 @@ const SystemSettings = () => {
         transaction_fee_value: '1.5',
         enable_reminders: true,
         reminder_days_before: '7',
-        reminder_days_after: '3'
+        reminder_days_after: '3',
+        show_record_payment_button: true // Toggle for Record Payment button visibility
     });
 
     // Security Settings
@@ -140,6 +141,11 @@ const SystemSettings = () => {
 
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Save payment settings to localStorage for client-side access
+            if (activeTab === 'payment') {
+                localStorage.setItem('paymentSettings', JSON.stringify(paymentSettings));
+            }
 
             setSuccess('Settings saved successfully!');
             setSaving(false);
@@ -657,6 +663,21 @@ const SystemSettings = () => {
                                         </SettingRow>
                                     </>
                                 )}
+
+                                <SettingRow
+                                    label="Show Record Payment Button"
+                                    description="Display the 'Record Payment' button on invoice tables for offline payment recording"
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <ToggleSwitch
+                                            checked={paymentSettings.show_record_payment_button}
+                                            onChange={(value) => setPaymentSettings({ ...paymentSettings, show_record_payment_button: value })}
+                                        />
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                                            {paymentSettings.show_record_payment_button ? 'Visible' : 'Hidden'}
+                                        </span>
+                                    </div>
+                                </SettingRow>
                             </div>
                         )}
 

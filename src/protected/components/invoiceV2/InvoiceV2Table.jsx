@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 
 const InvoiceV2Table = ({
@@ -13,6 +13,21 @@ const InvoiceV2Table = ({
     onCancel,
     onDelete,
 }) => {
+    // Check if Record Payment button should be shown (from system settings)
+    const [showRecordPayment, setShowRecordPayment] = useState(true);
+
+    useEffect(() => {
+        // Get setting from localStorage
+        const paymentSettings = localStorage.getItem('paymentSettings');
+        if (paymentSettings) {
+            try {
+                const settings = JSON.parse(paymentSettings);
+                setShowRecordPayment(settings.show_record_payment_button !== false);
+            } catch (e) {
+                setShowRecordPayment(true); // Default to true
+            }
+        }
+    }, []);
     if (loading) {
         return (
             <div className="text-center py-8">
@@ -62,76 +77,76 @@ const InvoiceV2Table = ({
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
-                <thead className="bg-gray-100 dark:bg-gray-700">
+                <thead className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white">
                     <tr>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Invoice #</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Payer</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Type</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Amount</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Paid</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Balance</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Status</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Payment</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Due Date</th>
-                        <th className="p-3 border-b font-semibold text-gray-800 dark:text-gray-200">Actions</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Invoice #</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Payer</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Type</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Amount</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Paid</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Balance</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Payment</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Due Date</th>
+                        <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {invoices.map((invoice) => (
                         <tr
                             key={invoice.id}
-                            className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200"
                         >
-                            <td className="p-3 font-medium text-blue-600 dark:text-blue-400">
+                            <td className="px-6 py-4 font-semibold text-[#0d544c] dark:text-[#3B78BD]">
                                 {invoice.invoice_number}
                             </td>
-                            <td className="p-3">
+                            <td className="px-6 py-4">
                                 <div>
-                                    <p className="font-medium text-gray-800 dark:text-white">
+                                    <p className="font-semibold text-gray-900 dark:text-white">
                                         {invoice.payer_name || 'N/A'}
                                     </p>
                                     {invoice.payer_phone && (
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{invoice.payer_phone}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{invoice.payer_phone}</p>
                                     )}
                                 </div>
                             </td>
-                            <td className="p-3">
-                                <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
+                            <td className="px-6 py-4">
+                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                                     {invoice.payer_type || 'N/A'}
                                 </span>
                             </td>
-                            <td className="p-3 font-semibold text-gray-800 dark:text-gray-200">
+                            <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">
                                 ₦{Number(invoice.total_amount || 0).toLocaleString()}
                             </td>
-                            <td className="p-3 text-green-600 dark:text-green-400">
+                            <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
                                 ₦{Number(invoice.amount_paid || 0).toLocaleString()}
                             </td>
-                            <td className="p-3 text-red-600 dark:text-red-400">
+                            <td className="px-6 py-4 font-semibold text-red-600 dark:text-red-400">
                                 ₦{Number(invoice.balance || 0).toLocaleString()}
                             </td>
-                            <td className="p-3">
-                                <span className={`px-2 py-1 text-xs rounded ${getStatusColor(invoice.status)}`}>
+                            <td className="px-6 py-4">
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
                                     {invoice.status || 'N/A'}
                                 </span>
                             </td>
-                            <td className="p-3">
-                                <span className={`px-2 py-1 text-xs rounded ${getPaymentStatusColor(invoice.payment_status)}`}>
+                            <td className="px-6 py-4">
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(invoice.payment_status)}`}>
                                     {invoice.payment_status || 'N/A'}
                                 </span>
                             </td>
-                            <td className="p-3 text-gray-800 dark:text-gray-200">
+                            <td className="px-6 py-4 text-gray-800 dark:text-gray-200">
                                 {invoice.due_date ? (
-                                    <span className={new Date(invoice.due_date) < new Date() && invoice.status !== 'paid' ? 'text-red-600 dark:text-red-400 font-semibold' : ''}>
+                                    <span className={new Date(invoice.due_date) < new Date() && invoice.status !== 'paid' ? 'text-red-600 dark:text-red-400 font-bold' : 'font-medium'}>
                                         {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
                                     </span>
                                 ) : 'N/A'}
                             </td>
-                            <td className="p-3">
-                                <div className="flex flex-wrap gap-1">
+                            <td className="px-6 py-4">
+                                <div className="flex flex-wrap gap-2 justify-center">
                                     {/* View Button - Always available */}
                                     <button
                                         onClick={() => onView(invoice)}
-                                        className="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white text-xs rounded transition-colors"
+                                        className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
                                         title="View Details"
                                     >
                                         View
@@ -141,18 +156,18 @@ const InvoiceV2Table = ({
                                     {invoice.status === 'draft' && onEdit && (
                                         <button
                                             onClick={() => onEdit(invoice)}
-                                            className="px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded transition-colors"
+                                            className="px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
                                             title="Edit Invoice"
                                         >
                                             Edit
                                         </button>
                                     )}
 
-                                    {/* Approve Button - Only for draft invoices */}
-                                    {invoice.status === 'draft' && onApprove && (
+                                    {/* Approve Button - Only for draft invoices (invoices are auto-approved on creation, so this is mainly for legacy) */}
+                                    {invoice.status === 'draft' && !invoice.approved_at && onApprove && (
                                         <button
                                             onClick={() => onApprove(invoice)}
-                                            className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-colors"
+                                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
                                             title="Approve Invoice"
                                         >
                                             Approve
@@ -163,18 +178,18 @@ const InvoiceV2Table = ({
                                     {invoice.payment_status !== 'paid' && invoice.status !== 'cancelled' && onPayOnline && (
                                         <button
                                             onClick={() => onPayOnline(invoice)}
-                                            className="px-2 py-1 bg-[#00a86b] hover:bg-[#008c5a] text-white text-xs rounded transition-colors"
+                                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
                                             title="Pay Online via Gateway"
                                         >
                                             Pay Online
                                         </button>
                                     )}
 
-                                    {/* Record Payment Button - For unpaid/partially paid invoices */}
-                                    {invoice.payment_status !== 'paid' && invoice.status !== 'cancelled' && onRecordPayment && (
+                                    {/* Record Payment Button - For unpaid/partially paid invoices (controlled by system settings) */}
+                                    {showRecordPayment && invoice.payment_status !== 'paid' && invoice.status !== 'cancelled' && onRecordPayment && (
                                         <button
                                             onClick={() => onRecordPayment(invoice)}
-                                            className="px-2 py-1 bg-[#3B78BD] hover:bg-[#F0B652] text-white text-xs rounded transition-colors"
+                                            className="px-3 py-1.5 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:shadow-lg text-white text-xs font-semibold rounded-lg transition-all duration-200"
                                             title="Record Offline Payment"
                                         >
                                             Record Payment
@@ -185,7 +200,7 @@ const InvoiceV2Table = ({
                                     {invoice.payment_status !== 'paid' && invoice.status !== 'cancelled' && onCancel && (
                                         <button
                                             onClick={() => onCancel(invoice)}
-                                            className="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white text-xs rounded transition-colors"
+                                            className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
                                             title="Cancel Invoice"
                                         >
                                             Cancel
@@ -196,7 +211,7 @@ const InvoiceV2Table = ({
                                     {(invoice.status === 'draft' || invoice.status === 'cancelled') && invoice.payment_status !== 'paid' && onDelete && (
                                         <button
                                             onClick={() => onDelete(invoice)}
-                                            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
                                             title="Delete Invoice"
                                         >
                                             Delete

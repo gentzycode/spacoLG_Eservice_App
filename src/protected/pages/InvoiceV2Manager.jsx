@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import {
     fetchInvoicesV2,
@@ -20,6 +20,8 @@ import ConfirmModal from '../components/common/ConfirmModal';
 import InputModal from '../components/common/InputModal';
 import { toast } from 'react-toastify';
 import { AiOutlinePlus, AiOutlineClose } from 'react-icons/ai';
+import { FaFileInvoiceDollar, FaSync } from 'react-icons/fa';
+import PageLoader from '../../common/PageLoader';
 
 const InvoiceV2Manager = () => {
     const { token } = useContext(AuthContext);
@@ -222,94 +224,107 @@ const InvoiceV2Manager = () => {
     };
 
     return (
-        <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 min-h-screen">
             {error && (
-                <div className="px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between text-red-600 dark:text-red-400 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                <div className="mb-4 animate-fadeIn">
+                    <div className="flex items-center justify-between text-red-600 dark:text-red-400 p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-800 shadow-lg">
                         <span>{error}</span>
-                        <button onClick={() => setError(null)} className="text-red-600 hover:text-red-800">
+                        <button onClick={() => setError(null)} className="text-red-600 hover:text-red-800 dark:hover:text-red-400">
                             <AiOutlineClose size={20} />
                         </button>
                     </div>
                 </div>
             )}
 
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-                {/* Header Section */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            {/* Header Section */}
+            <div className="mb-8 animate-fadeIn">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Invoice V2 Management</h1>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage and track all invoices</p>
+                        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center space-x-3">
+                            <FaFileInvoiceDollar className="text-[#0d544c]" />
+                            <span>Invoice Management</span>
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg">
+                            Create, manage, and track all invoices for individuals and corporates
+                        </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            onClick={fetchData}
+                            disabled={loading}
+                            className="flex items-center space-x-2 px-5 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:border-[#0d544c] dark:hover:border-[#3B78BD] hover:shadow-lg transition-all duration-300 font-semibold disabled:opacity-50"
+                        >
+                            <FaSync className={loading ? 'animate-spin' : ''} />
+                            <span>Refresh</span>
+                        </button>
                         <button
                             onClick={handleCreate}
-                            className="px-5 py-2.5 bg-[#3B78BD] text-white rounded-lg hover:bg-[#F0B652] transition-all duration-300 shadow-md flex items-center space-x-2 font-semibold"
+                            className="px-6 py-2.5 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white rounded-xl hover:shadow-xl transition-all duration-300 flex items-center space-x-2 font-semibold"
                         >
                             <AiOutlinePlus size={20} />
                             <span>Create Invoice</span>
                         </button>
                     </div>
                 </div>
+            </div>
 
-                {/* Statistics Section */}
-                <InvoiceV2Statistics statistics={statistics} loading={loading} />
+            {/* Statistics Section */}
+            <InvoiceV2Statistics statistics={statistics} loading={loading} />
 
-                {/* Filters Section */}
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 mb-6">
-                    <InvoiceV2Filters
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
+            {/* Filters Section */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6 animate-fadeIn">
+                <InvoiceV2Filters
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                />
+            </div>
+
+            {/* Table Section */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 animate-fadeIn">
+                <div className="p-6">
+                    <InvoiceV2Table
+                        invoices={invoices}
+                        loading={loading}
+                        error={error}
+                        onView={handleView}
+                        onEdit={handleEdit}
+                        onRecordPayment={handleRecordPayment}
+                        onPayOnline={handlePayOnline}
+                        onApprove={handleApprove}
+                        onCancel={handleCancel}
+                        onDelete={handleDelete}
                     />
                 </div>
 
-                {/* Table Section */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                    <div className="p-6">
-                        <InvoiceV2Table
-                            invoices={invoices}
-                            loading={loading}
-                            error={error}
-                            onView={handleView}
-                            onEdit={handleEdit}
-                            onRecordPayment={handleRecordPayment}
-                            onPayOnline={handlePayOnline}
-                            onApprove={handleApprove}
-                            onCancel={handleCancel}
-                            onDelete={handleDelete}
-                        />
-                    </div>
-
-                    {/* Pagination */}
-                    {pagination.last_page > 1 && (
-                        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to{' '}
-                                {Math.min(pagination.current_page * pagination.per_page, pagination.total)} of{' '}
-                                {pagination.total} invoices
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <button
-                                    onClick={() => handlePageChange(pagination.current_page - 1)}
-                                    disabled={pagination.current_page === 1}
-                                    className="px-4 py-2 bg-[#3B78BD] text-white rounded-lg hover:bg-[#F0B652] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Previous
-                                </button>
-                                <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                    Page {pagination.current_page} of {pagination.last_page}
-                                </span>
-                                <button
-                                    onClick={() => handlePageChange(pagination.current_page + 1)}
-                                    disabled={pagination.current_page === pagination.last_page}
-                                    className="px-4 py-2 bg-[#3B78BD] text-white rounded-lg hover:bg-[#F0B652] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Next
-                                </button>
-                            </div>
+                {/* Pagination */}
+                {pagination.last_page > 1 && (
+                    <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50 dark:bg-gray-900/50">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                            Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to{' '}
+                            {Math.min(pagination.current_page * pagination.per_page, pagination.total)} of{' '}
+                            {pagination.total} invoices
                         </div>
-                    )}
-                </div>
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() => handlePageChange(pagination.current_page - 1)}
+                                disabled={pagination.current_page === 1}
+                                className="px-4 py-2 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-gray-700 dark:text-gray-300 font-semibold">
+                                Page {pagination.current_page} of {pagination.last_page}
+                            </span>
+                            <button
+                                onClick={() => handlePageChange(pagination.current_page + 1)}
+                                disabled={pagination.current_page === pagination.last_page}
+                                className="px-4 py-2 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Modals */}
@@ -393,6 +408,39 @@ const InvoiceV2Manager = () => {
                 confirmButtonClass="bg-red-500 hover:bg-red-600"
                 loading={loading}
             />
+
+            {/* CSS Animations */}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+
+                .animate-fadeIn {
+                    animation: fadeIn 0.5s ease-out forwards;
+                }
+
+                .animate-slideIn {
+                    animation: slideIn 0.4s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 };

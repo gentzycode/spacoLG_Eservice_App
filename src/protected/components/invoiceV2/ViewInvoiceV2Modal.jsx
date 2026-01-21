@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getInvoiceV2ById } from '../../../apis/invoiceAssessmentActions';
 import { format } from 'date-fns';
+import InvoicePrintModal from './InvoicePrintModal';
+import { FaPrint } from 'react-icons/fa';
 
 const ViewInvoiceV2Modal = ({ invoice, onClose, token }) => {
     const [invoiceDetails, setInvoiceDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showPrintModal, setShowPrintModal] = useState(false);
 
     useEffect(() => {
         fetchInvoiceDetails();
@@ -238,17 +241,32 @@ const ViewInvoiceV2Modal = ({ invoice, onClose, token }) => {
                         </div>
                     </div>
 
-                    {/* Close Button */}
-                    <div className="mt-6 flex justify-end">
+                    {/* Action Buttons */}
+                    <div className="mt-6 flex justify-end space-x-3">
+                        <button
+                            onClick={() => setShowPrintModal(true)}
+                            className="px-6 py-2.5 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:shadow-lg text-white rounded-xl transition-all duration-200 flex items-center space-x-2 font-semibold"
+                        >
+                            <FaPrint />
+                            <span>Print Invoice</span>
+                        </button>
                         <button
                             onClick={onClose}
-                            className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md"
+                            className="px-6 py-2.5 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 font-semibold"
                         >
                             Close
                         </button>
                     </div>
                 </div>
             </div>
+
+            {/* Invoice Print Modal */}
+            {showPrintModal && invoiceDetails && (
+                <InvoicePrintModal
+                    invoice={invoiceDetails}
+                    onClose={() => setShowPrintModal(false)}
+                />
+            )}
         </div>
     );
 };

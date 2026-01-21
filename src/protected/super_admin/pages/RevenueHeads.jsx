@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaTimes, FaSave,
-    FaBook, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaListOl, FaEye, FaDownload
+    FaBook, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaListOl, FaEye, FaDownload,
+    FaFileExcel, FaFileCsv, FaSync, FaChartLine
 } from 'react-icons/fa';
-import { MdCategory } from 'react-icons/md';
+import { MdCategory, MdGridView, MdTableRows } from 'react-icons/md';
 import { CSVLink } from 'react-csv';
-import InitLoader from '../../../common/InitLoader';
+import PageLoader from '../../../common/PageLoader';
 import {
     fetchRevenueHeads,
     fetchRevenueHeadsBySchedule,
@@ -31,6 +32,9 @@ const RevenueHeads = () => {
     const [selectedSchedule, setSelectedSchedule] = useState('all');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [activeOnly, setActiveOnly] = useState(false);
+
+    // View mode
+    const [viewMode, setViewMode] = useState('table'); // 'grid' or 'table'
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -234,18 +238,44 @@ const RevenueHeads = () => {
         setShowViewModal(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this revenue head?')) return;
+    const handleDelete = useCallback(async (id, name) => {
+        // Use toast for confirmation
+        const confirmDelete = async () => {
+            setLoading(true);
+            try {
+                await deleteRevenueHead(id);
+                toast.success('Revenue head deleted successfully');
+                loadData();
+            } catch (error) {
+                console.error('Error deleting revenue head:', error);
+                toast.error('Failed to delete revenue head');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        try {
-            await deleteRevenueHead(id);
-            toast.success('Revenue head deleted successfully');
-            loadData();
-        } catch (error) {
-            console.error('Error deleting revenue head:', error);
-            toast.error('Failed to delete revenue head');
-        }
-    };
+        // Show warning toast with action button
+        toast.warn(
+            <div className="flex flex-col space-y-3">
+                <p className="font-semibold">Delete Revenue Head?</p>
+                <p className="text-sm">{name || 'This item'} will be permanently removed.</p>
+                <div className="flex space-x-2 mt-2">
+                    <button
+                        onClick={confirmDelete}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                    >
+                        Yes, Delete
+                    </button>
+                </div>
+            </div>,
+            {
+                position: 'top-center',
+                autoClose: 5000,
+                closeButton: true,
+                draggable: false,
+            }
+        );
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -347,266 +377,497 @@ const RevenueHeads = () => {
     };
 
     if (loading && revenueHeads.length === 0) {
-        return <InitLoader />;
+        return <PageLoader message="Loading revenue heads data..." fullScreen={true} />;
     }
 
     return (
-        <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    Revenue Heads Management
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                    Manage revenue items from Yenagoa LGA By-Laws (Revenue) 2014 (As Amended 2025)
-                </p>
-            </div>
-
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue Heads</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{statistics.total}</p>
-                        </div>
-                        <FaBook className="text-blue-500 text-3xl" />
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 min-h-screen">
+            {/* Header Section */}
+            <div className="mb-8 animate-fadeIn">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center space-x-3">
+                            <FaBook className="text-[#0d544c]" />
+                            <span>Revenue Heads Management</span>
+                        </h1>
+                        <p className="text-gray-600 dark:text-gray-400 text-lg">
+                            Manage revenue items from Yenagoa LGA By-Laws (Revenue) 2014 (As Amended 2025)
+                        </p>
                     </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Active</p>
-                            <p className="text-2xl font-bold text-green-600">{statistics.active}</p>
-                        </div>
-                        <FaCheckCircle className="text-green-500 text-3xl" />
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Schedules</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">6</p>
-                        </div>
-                        <FaListOl className="text-purple-500 text-3xl" />
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">Categories</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{categories.length}</p>
-                        </div>
-                        <MdCategory className="text-orange-500 text-3xl" />
-                    </div>
-                </div>
-            </div>
-
-            {/* Filters and Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    {/* Search */}
-                    <div className="relative">
-                        <FaSearch className="absolute left-3 top-3 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search revenue heads..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-
-                    {/* Schedule Filter */}
-                    <select
-                        value={selectedSchedule}
-                        onChange={(e) => setSelectedSchedule(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="all">All Schedules</option>
-                        {schedules.map(schedule => (
-                            <option key={schedule.number} value={schedule.number}>
-                                Schedule {schedule.number}: {schedule.name}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Category Filter */}
-                    <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="all">All Categories</option>
-                        {categories.map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                    </select>
-
-                    {/* Active Filter */}
-                    <div className="flex items-center">
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={activeOnly}
-                                onChange={(e) => setActiveOnly(e.target.checked)}
-                                className="mr-2"
-                            />
-                            <span className="text-gray-700 dark:text-gray-300">Active Only</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Showing {filteredHeads.length} of {revenueHeads.length} revenue heads
-                    </p>
-                    <div className="flex gap-3">
-                        <CSVLink
-                            data={prepareExportData()}
-                            headers={csvHeaders}
-                            filename={generateFilename()}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
-                            onClick={() => {
-                                toast.success(`Exporting ${filteredHeads.length} revenue heads to CSV`);
-                            }}
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* Refresh Button */}
+                        <button
+                            onClick={loadData}
+                            disabled={loading}
+                            className="flex items-center space-x-2 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-medium shadow-sm"
+                            title="Refresh data"
                         >
-                            <FaDownload /> Export to CSV
-                        </CSVLink>
+                            <FaSync size={16} className={loading ? 'animate-spin' : ''} />
+                            <span className="hidden sm:inline">Refresh</span>
+                        </button>
+
+                        {/* Add Revenue Head Button */}
                         <button
                             onClick={handleAdd}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+                            className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white rounded-xl hover:shadow-xl transition-all duration-300 font-medium"
                         >
-                            <FaPlus /> Add Revenue Head
+                            <FaPlus size={20} />
+                            <span>Add Revenue Head</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Revenue Heads Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Code
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Schedule
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Category
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Payment Frequency
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {paginatedHeads.map((head) => (
-                                <tr key={head.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                        {head.code}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                        {head.name}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {head.schedule_number}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {head.category}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {head.payment_frequency}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-slideIn">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Total Revenue Heads</p>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{statistics.total}</h3>
+                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <FaBook className="text-white text-2xl" />
+                        </div>
+                    </div>
+                    {statistics.total > 0 && (
+                        <div className="flex items-center space-x-2 text-xs">
+                            <FaChartLine className="text-green-600" size={14} />
+                            <span className="text-green-600 font-semibold">
+                                {Math.round((statistics.active / statistics.total) * 100)}%
+                            </span>
+                            <span className="text-gray-400">active</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Active</p>
+                            <h3 className="text-3xl font-bold text-green-600">{statistics.active}</h3>
+                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                            <FaCheckCircle className="text-white text-2xl" />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2 text-xs">
+                        <span className="text-gray-400">
+                            {statistics.total - statistics.active} inactive
+                        </span>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Schedules</p>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white">6</h3>
+                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                            <FaListOl className="text-white text-2xl" />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2 text-xs">
+                        <span className="text-gray-400">By-Laws (Revenue) 2014</span>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Categories</p>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{categories.length}</h3>
+                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                            <MdCategory className="text-white text-2xl" />
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-2 text-xs">
+                        <span className="text-gray-400">Unique categories</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filters and Actions */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-slideIn">
+                {/* Filter Header */}
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center space-x-2">
+                        <FaFilter className="text-[#0d544c]" size={18} />
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filters & Search</h2>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        {/* View Toggle */}
+                        <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                            <button
+                                onClick={() => setViewMode('table')}
+                                className={`p-2.5 rounded-lg transition-all duration-300 ${
+                                    viewMode === 'table'
+                                        ? 'bg-white dark:bg-gray-600 text-[#0d544c] shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                }`}
+                                title="Table View"
+                            >
+                                <MdTableRows size={20} />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-2.5 rounded-lg transition-all duration-300 ${
+                                    viewMode === 'grid'
+                                        ? 'bg-white dark:bg-gray-600 text-[#0d544c] shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                }`}
+                                title="Grid View"
+                            >
+                                <MdGridView size={20} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Search */}
+                    <div className="relative">
+                        <FaSearch className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Search revenue heads..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                        />
+                    </div>
+
+                    {/* Schedule Filter */}
+                    <div className="relative">
+                        <select
+                            value={selectedSchedule}
+                            onChange={(e) => setSelectedSchedule(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent appearance-none cursor-pointer transition-all duration-300"
+                        >
+                            <option value="all">All Schedules</option>
+                            {schedules.map(schedule => (
+                                <option key={schedule.number} value={schedule.number}>
+                                    Schedule {schedule.number}: {schedule.name}
+                                </option>
+                            ))}
+                        </select>
+                        <FaListOl className="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" size={14} />
+                    </div>
+
+                    {/* Category Filter */}
+                    <div className="relative">
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent appearance-none cursor-pointer transition-all duration-300"
+                        >
+                            <option value="all">All Categories</option>
+                            {categories.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                        <MdCategory className="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none" size={16} />
+                    </div>
+
+                    {/* Active Filter */}
+                    <div className="flex items-center justify-center">
+                        <label className="flex items-center cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={activeOnly}
+                                onChange={(e) => setActiveOnly(e.target.checked)}
+                                className="w-5 h-5 text-[#0d544c] border-gray-300 rounded focus:ring-[#0d544c] focus:ring-2 cursor-pointer"
+                            />
+                            <span className="ml-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-[#0d544c] dark:group-hover:text-[#3B78BD] transition-colors">
+                                Active Only
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Showing <span className="font-semibold text-gray-900 dark:text-white">{filteredHeads.length}</span> of <span className="font-semibold text-gray-900 dark:text-white">{revenueHeads.length}</span> revenue heads
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                        <CSVLink
+                            data={prepareExportData()}
+                            headers={csvHeaders}
+                            filename={generateFilename()}
+                            className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl transition-all duration-300 font-medium shadow-md hover:shadow-lg"
+                            onClick={() => {
+                                toast.success(`Exporting ${filteredHeads.length} revenue heads to CSV`);
+                            }}
+                        >
+                            <FaFileCsv size={16} />
+                            <span>Export CSV</span>
+                        </CSVLink>
+                        <CSVLink
+                            data={prepareExportData()}
+                            headers={csvHeaders}
+                            filename={generateFilename().replace('.csv', '.xlsx')}
+                            className="flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl transition-all duration-300 font-medium shadow-md hover:shadow-lg"
+                            onClick={() => {
+                                toast.success(`Exporting ${filteredHeads.length} revenue heads to Excel`);
+                            }}
+                        >
+                            <FaFileExcel size={16} />
+                            <span>Export Excel</span>
+                        </CSVLink>
+                    </div>
+                </div>
+            </div>
+
+            {/* Revenue Heads Content - Grid or Table View */}
+            {viewMode === 'grid' ? (
+                /* Grid View */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {paginatedHeads.map((head, index) => (
+                        <div
+                            key={head.id}
+                            className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 animate-fadeIn group"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                            {/* Header */}
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <span className="px-2.5 py-1 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white rounded-lg text-xs font-bold">
+                                            {head.code}
+                                        </span>
                                         {head.is_active ? (
-                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                                                <FaCheckCircle className="mr-1" size={10} />
                                                 Active
                                             </span>
                                         ) : (
-                                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                                                <FaTimesCircle className="mr-1" size={10} />
                                                 Inactive
                                             </span>
                                         )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button
-                                            onClick={() => handleView(head)}
-                                            className="text-green-600 hover:text-green-900 dark:hover:text-green-400 mr-3"
-                                            title="View Details"
-                                        >
-                                            <FaEye />
-                                        </button>
-                                        <button
-                                            onClick={() => handleEdit(head)}
-                                            className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 mr-3"
-                                            title="Edit"
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(head.id)}
-                                            className="text-red-600 hover:text-red-900 dark:hover:text-red-400"
-                                            title="Delete"
-                                        >
-                                            <FaTrash />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    </div>
+                                    <h3 className="text-base font-bold text-gray-900 dark:text-white line-clamp-2">
+                                        {head.name}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            {/* Details */}
+                            <div className="space-y-3 mb-4">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-500 dark:text-gray-400 flex items-center space-x-1">
+                                        <MdCategory size={14} />
+                                        <span>Category</span>
+                                    </span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{head.category}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-500 dark:text-gray-400 flex items-center space-x-1">
+                                        <FaCalendarAlt size={12} />
+                                        <span>Frequency</span>
+                                    </span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{head.payment_frequency}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-500 dark:text-gray-400 flex items-center space-x-1">
+                                        <FaListOl size={12} />
+                                        <span>Tariffs</span>
+                                    </span>
+                                    <span className="font-semibold text-[#0d544c] dark:text-[#3B78BD]">
+                                        {head.tariffs?.length || 0}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <button
+                                    onClick={() => handleView(head)}
+                                    className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-all duration-300"
+                                    title="View Details"
+                                >
+                                    <FaEye size={14} />
+                                    <span className="text-xs font-medium">View</span>
+                                </button>
+                                <button
+                                    onClick={() => handleEdit(head)}
+                                    className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-300"
+                                    title="Edit"
+                                >
+                                    <FaEdit size={14} />
+                                    <span className="text-xs font-medium">Edit</span>
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(head.id, head.name)}
+                                    className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-300"
+                                    title="Delete"
+                                >
+                                    <FaTrash size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-
-                {filteredHeads.length === 0 && (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500 dark:text-gray-400">No revenue heads found</p>
+            ) : (
+                /* Table View */
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD]">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                                        Code
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                                        Tariffs
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                                        Category
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                                        Payment Frequency
+                                    </th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                {paginatedHeads.map((head, index) => (
+                                    <tr
+                                        key={head.id}
+                                        className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-700 dark:hover:to-gray-750 transition-all duration-200"
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-[#0d544c] dark:text-[#3B78BD]">
+                                            {head.code}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                                            {head.name}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-[#0d544c] to-[#3B78BD]">
+                                                    <span className="text-white font-bold text-xs">
+                                                        {head.tariffs?.length || 0}
+                                                    </span>
+                                                </div>
+                                                <span className="text-gray-500 dark:text-gray-400 text-xs">
+                                                    {(head.tariffs?.length || 0) === 1 ? 'tariff' : 'tariffs'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                                                <MdCategory className="mr-1" size={12} />
+                                                {head.category}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                                                <FaCalendarAlt className="mr-1" size={10} />
+                                                {head.payment_frequency}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {head.is_active ? (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/30 text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700">
+                                                    <FaCheckCircle className="mr-1.5" size={12} />
+                                                    Active
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700">
+                                                    <FaTimesCircle className="mr-1.5" size={12} />
+                                                    Inactive
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <button
+                                                    onClick={() => handleView(head)}
+                                                    className="p-2 rounded-lg text-green-600 hover:text-white hover:bg-green-600 dark:text-green-400 dark:hover:bg-green-600 transition-all duration-300 group"
+                                                    title="View Details"
+                                                >
+                                                    <FaEye size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEdit(head)}
+                                                    className="p-2 rounded-lg text-blue-600 hover:text-white hover:bg-blue-600 dark:text-blue-400 dark:hover:bg-blue-600 transition-all duration-300 group"
+                                                    title="Edit"
+                                                >
+                                                    <FaEdit size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(head.id, head.name)}
+                                                    className="p-2 rounded-lg text-red-600 hover:text-white hover:bg-red-600 dark:text-red-400 dark:hover:bg-red-600 transition-all duration-300 group"
+                                                    title="Delete"
+                                                >
+                                                    <FaTrash size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                )}
+                </div>
+            )}
 
-                {/* Pagination */}
-                {filteredHeads.length > 0 && (
-                    <div className="px-6 py-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            {/* Empty State */}
+            {filteredHeads.length === 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 text-center py-16">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 mb-4">
+                        <FaBook className="text-gray-400 dark:text-gray-500" size={24} />
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">No revenue heads found</p>
+                    <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Try adjusting your filters or search term</p>
+                </div>
+            )}
+
+            {/* Pagination */}
+            {filteredHeads.length > 0 && (
+                <div className="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="px-6 py-5 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                             {/* Items per page selector */}
-                            <div className="flex items-center gap-2">
-                                <label className="text-sm text-gray-700 dark:text-gray-300">
+                            <div className="flex items-center gap-2.5">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Show
                                 </label>
                                 <select
                                     value={itemsPerPage}
                                     onChange={handleItemsPerPageChange}
-                                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                                    className="px-3.5 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300 cursor-pointer"
                                 >
                                     <option value={10}>10</option>
                                     <option value={20}>20</option>
                                     <option value={50}>50</option>
                                     <option value={100}>100</option>
                                 </select>
-                                <label className="text-sm text-gray-700 dark:text-gray-300">
+                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     entries
                                 </label>
                             </div>
 
                             {/* Pagination info */}
-                            <div className="text-sm text-gray-700 dark:text-gray-300">
-                                Showing {filteredHeads.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1} to{' '}
-                                {Math.min(currentPage * itemsPerPage, filteredHeads.length)} of {filteredHeads.length} entries
+                            <div className="text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600">
+                                Showing <span className="text-[#0d544c] dark:text-[#3B78BD] font-semibold">{filteredHeads.length === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1}</span> to{' '}
+                                <span className="text-[#0d544c] dark:text-[#3B78BD] font-semibold">{Math.min(currentPage * itemsPerPage, filteredHeads.length)}</span> of{' '}
+                                <span className="text-[#0d544c] dark:text-[#3B78BD] font-semibold">{filteredHeads.length}</span> entries
                             </div>
 
                             {/* Pagination buttons */}
@@ -614,20 +875,20 @@ const RevenueHeads = () => {
                                 <button
                                     onClick={() => handlePageChange(1)}
                                     disabled={currentPage === 1}
-                                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[#0d544c] hover:to-[#3B78BD] hover:text-white hover:border-transparent transition-all duration-300"
                                 >
                                     First
                                 </button>
                                 <button
                                     onClick={() => handlePageChange(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[#0d544c] hover:to-[#3B78BD] hover:text-white hover:border-transparent transition-all duration-300"
                                 >
                                     Previous
                                 </button>
 
                                 {/* Page numbers */}
-                                <div className="flex gap-1">
+                                <div className="flex gap-1.5">
                                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                         let pageNum;
                                         if (totalPages <= 5) {
@@ -644,10 +905,10 @@ const RevenueHeads = () => {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => handlePageChange(pageNum)}
-                                                className={`px-3 py-1 border rounded-lg text-sm ${
+                                                className={`min-w-[2.5rem] px-3 py-2 border rounded-xl text-sm font-semibold transition-all duration-300 ${
                                                     currentPage === pageNum
-                                                        ? 'bg-blue-600 text-white border-blue-600'
-                                                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600'
+                                                        ? 'bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white border-transparent shadow-md'
+                                                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:border-[#0d544c] hover:text-[#0d544c] dark:hover:border-[#3B78BD] dark:hover:text-[#3B78BD]'
                                                 }`}
                                             >
                                                 {pageNum}
@@ -659,45 +920,56 @@ const RevenueHeads = () => {
                                 <button
                                     onClick={() => handlePageChange(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[#0d544c] hover:to-[#3B78BD] hover:text-white hover:border-transparent transition-all duration-300"
                                 >
                                     Next
                                 </button>
                                 <button
                                     onClick={() => handlePageChange(totalPages)}
                                     disabled={currentPage === totalPages}
-                                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-600"
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gradient-to-r hover:from-[#0d544c] hover:to-[#3B78BD] hover:text-white hover:border-transparent transition-all duration-300"
                                 >
                                     Last
                                 </button>
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {editingHead ? 'Edit Revenue Head' : 'Add Revenue Head'}
-                                </h2>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 animate-slideIn">
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD] px-6 py-5">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                                        {editingHead ? <FaEdit className="text-white" size={20} /> : <FaPlus className="text-white" size={20} />}
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-white">
+                                        {editingHead ? 'Edit Revenue Head' : 'Add Revenue Head'}
+                                    </h2>
+                                </div>
                                 <button
                                     onClick={() => setShowModal(false)}
-                                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                    className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300"
+                                    title="Close"
                                 >
-                                    <FaTimes size={24} />
+                                    <FaTimes size={20} />
                                 </button>
                             </div>
+                        </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Code *
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Code <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -705,20 +977,21 @@ const RevenueHeads = () => {
                                             value={formData.code}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                            placeholder="Enter revenue code"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Schedule *
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Schedule <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             name="schedule_number"
                                             value={formData.schedule_number}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300 cursor-pointer"
                                         >
                                             {schedules.map(s => (
                                                 <option key={s.number} value={s.number}>
@@ -730,8 +1003,8 @@ const RevenueHeads = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Name *
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                        Name <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -739,14 +1012,15 @@ const RevenueHeads = () => {
                                         value={formData.name}
                                         onChange={handleChange}
                                         required
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                        placeholder="Enter revenue head name"
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Paragraph Number *
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Paragraph Number <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -754,12 +1028,13 @@ const RevenueHeads = () => {
                                             value={formData.paragraph_number}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                            placeholder="e.g., 1.0"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                             Sub-Paragraph
                                         </label>
                                         <input
@@ -767,15 +1042,16 @@ const RevenueHeads = () => {
                                             name="sub_paragraph"
                                             value={formData.sub_paragraph}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                            placeholder="e.g., (a)"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Category *
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Category <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -783,20 +1059,21 @@ const RevenueHeads = () => {
                                             value={formData.category}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                            placeholder="Enter category"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Payment Frequency *
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Payment Frequency <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             name="payment_frequency"
                                             value={formData.payment_frequency}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300 cursor-pointer"
                                         >
                                             {paymentFrequencies.map(pf => (
                                                 <option key={pf.value} value={pf.value}>
@@ -807,17 +1084,17 @@ const RevenueHeads = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                            Pricing Type *
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                            Pricing Type <span className="text-red-500">*</span>
                                         </label>
                                         <select
                                             name="pricing_type"
                                             value={formData.pricing_type}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300 cursor-pointer"
                                         >
                                             {pricingTypes.map(pt => (
                                                 <option key={pt.value} value={pt.value}>
@@ -828,7 +1105,7 @@ const RevenueHeads = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                             Default Amount
                                         </label>
                                         <input
@@ -838,13 +1115,14 @@ const RevenueHeads = () => {
                                             onChange={handleChange}
                                             step="0.01"
                                             min="0"
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                            className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                            placeholder="0.00"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         By-Law Reference
                                     </label>
                                     <input
@@ -852,52 +1130,58 @@ const RevenueHeads = () => {
                                         name="bylaw_reference"
                                         value={formData.bylaw_reference}
                                         onChange={handleChange}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300"
+                                        placeholder="Enter by-law reference"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Description
                                     </label>
                                     <textarea
                                         name="description"
                                         value={formData.description}
                                         onChange={handleChange}
-                                        rows={3}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        rows={4}
+                                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-[#0d544c] focus:border-transparent transition-all duration-300 resize-none"
+                                        placeholder="Enter description..."
                                     />
                                 </div>
 
-                                <div>
-                                    <label className="flex items-center cursor-pointer">
+                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
+                                    <label className="flex items-center cursor-pointer group">
                                         <input
                                             type="checkbox"
                                             name="is_active"
                                             checked={formData.is_active}
                                             onChange={handleChange}
-                                            className="mr-2"
+                                            className="w-5 h-5 text-[#0d544c] border-gray-300 rounded focus:ring-[#0d544c] focus:ring-2 cursor-pointer"
                                         />
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Active
+                                        <span className="ml-3 text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-[#0d544c] dark:group-hover:text-[#3B78BD] transition-colors">
+                                            Active Revenue Head
                                         </span>
                                     </label>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-8">
+                                        Enable this revenue head for use in the system
+                                    </p>
                                 </div>
 
-                                <div className="flex justify-end gap-4 mt-6">
+                                <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                                     <button
                                         type="button"
                                         onClick={() => setShowModal(false)}
-                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                        className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-300 font-medium"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={loading}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                                        className="px-6 py-2.5 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:from-[#0a3d37] hover:to-[#2d5fa0] text-white rounded-xl flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium shadow-md hover:shadow-lg"
                                     >
-                                        <FaSave /> {loading ? 'Saving...' : 'Save'}
+                                        <FaSave size={16} />
+                                        <span>{loading ? 'Saving...' : 'Save Revenue Head'}</span>
                                     </button>
                                 </div>
                             </form>
