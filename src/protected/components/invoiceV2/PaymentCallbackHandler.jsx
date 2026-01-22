@@ -34,6 +34,10 @@ const PaymentCallbackHandler = ({ onPaymentComplete }) => {
                         handleMonnifyCallback(callback, pendingPayment);
                         break;
 
+                    case 'paystack':
+                        handlePaystackCallback(callback, pendingPayment);
+                        break;
+
                     default:
                         console.warn('Unknown payment gateway:', callback.gateway);
                 }
@@ -94,6 +98,33 @@ const PaymentCallbackHandler = ({ onPaymentComplete }) => {
             });
         } else {
             toast.warning(`Payment status: ${callback.status}`, {
+                position: 'top-right',
+                autoClose: 4000
+            });
+        }
+    };
+
+    const handlePaystackCallback = (callback, pendingPayment) => {
+        console.log('Paystack payment callback detected', { callback, pendingPayment });
+
+        // Paystack redirects with trxref and reference in URL
+        if (callback.reference) {
+            toast.success(
+                `Payment processed! Verifying invoice ${pendingPayment.invoice_number}...`,
+                {
+                    position: 'top-right',
+                    autoClose: 3000
+                }
+            );
+
+            // Notify parent component to refresh invoice data
+            if (onPaymentComplete && pendingPayment.invoice_id) {
+                setTimeout(() => {
+                    onPaymentComplete(pendingPayment.invoice_id);
+                }, 500);
+            }
+        } else {
+            toast.warning('Payment callback received but reference is missing.', {
                 position: 'top-right',
                 autoClose: 4000
             });

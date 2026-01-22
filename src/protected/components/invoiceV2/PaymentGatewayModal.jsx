@@ -1,39 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { X, CreditCard, Loader2 } from 'lucide-react';
 import { initializeInvoicePayment, savePendingPayment } from '../../../apis/paymentService';
+import { AuthContext } from '../../../context/AuthContext';
 import { toast } from 'react-toastify';
 import './PaymentGatewayModal.css';
 
 const PaymentGatewayModal = ({ invoice, onClose }) => {
+    const { token } = useContext(AuthContext);
     const [selectedGateway, setSelectedGateway] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [gateways, setGateways] = useState([]);
+    const [fetchingGateways, setFetchingGateways] = useState(true);
 
-    const gateways = [
-        {
-            id: 'monnify',
-            name: 'Monnify',
-            description: 'Pay with cards, bank transfer, or USSD',
-            color: '#5865f2',
-            logo: '/assets/monnify-logo.png',
-            available: true
-        },
-        {
-            id: 'tranzakt',
-            name: 'Tranzakt',
-            description: 'Secure payment through Tranzakt',
-            color: '#00a86b',
-            logo: '/assets/tranzakt-logo.png',
-            available: true
-        },
-        {
-            id: 'paystack',
-            name: 'Paystack',
-            description: 'Pay with Paystack (Coming Soon)',
-            color: '#00c3f7',
-            logo: '/assets/paystack-logo.png',
-            available: false
-        }
-    ];
+    // Gateway color mapping (can be customized)
+    const gatewayColors = {
+        'monnify': '#5865f2',
+        'tranzakt': '#00a86b',
+        'paystack': '#00c3f7',
+        'flutterwave': '#F5A623',
+        'interswitch': '#D0021B',
+        'remita': '#0B4D2C',
+        'default': '#4A5568'
+    };
+
+    // Gateway descriptions
+    const gatewayDescriptions = {
+        'monnify': 'Pay with cards, bank transfer, or USSD',
+        'tranzakt': 'Secure payment through Tranzakt',
+        'paystack': 'Pay with Paystack - Cards, Bank Transfer & More',
+        'flutterwave': 'Pay with Flutterwave',
+        'interswitch': 'Pay with Interswitch',
+        'remita': 'Pay with Remita',
+        'e-wallet': 'Pay from your wallet balance',
+        'default': 'Secure online payment'
+    };
+
+    // Fetch enabled payment gateways from backend
+    useEffect(() => {
+        const fetchEnabledGateways = async () => {
+            try {
+                setFetchingGateways(true);
+                const response = await fetch(
+                    `${import.meta.env.VITE_ADMIN_BASE_URL}/paymentgateways/enabled`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (data.status === 'success' && data.data) {
+                    // Map backend gateways to frontend format
+                    const mappedGateways = data.data
+                        .filter(gw => {
+                            // Filter out e-wallet and other non-online payment gateways
+                            const slug = gw.slug?.toLowerCase() || gw.gateway_name?.toLowerCase() || '';
+                            return !['e-wallet', 'cash', 'token'].includes(slug);
+                        })
+                        .map(gw => {
+                            const slug = gw.slug?.toLowerCase() || gw.gateway_name?.toLowerCase() || '';
+                            return {
+                                id: slug,
+                                name: gw.gateway_name,
+                                description: gatewayDescriptions[slug] || gatewayDescriptions.default,
+                                color: gatewayColors[slug] || gatewayColors.default,
+                                logo: gw.logo_url || '/assets/payment-icon.png',
+                                available: true
+                            };
+                        });
+
+                    setGateways(mappedGateways);
+
+                    if (mappedGateways.length === 0) {
+                        toast.warning('No online payment gateways are currently enabled. Please contact support.');
+                    }
+                } else {
+                    toast.error('Failed to load payment gateways');
+                }
+            } catch (error) {
+                console.error('Error fetching payment gateways:', error);
+                toast.error('Failed to load payment gateways');
+            } finally {
+                setFetchingGateways(false);
+            }
+        };
+
+        fetchEnabledGateways();
+    }, [token]);
 
     const handlePayment = async () => {
         if (!selectedGateway) {
@@ -75,10 +131,25 @@ const PaymentGatewayModal = ({ invoice, onClose }) => {
             }
         } catch (error) {
             console.error('Payment error:', error);
-            const errorMessage = error.response?.data?.message ||
-                                error.message ||
-                                'Failed to initialize payment. Please try again.';
-            toast.error(errorMessage);
+
+            // Enhanced error handling
+            let errorMessage = 'Failed to initialize payment. Please try again.';
+
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+
+                // Special handling for configuration errors
+                if (errorMessage.includes('not fully configured')) {
+                    errorMessage = `${selectedGateway.toUpperCase()} is not fully configured. Please contact support or try a different payment method.`;
+                }
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            toast.error(errorMessage, {
+                position: 'top-right',
+                autoClose: 8000
+            });
             setLoading(false);
         }
     };
@@ -134,8 +205,20 @@ const PaymentGatewayModal = ({ invoice, onClose }) => {
                 {/* Gateway Options */}
                 <div className="payment-gateway-options">
                     <h3 className="gateway-options-title">Payment Gateways</h3>
-                    <div className="gateway-cards">
-                        {gateways.map((gateway) => (
+
+                    {fetchingGateways ? (
+                        <div className="gateway-loading">
+                            <Loader2 className="spinner" size={32} />
+                            <p>Loading payment options...</p>
+                        </div>
+                    ) : gateways.length === 0 ? (
+                        <div className="gateway-empty">
+                            <p>No online payment gateways are currently available.</p>
+                            <p className="gateway-empty-subtitle">Please contact support or try manual payment.</p>
+                        </div>
+                    ) : (
+                        <div className="gateway-cards">
+                            {gateways.map((gateway) => (
                             <div
                                 key={gateway.id}
                                 className={`gateway-card ${
@@ -168,8 +251,9 @@ const PaymentGatewayModal = ({ invoice, onClose }) => {
                                     <div className="gateway-badge">Coming Soon</div>
                                 )}
                             </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Actions */}

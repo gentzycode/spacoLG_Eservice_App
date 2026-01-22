@@ -95,7 +95,7 @@ const CorporateModal = ({ closeModal, corporate, viewMode = false, onSave }) => 
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 3000);
                 toast.success('Corporate saved successfully!');
-                if (onSave) onSave();
+                if (onSave) await onSave(response); // Pass the response to onSave callback
                 closeModal();
             }
         } catch (err) {

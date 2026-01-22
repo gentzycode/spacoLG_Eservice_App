@@ -248,7 +248,7 @@ const ViewInvoiceV2Modal = ({ invoice, onClose, token }) => {
                             className="px-6 py-2.5 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] hover:shadow-lg text-white rounded-xl transition-all duration-200 flex items-center space-x-2 font-semibold"
                         >
                             <FaPrint />
-                            <span>Print Invoice</span>
+                            <span>Download PDF</span>
                         </button>
                         <button
                             onClick={onClose}

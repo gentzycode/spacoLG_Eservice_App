@@ -88,6 +88,17 @@ export const checkPaymentCallback = () => {
         };
     }
 
+    // Check for Paystack callback
+    const trxref = urlParams.get('trxref');
+    const reference = urlParams.get('reference');
+    if (trxref || reference) {
+        return {
+            gateway: 'paystack',
+            type: 'paystack_callback',
+            reference: reference || trxref
+        };
+    }
+
     return null;
 };
 
@@ -96,9 +107,14 @@ export const checkPaymentCallback = () => {
  */
 export const cleanCallbackUrl = () => {
     const url = new URL(window.location.href);
+    // Tranzakt params
     url.searchParams.delete('tranzakt_callback');
+    // Monnify params
     url.searchParams.delete('status');
     url.searchParams.delete('transactionReference');
     url.searchParams.delete('paymentReference');
+    // Paystack params
+    url.searchParams.delete('trxref');
+    url.searchParams.delete('reference');
     window.history.replaceState({}, '', url.pathname + url.search);
 };

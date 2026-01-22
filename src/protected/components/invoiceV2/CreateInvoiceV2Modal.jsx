@@ -5,7 +5,9 @@ import { fetchRevenueHeads } from '../../../apis/revenueActions';
 import {
     getIndividuals,
     getCorporates,
-    getEnabledPaymentGateways
+    getEnabledPaymentGateways,
+    createIndividual,
+    createCorporate
 } from '../../../apis/authActions';
 import IndividualModal from '../payerManagement/IndividualModalEnhanced';
 import CorporateModal from '../payerManagement/CorporateModal';
@@ -35,7 +37,7 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
         payer_email: '',
         payer_address: '',
         issue_date: new Date().toISOString().split('T')[0],
-        due_date: new Date().toISOString().split('T')[0], // Default to today but editable
+        due_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default to tomorrow (+1 day)
         notes: '',
         items: [], // Start with empty items - user will add tariffs from selector
     });
@@ -345,7 +347,13 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
                 onClose();
             }
         } catch (err) {
-            toast.error(err.message || 'Failed to create invoice');
+            // Display detailed validation errors
+            const errorMessage = err?.message || err?.errors
+                ? (typeof err.errors === 'object'
+                    ? Object.values(err.errors).flat().join('\n')
+                    : err.message)
+                : 'Failed to create invoice';
+            toast.error(errorMessage, { autoClose: 8000 });
             console.error('Error creating invoice:', err);
         } finally {
             setSubmitting(false);
@@ -405,10 +413,14 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
 
     return (
         <>
-            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+                <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full ${
+                    searchResults.length > 0 && currentStep === 1
+                        ? 'min-h-[70vh]' // Ensure enough space when search results are visible
+                        : 'max-h-[90vh]'
+                } my-4 overflow-hidden flex flex-col`}>
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD] p-6 flex justify-between items-center">
+                    <div className="bg-gradient-to-r from-[#0d544c] to-[#3B78BD] p-6 flex justify-between items-center flex-shrink-0">
                         <div>
                             <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
                                 <FaFileInvoiceDollar size={28} />
@@ -429,12 +441,12 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
                     </div>
 
                     {error && (
-                        <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400">
+                        <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 flex-shrink-0">
                             {error}
                         </div>
                     )}
 
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex-1 overflow-y-auto p-6 relative">
                         {/* Step Indicator */}
                         <StepIndicator />
 
@@ -509,7 +521,7 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
 
                                 {/* Payer Search Fields (for existing payers) */}
                                 {(payerType === 'individual' || payerType === 'corporate') && (
-                                    <div className="mb-6 space-y-4">
+                                    <div className={`space-y-4 ${searchResults.length > 0 ? 'mb-80' : 'mb-6'}`}>
                                         <div className="relative">
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 {payerType === 'individual' ? 'Search Individual (Ref, Name, or Phone) *' : 'Search Corporate (Ref, Name, or Phone) *'}
@@ -525,13 +537,16 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
 
                                             {/* Search Results Dropdown */}
                                             {searchResults.length > 0 && (
-                                                <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                                <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-700 border-2 border-[#0d544c] dark:border-[#3B78BD] rounded-xl shadow-2xl max-h-72 overflow-y-auto animate-fadeIn">
+                                                    <div className="sticky top-0 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] px-4 py-2 text-white text-sm font-semibold rounded-t-xl">
+                                                        {searchResults.length} Result{searchResults.length !== 1 ? 's' : ''} Found
+                                                    </div>
                                                     {searchResults.map((payer, index) => (
                                                         <button
                                                             key={index}
                                                             type="button"
                                                             onClick={() => handleSelectPayer(payer)}
-                                                            className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-200 dark:border-gray-600 last:border-b-0 transition-all duration-200"
+                                                            className="w-full px-4 py-3 text-left hover:bg-[#0d544c]/10 dark:hover:bg-[#3B78BD]/20 border-b border-gray-200 dark:border-gray-600 last:border-b-0 transition-all duration-200"
                                                         >
                                                             <div className="font-medium text-gray-900 dark:text-white">
                                                                 {payerType === 'individual'
@@ -872,7 +887,7 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
                                         className="px-6 py-3 bg-gradient-to-r from-[#0d544c] to-[#3B78BD] text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2 font-semibold"
                                     >
                                         <FaPrint />
-                                        <span>Print Invoice</span>
+                                        <span>Download PDF</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -938,10 +953,36 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
                     individual={null}
                     viewMode={false}
                     onSave={async (id, payload) => {
-                        await loadPayers();
-                        setShowIndividualModal(false);
-                        toast.success('Individual created! Please search and select them to continue.');
-                        setPayerType('individual');
+                        try {
+                            // Call the API to create the individual
+                            const response = await createIndividual(token, payload);
+
+                            // Reload the payers list
+                            await loadPayers();
+
+                            // Auto-select the newly created individual
+                            if (response && response.individual_ref) {
+                                const newIndividual = response;
+                                setSelectedPayer(newIndividual);
+                                setFormData({
+                                    ...formData,
+                                    payer_reference: newIndividual.individual_ref,
+                                    payer_name: `${newIndividual.first_name} ${newIndividual.last_name}`,
+                                    payer_phone: newIndividual.mobile_number || '',
+                                    payer_email: newIndividual.email || '',
+                                    payer_address: newIndividual.address || '',
+                                    payer_type: 'individual'
+                                });
+                                toast.success('Individual created and selected! You can now proceed to add tariffs.');
+                            }
+
+                            // Close modal and show success
+                            setShowIndividualModal(false);
+                            setPayerType('individual');
+                        } catch (error) {
+                            // Error will be thrown back to the modal to display
+                            throw error;
+                        }
                     }}
                 />
             )}
@@ -957,10 +998,28 @@ const CreateInvoiceV2Modal = ({ onClose, onSuccess, token: propToken }) => {
                     }}
                     corporate={null}
                     viewMode={false}
-                    onSave={async () => {
+                    onSave={async (response) => {
+                        // CorporateModal handles the API call internally and passes the response
+                        // Reload payers list
                         await loadPayers();
+
+                        // Auto-select the newly created corporate
+                        if (response && response.corporate_ref) {
+                            const newCorporate = response;
+                            setSelectedPayer(newCorporate);
+                            setFormData({
+                                ...formData,
+                                payer_reference: newCorporate.corporate_ref,
+                                payer_name: newCorporate.company_name,
+                                payer_phone: newCorporate.phone_number || '',
+                                payer_email: newCorporate.email || '',
+                                payer_address: newCorporate.address || '',
+                                payer_type: 'corporate'
+                            });
+                            toast.success('Corporate created and selected! You can now proceed to add tariffs.');
+                        }
+
                         setShowCorporateModal(false);
-                        toast.success('Corporate created! Please search and select them to continue.');
                         setPayerType('corporate');
                     }}
                 />

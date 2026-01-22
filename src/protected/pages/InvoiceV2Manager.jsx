@@ -16,6 +16,7 @@ import ViewInvoiceV2Modal from '../components/invoiceV2/ViewInvoiceV2Modal';
 import RecordPaymentModal from '../components/invoiceV2/RecordPaymentModal';
 import PaymentGatewayModal from '../components/invoiceV2/PaymentGatewayModal';
 import PaymentCallbackHandler from '../components/invoiceV2/PaymentCallbackHandler';
+import PendingPaymentChecker from '../components/invoiceV2/PendingPaymentChecker';
 import ConfirmModal from '../components/common/ConfirmModal';
 import InputModal from '../components/common/InputModal';
 import { toast } from 'react-toastify';
@@ -371,6 +372,9 @@ const InvoiceV2Manager = () => {
 
             {/* Payment Callback Handler */}
             <PaymentCallbackHandler onPaymentComplete={handlePaymentComplete} />
+
+            {/* Pending Payment Checker - Auto-verifies payments when user returns */}
+            <PendingPaymentChecker onVerificationComplete={handlePaymentComplete} />
 
             {/* Approve Confirmation */}
             <ConfirmModal

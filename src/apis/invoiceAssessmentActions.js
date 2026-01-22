@@ -19,7 +19,19 @@ const handleError = (err, setError) => {
         return;
     }
     const errorData = err.response.data;
-    setError?.(errorData.message || errorData || ERROR_MESSAGES.FETCH_ERROR);
+
+    // Handle Laravel validation errors with detailed messages
+    if (errorData.errors && typeof errorData.errors === 'object') {
+        const errorMessages = Object.entries(errorData.errors)
+            .map(([field, messages]) => {
+                const fieldName = field.replace(/_/g, ' ').replace(/\./g, ' ');
+                return Array.isArray(messages) ? messages.join(', ') : messages;
+            })
+            .join('\n');
+        setError?.(errorMessages || errorData.message || ERROR_MESSAGES.FETCH_ERROR);
+    } else {
+        setError?.(errorData.message || errorData || ERROR_MESSAGES.FETCH_ERROR);
+    }
 };
 
 // Centralized API request wrapper
